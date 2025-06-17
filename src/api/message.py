@@ -69,7 +69,7 @@ class Message(ApiHandler):
         # Print to console and log
         PrintStyle(
             background_color="#6C3483", font_color="white", bold=True, padding=True
-        ).print(f"User message:")
+        ).print("User message:")
         PrintStyle(font_color="white", padding=False).print(f"> {message}")
         if attachment_filenames:
             PrintStyle(font_color="white", padding=False).print("Attachments:")

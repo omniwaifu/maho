@@ -462,17 +462,17 @@ def _stringify_content(content: MessageContent) -> str:
     # already a string
     if isinstance(content, str):
         return content
-    
+
     # raw messages return preview or trimmed json
     if _is_raw_message(content):
-        preview: str = content.get("preview", "") # type: ignore
+        preview: str = content.get("preview", "")  # type: ignore
         if preview:
             return preview
         text = _json_dumps(content)
         if len(text) > RAW_MESSAGE_OUTPUT_TEXT_TRIM:
             return text[:RAW_MESSAGE_OUTPUT_TEXT_TRIM] + "... TRIMMED"
         return text
-    
+
     # regular messages of non-string are dumped as json
     return _json_dumps(content)
 

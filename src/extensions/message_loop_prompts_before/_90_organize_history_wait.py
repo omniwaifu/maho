@@ -26,4 +26,3 @@ class OrganizeHistoryWait(Extension):
                 # no task running, start and wait
                 self.agent.context.log.set_progress("Compressing history...")
                 await self.agent.history.compress()
-

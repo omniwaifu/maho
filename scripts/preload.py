@@ -19,7 +19,7 @@ from src.providers.base import ModelProvider
 async def preload():
     PrintStyle().print("Running preload...")
     runtime.initialize()
-    
+
     try:
         set = settings.get_default_settings()
 
@@ -36,6 +36,7 @@ async def preload():
                 try:
                     # Import here to avoid circular dependency
                     import models
+
                     emb_mod = models.get_huggingface_embedding(set["embed_model_name"])
                     emb_txt = await emb_mod.aembed_query("test")
                     return emb_txt
@@ -47,7 +48,7 @@ async def preload():
 
         await asyncio.gather(*tasks, return_exceptions=True)
         PrintStyle().print("Preload completed")
-        
+
     except Exception as e:
         PrintStyle().error(f"Error in preload: {e}")
 
@@ -57,4 +58,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main() 
+    main()

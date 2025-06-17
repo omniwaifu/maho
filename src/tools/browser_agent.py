@@ -294,13 +294,17 @@ class BrowserAgent(Tool):
                 f"Task reached step limit without completion. Last page: {current_url}. "
                 f"The browser agent may need clearer instructions on when to finish."
             )
-        
+
         # update the log (without screenshot path here, user can click)
         self.log.update(answer=answer_text)
 
         # add screenshot to the answer if we have it
-        if self.log.kvps and "screenshot" in self.log.kvps and self.log.kvps['screenshot']:
-            path = self.log.kvps['screenshot'].split('//', 1)[-1].split('&', 1)[0]
+        if (
+            self.log.kvps
+            and "screenshot" in self.log.kvps
+            and self.log.kvps["screenshot"]
+        ):
+            path = self.log.kvps["screenshot"].split("//", 1)[-1].split("&", 1)[0]
             answer_text += f"\n\nScreenshot: {path}"
 
         # respond (with screenshot path)
@@ -410,9 +414,11 @@ def get_use_agent_log(use_agent: browser_use.Agent | None):
             # final results
             if item.is_done:
                 if item.success:
-                    short_log.append(f"✅ Done")
+                    short_log.append("✅ Done")
                 else:
-                    short_log.append(f"❌ Error: {item.error or item.extracted_content or 'Unknown error'}")
+                    short_log.append(
+                        f"❌ Error: {item.error or item.extracted_content or 'Unknown error'}"
+                    )
 
             # progress messages
             else:

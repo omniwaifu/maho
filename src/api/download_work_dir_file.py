@@ -25,7 +25,9 @@ class DownloadFile(ApiHandler):
             raise Exception(f"File {file_path} not found")
 
         if file["is_dir"]:
-            zip_file = await runtime.call_development_function(files.zip_dir, file["abs_path"])
+            zip_file = await runtime.call_development_function(
+                files.zip_dir, file["abs_path"]
+            )
             if runtime.is_development():
                 b64 = await runtime.call_development_function(fetch_file, zip_file)
                 file_data = BytesIO(base64.b64decode(b64))
@@ -42,7 +44,9 @@ class DownloadFile(ApiHandler):
                 )
         elif file["is_file"]:
             if runtime.is_development():
-                b64 = await runtime.call_development_function(fetch_file, file["abs_path"])
+                b64 = await runtime.call_development_function(
+                    fetch_file, file["abs_path"]
+                )
                 file_data = BytesIO(base64.b64decode(b64))
                 return send_file(
                     file_data,

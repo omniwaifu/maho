@@ -1,9 +1,9 @@
 from fnmatch import fnmatch
 import json
-import os, re
+import os
+import re
 import base64
 
-import re
 import shutil
 import tempfile
 import zipfile
@@ -162,9 +162,6 @@ def find_file_in_dirs(file_path, backup_dirs):
     )
 
 
-import re
-
-
 def remove_code_fences(text):
     # Pattern to match code fences with optional language specifier
     pattern = r"(```|~~~)(.*?\n)(.*?)(\1)"
@@ -177,9 +174,6 @@ def remove_code_fences(text):
     result = re.sub(pattern, replacer, text, flags=re.DOTALL)
 
     return result
-
-
-import re
 
 
 def is_full_json_template(text):
@@ -235,7 +229,7 @@ def delete_dir(relative_path: str):
 
                 # try again after changing permissions
                 shutil.rmtree(abs_path, ignore_errors=True)
-            except:
+            except Exception:
                 # suppress all errors - we're ensuring no errors propagate
                 pass
 

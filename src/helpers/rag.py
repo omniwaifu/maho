@@ -15,6 +15,7 @@ from langchain_community.document_loaders import (
 # def extract_file(path: str) -> List[Document]:
 #     pass  # TODO finish implementing
 
+
 def extract_text(content: bytes, chunk_size: int = 128) -> List[str]:
     result = []
 

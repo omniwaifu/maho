@@ -91,8 +91,8 @@ class MemorizeSolutions(Extension):
         for solution in solutions:
             # solution to plain text:
             if isinstance(solution, dict):
-                problem = solution.get('problem', 'Unknown problem')
-                solution_text = solution.get('solution', 'Unknown solution')
+                problem = solution.get("problem", "Unknown problem")
+                solution_text = solution.get("solution", "Unknown solution")
                 txt = f"# Problem\n {problem}\n# Solution\n {solution_text}"
             else:
                 # If solution is not a dict, convert it to string
@@ -111,7 +111,9 @@ class MemorizeSolutions(Extension):
                     log_item.update(replaced=rem_txt)
 
             # insert new solution
-            await db.insert_text(text=txt, metadata={"area": Memory.Area.SOLUTIONS.value})
+            await db.insert_text(
+                text=txt, metadata={"area": Memory.Area.SOLUTIONS.value}
+            )
 
         solutions_txt = solutions_txt.strip()
         log_item.update(solutions=solutions_txt)

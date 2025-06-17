@@ -1041,14 +1041,14 @@ def _apply_settings(previous: Settings | None):
             )  # TODO overkill, replace with background task
 
         # update token in mcp server
-        current_token = create_auth_token() #TODO - ugly, token in settings is generated from dotenv and does not always correspond
-        if (
-            not previous
-            or current_token != previous["mcp_server_token"]
-        ):
+        current_token = (
+            create_auth_token()
+        )  # TODO - ugly, token in settings is generated from dotenv and does not always correspond
+        if not previous or current_token != previous["mcp_server_token"]:
 
             async def update_mcp_token(token: str):
                 from python.helpers.mcp_server import DynamicMcpProxy
+
                 DynamicMcpProxy.get_instance().reconfigure(token=token)
 
             task3 = defer.DeferredTask().start_task(

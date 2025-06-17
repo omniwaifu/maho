@@ -106,12 +106,14 @@ def _serialize_context(context: AgentContext):
         "id": context.id,
         "name": context.name,
         "created_at": (
-            context.created_at.isoformat() if context.created_at
+            context.created_at.isoformat()
+            if context.created_at
             else datetime.fromtimestamp(0).isoformat()
         ),
         "type": context.type.value,
         "last_message": (
-            context.last_message.isoformat() if context.last_message
+            context.last_message.isoformat()
+            if context.last_message
             else datetime.fromtimestamp(0).isoformat()
         ),
         "agents": agents,

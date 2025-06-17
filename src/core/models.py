@@ -81,13 +81,15 @@ class LoopData:
 # Exception classes
 class InterventionException(Exception):
     """Intervention exception class - skips rest of message loop iteration"""
+
     pass
 
 
 class RepairableException(Exception):
     """Killer exception class - not forwarded to LLM, cannot be fixed on its own, ends message loop"""
+
     pass
 
 
 class HandledException(Exception):
-    pass 
+    pass

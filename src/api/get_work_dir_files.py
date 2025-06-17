@@ -21,6 +21,7 @@ class GetWorkDirFiles(ApiHandler):
 
         return {"data": result}
 
+
 async def get_files(path):
     browser = FileBrowser()
     return browser.get_files(path)

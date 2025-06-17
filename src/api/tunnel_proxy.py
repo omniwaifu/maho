@@ -17,7 +17,9 @@ class TunnelProxy(ApiHandler):
         # first verify the service is running:
         service_ok = False
         try:
-            response = requests.post(f"http://localhost:{tunnel_api_port}/", json={"action": "health"})
+            response = requests.post(
+                f"http://localhost:{tunnel_api_port}/", json={"action": "health"}
+            )
             if response.status_code == 200:
                 service_ok = True
         except Exception as e:
@@ -26,11 +28,14 @@ class TunnelProxy(ApiHandler):
         # forward this request to the tunnel service if OK
         if service_ok:
             try:
-                response = requests.post(f"http://localhost:{tunnel_api_port}/", json=input)
+                response = requests.post(
+                    f"http://localhost:{tunnel_api_port}/", json=input
+                )
                 return response.json()
             except Exception as e:
                 return {"error": str(e)}
         else:
             # forward to API handler directly
             from python.api.tunnel import Tunnel
+
             return await Tunnel(self.app, self.thread_lock).process(input, request)

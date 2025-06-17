@@ -20,7 +20,9 @@ class DeleteWorkDirFile(ApiHandler):
         if res:
             # Get updated file list
             # result = browser.get_files(current_path)
-            result = await runtime.call_development_function(get_work_dir_files.get_files, current_path)
+            result = await runtime.call_development_function(
+                get_work_dir_files.get_files, current_path
+            )
             return {"data": result}
         else:
             raise Exception("File not found or could not be deleted")

@@ -150,14 +150,18 @@ async def serve_index():
 
 def init_a0():
     """Initialize contexts and MCP"""
-    from src.config.initialization import initialize_chats, initialize_mcp, initialize_job_loop
-    
+    from src.config.initialization import (
+        initialize_chats,
+        initialize_mcp,
+        initialize_job_loop,
+    )
+
     # initialize chats
     initialize_chats()
-    
+
     # initialize MCP
     initialize_mcp()
-    
+
     # initialize job loop
     initialize_job_loop()
 
@@ -228,6 +232,7 @@ def run():
     mcp_server.register_server(webapp)
 
     try:
+
         def signal_handler(sig, frame):
             PrintStyle().print("Received interrupt signal. Shutting down gracefully...")
             if server:
@@ -260,4 +265,4 @@ def run():
 
 
 if __name__ == "__main__":
-    run() 
+    run()

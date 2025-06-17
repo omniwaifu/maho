@@ -34,8 +34,10 @@ class Localization:
         # Validate timezone
         try:
             pytz.timezone(timezone)
-            if timezone != getattr(self, 'timezone', None):
-                PrintStyle.debug(f"Changing timezone from {getattr(self, 'timezone', 'None')} to {timezone}")
+            if timezone != getattr(self, "timezone", None):
+                PrintStyle.debug(
+                    f"Changing timezone from {getattr(self, 'timezone', 'None')} to {timezone}"
+                )
                 self.timezone = timezone
                 save_dotenv_value("DEFAULT_USER_TIMEZONE", timezone)
         except pytz.exceptions.UnknownTimeZoneError:
@@ -59,11 +61,17 @@ class Localization:
                 local_datetime_obj = datetime.fromisoformat(localtime_str)
                 if local_datetime_obj.tzinfo is None:
                     # If no timezone info, assume it's in the configured timezone
-                    local_datetime_obj = pytz.timezone(self.timezone).localize(local_datetime_obj)
+                    local_datetime_obj = pytz.timezone(self.timezone).localize(
+                        local_datetime_obj
+                    )
             except ValueError:
                 # If timezone parsing fails, try without timezone
-                local_datetime_obj = datetime.fromisoformat(localtime_str.split('Z')[0].split('+')[0])
-                local_datetime_obj = pytz.timezone(self.timezone).localize(local_datetime_obj)
+                local_datetime_obj = datetime.fromisoformat(
+                    localtime_str.split("Z")[0].split("+")[0]
+                )
+                local_datetime_obj = pytz.timezone(self.timezone).localize(
+                    local_datetime_obj
+                )
 
             # Convert to UTC
             return local_datetime_obj.astimezone(pytz.utc)
@@ -71,7 +79,9 @@ class Localization:
             PrintStyle.error(f"Error converting localtime string to UTC: {e}")
             return None
 
-    def utc_dt_to_localtime_str(self, utc_dt: datetime | None, sep: str = "T", timespec: str = "auto") -> str | None:
+    def utc_dt_to_localtime_str(
+        self, utc_dt: datetime | None, sep: str = "T", timespec: str = "auto"
+    ) -> str | None:
         """
         Convert a UTC datetime object to a local time ISO string.
         Returns None if input is None.

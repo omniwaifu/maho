@@ -105,7 +105,9 @@ class MemorizeMemories(Extension):
                     log_item.update(replaced=rem_txt)
 
             # insert new solution
-            await db.insert_text(text=txt, metadata={"area": Memory.Area.FRAGMENTS.value})
+            await db.insert_text(
+                text=txt, metadata={"area": Memory.Area.FRAGMENTS.value}
+            )
 
         log_item.update(
             result=f"{len(memories)} entries memorized.",

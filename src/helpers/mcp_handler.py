@@ -67,11 +67,10 @@ def initialize_mcp(mcp_servers_config: str):
                 content=f"Failed to update MCP settings: {e}",
                 temp=False,
             )
-            
-            PrintStyle(
-                background_color="black", font_color="red", padding=True
-            ).print(f"Failed to update MCP settings: {e}")
-            
+
+            PrintStyle(background_color="black", font_color="red", padding=True).print(
+                f"Failed to update MCP settings: {e}"
+            )
 
 
 class MCPTool(Tool):
@@ -370,9 +369,9 @@ class MCPConfig(BaseModel):
     @classmethod
     def get_instance(cls) -> "MCPConfig":
         # with cls.__lock:
-            if cls.__instance is None:
-                cls.__instance = cls(servers_list=[])
-            return cls.__instance
+        if cls.__instance is None:
+            cls.__instance = cls(servers_list=[])
+        return cls.__instance
 
     @classmethod
     def wait_for_lock(cls):

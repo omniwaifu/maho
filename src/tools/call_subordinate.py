@@ -10,9 +10,7 @@ class Delegation(Tool):
             self.agent.get_data(Agent.DATA_NAME_SUBORDINATE) is None
             or str(reset).lower().strip() == "true"
         ):
-            sub = Agent(
-                self.agent.number + 1, self.agent.config, self.agent.context
-            )
+            sub = Agent(self.agent.number + 1, self.agent.config, self.agent.context)
             sub.set_data(Agent.DATA_NAME_SUPERIOR, self.agent)
             self.agent.set_data(Agent.DATA_NAME_SUBORDINATE, sub)
 

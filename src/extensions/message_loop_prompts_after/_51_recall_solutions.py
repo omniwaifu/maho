@@ -5,6 +5,7 @@ from agent import LoopData
 
 DATA_NAME_TASK = "_recall_solutions_task"
 
+
 class RecallSolutions(Extension):
 
     INTERVAL = 3
@@ -17,7 +18,9 @@ class RecallSolutions(Extension):
 
         # every 3 iterations (or the first one) recall memories
         if loop_data.iteration % RecallSolutions.INTERVAL == 0:
-            task = asyncio.create_task(self.search_solutions(loop_data=loop_data, **kwargs))
+            task = asyncio.create_task(
+                self.search_solutions(loop_data=loop_data, **kwargs)
+            )
         else:
             task = None
 
@@ -26,11 +29,11 @@ class RecallSolutions(Extension):
 
     async def search_solutions(self, loop_data: LoopData, **kwargs):
 
-        #cleanup
+        # cleanup
         extras = loop_data.extras_persistent
         if "solutions" in extras:
             del extras["solutions"]
-        
+
         # try:
         # show temp info message
         self.agent.context.log.log(
@@ -48,7 +51,7 @@ class RecallSolutions(Extension):
         #     self.agent.history[-RecallSolutions.HISTORY :]
         # )  # only last X messages
         # msgs_text = self.agent.history.current.output_text()
-        msgs_text = self.agent.history.output_text()[-RecallSolutions.HISTORY:]
+        msgs_text = self.agent.history.output_text()[-RecallSolutions.HISTORY :]
 
         system = self.agent.read_prompt(
             "memory.solutions_query.sys.md", history=msgs_text
@@ -60,7 +63,11 @@ class RecallSolutions(Extension):
 
         # call util llm to summarize conversation
         query = await self.agent.call_utility_model(
-            system=system, message=loop_data.user_message.output_text() if loop_data.user_message else "", callback=log_callback
+            system=system,
+            message=(
+                loop_data.user_message.output_text() if loop_data.user_message else ""
+            ),
+            callback=log_callback,
         )
 
         # get solutions database

@@ -4,6 +4,7 @@ from python.helpers import errors
 
 from python.helpers import git
 
+
 class HealthCheck(ApiHandler):
 
     async def process(self, input: dict, request: Request) -> dict | Response:

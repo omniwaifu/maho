@@ -199,7 +199,7 @@ async def finish_chat(
             description="ID of the chat to be finished. This value is returned in response to sending previous message.",
             title="chat_id",
         ),
-    ]
+    ],
 ) -> Annotated[
     Union[ToolResponse, ToolError],
     Field(

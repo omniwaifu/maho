@@ -1,6 +1,9 @@
 import uuid
 from datetime import datetime, timezone
-from typing import Any, Awaitable, Coroutine, Callable
+from typing import TYPE_CHECKING, Any, Awaitable, Coroutine, Callable
+
+if TYPE_CHECKING:
+    from src.core.agent import Agent
 
 from src.core.models import AgentConfig, AgentContextType, UserMessage
 from src.helpers import log as Log
@@ -19,10 +22,10 @@ class AgentContext:
         config: AgentConfig,
         id: str | None = None,
         name: str | None = None,
-        agent0: "Agent|None" = None,
+        agent0: "Agent|None" = None,  # type: ignore
         log: Log.Log | None = None,
         paused: bool = False,
-        streaming_agent: "Agent|None" = None,
+        streaming_agent: "Agent|None" = None,  # type: ignore
         created_at: datetime | None = None,
         type: AgentContextType = AgentContextType.USER,
         last_message: datetime | None = None,
@@ -34,6 +37,7 @@ class AgentContext:
         self.log = log or Log.Log()
         # Avoid circular import by importing Agent here
         from src.core.agent import Agent
+
         self.agent0 = agent0 or Agent(0, self.config, self)
         self.paused = paused
         self.streaming_agent = streaming_agent
@@ -59,7 +63,7 @@ class AgentContext:
         if not AgentContext._contexts:
             return None
         return list(AgentContext._contexts.values())[0]
-    
+
     @staticmethod
     def all():
         return list(AgentContext._contexts.values())
@@ -77,7 +81,8 @@ class AgentContext:
             "name": self.name,
             "created_at": (
                 Localization.get().serialize_datetime(self.created_at)
-                if self.created_at else Localization.get().serialize_datetime(datetime.fromtimestamp(0))
+                if self.created_at
+                else Localization.get().serialize_datetime(datetime.fromtimestamp(0))
             ),
             "no": self.no,
             "log_guid": self.log.guid,
@@ -86,7 +91,8 @@ class AgentContext:
             "paused": self.paused,
             "last_message": (
                 Localization.get().serialize_datetime(self.last_message)
-                if self.last_message else Localization.get().serialize_datetime(datetime.fromtimestamp(0))
+                if self.last_message
+                else Localization.get().serialize_datetime(datetime.fromtimestamp(0))
             ),
             "type": self.type.value,
         }
@@ -104,7 +110,11 @@ class AgentContext:
     ) -> list[Log.LogItem]:
         items: list[Log.LogItem] = []
         for context in AgentContext.all():
-            items.append(context.log.log(type, heading, content, kvps, temp, update_progress, id, **kwargs))
+            items.append(
+                context.log.log(
+                    type, heading, content, kvps, temp, update_progress, id, **kwargs
+                )
+            )
         return items
 
     def kill_process(self):
@@ -116,6 +126,7 @@ class AgentContext:
         self.log.reset()
         # Avoid circular import by importing Agent here
         from src.core.agent import Agent
+
         self.agent0 = Agent(0, self.config, self)
         self.streaming_agent = None
         self.paused = False
@@ -142,6 +153,7 @@ class AgentContext:
                 broadcast_level -= 1
                 # Avoid circular import by importing Agent here
                 from src.core.agent import Agent
+
                 intervention_agent = intervention_agent.data.get(
                     Agent.DATA_NAME_SUPERIOR, None
                 )
@@ -161,7 +173,7 @@ class AgentContext:
         return self.task
 
     # this wrapper ensures that superior agents are called back if the chat was loaded from file and original callstack is gone
-    async def _process_chain(self, agent: "Agent", msg: "UserMessage|str", user=True):
+    async def _process_chain(self, agent: "Agent", msg: "UserMessage|str", user=True):  # type: ignore
         try:
             msg_template = (
                 agent.hist_add_user_message(msg)  # type: ignore
@@ -173,9 +185,10 @@ class AgentContext:
             response = await agent.monologue()  # type: ignore
             # Avoid circular import by importing Agent here
             from src.core.agent import Agent
+
             superior = agent.data.get(Agent.DATA_NAME_SUPERIOR, None)
             if superior:
                 response = await self._process_chain(superior, response, False)  # type: ignore
             return response
         except Exception as e:
-            agent.handle_critical_exception(e) 
+            agent.handle_critical_exception(e)

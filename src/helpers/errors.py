@@ -15,7 +15,7 @@ def error_text(e: Exception):
 
 def format_error(e: Exception, start_entries=6, end_entries=4):
     # format traceback from the provided exception instead of the most recent one
-    traceback_text = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
+    traceback_text = "".join(traceback.format_exception(type(e), e, e.__traceback__))
     # Split the traceback into lines
     lines = traceback_text.split("\n")
 

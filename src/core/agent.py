@@ -1,13 +1,21 @@
 import asyncio
 from datetime import datetime, timezone
-from typing import Any, Awaitable, Callable
+from typing import TYPE_CHECKING, Any, Awaitable, Callable
+
+if TYPE_CHECKING:
+    from src.core.context import AgentContext
 
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage, SystemMessage, BaseMessage
 
 from src.core.models import (
-    AgentConfig, ModelConfig, UserMessage, LoopData,
-    InterventionException, RepairableException, HandledException
+    AgentConfig,
+    ModelConfig,
+    UserMessage,
+    LoopData,
+    InterventionException,
+    RepairableException,
+    HandledException,
 )
 from src.helpers import extract_tools, files, errors, history, tokens
 from src.helpers import dirty_json
@@ -24,7 +32,7 @@ class Agent:
     DATA_NAME_CTX_WINDOW = "ctx_window"
 
     def __init__(
-        self, number: int, config: AgentConfig, context: "AgentContext | None" = None
+        self, number: int, config: AgentConfig, context: "AgentContext | None" = None  # type: ignore
     ):
         # agent config
         self.config = config
@@ -34,6 +42,7 @@ class Agent:
             self.context = context
         else:
             from src.core.context import AgentContext
+
             self.context = AgentContext(config)
 
         # non-config vars
@@ -62,7 +71,9 @@ class Agent:
                     self.loop_data.iteration += 1
 
                     # call message_loop_start extensions
-                    await self.call_extensions("message_loop_start", loop_data=self.loop_data)
+                    await self.call_extensions(
+                        "message_loop_start", loop_data=self.loop_data
+                    )
 
                     try:
                         # prepare LLM chain (model, system, history)
@@ -156,10 +167,14 @@ class Agent:
 
         # extras (memory etc.)
         extras = history.Message(
-            False, 
-            content=self.read_prompt("agent.context.extras.md", extras=dirty_json.stringify(
-                {**loop_data.extras_persistent, **loop_data.extras_temporary}
-                ))).output()
+            False,
+            content=self.read_prompt(
+                "agent.context.extras.md",
+                extras=dirty_json.stringify(
+                    {**loop_data.extras_persistent, **loop_data.extras_temporary}
+                ),
+            ),
+        ).output()
         loop_data.extras_temporary.clear()
 
         # convert history + extras to LLM format
@@ -268,14 +283,14 @@ class Agent:
                 "fw.intervention.md",
                 message=message.message,
                 attachments=message.attachments,
-                system_message=message.system_message
+                system_message=message.system_message,
             )
         else:
             content = self.parse_prompt(
                 "fw.user_message.md",
                 message=message.message,
                 attachments=message.attachments,
-                system_message=message.system_message
+                system_message=message.system_message,
             )
 
         # remove empty parts from template
@@ -310,6 +325,7 @@ class Agent:
     def get_chat_model(self):
         # Import here to avoid circular dependency
         import models
+
         return models.get_model(
             models.ModelType.CHAT,
             self.config.chat_model.provider,
@@ -320,6 +336,7 @@ class Agent:
     def get_utility_model(self):
         # Import here to avoid circular dependency
         import models
+
         return models.get_model(
             models.ModelType.CHAT,
             self.config.utility_model.provider,
@@ -330,6 +347,7 @@ class Agent:
     def get_embedding_model(self):
         # Import here to avoid circular dependency
         import models
+
         return models.get_model(
             models.ModelType.EMBEDDING,
             self.config.embeddings_model.provider,
@@ -363,6 +381,7 @@ class Agent:
 
             # Import here to avoid circular dependency
             import models
+
             content = models.parse_chunk(chunk)
             limiter.add(output=tokens.approximate_tokens(content))
             response += content
@@ -390,6 +409,7 @@ class Agent:
 
             # Import here to avoid circular dependency
             import models
+
             content = models.parse_chunk(chunk)
             limiter.add(output=tokens.approximate_tokens(content))
             response += content
@@ -420,6 +440,7 @@ class Agent:
 
         # rate limiter - Import here to avoid circular dependency
         import models
+
         limiter = models.get_rate_limiter(
             model_config.provider,
             model_config.name,
@@ -457,34 +478,39 @@ class Agent:
         if tool_request is not None:
             raw_tool_name = tool_request.get("tool_name", "")  # Get the raw tool name
             tool_args = tool_request.get("tool_args", {})
-            
+
             tool_name = raw_tool_name  # Initialize tool_name with raw_tool_name
             tool_method = None  # Initialize tool_method
 
             # Split raw_tool_name into tool_name and tool_method if applicable
             if ":" in raw_tool_name:
                 tool_name, tool_method = raw_tool_name.split(":", 1)
-            
+
             tool = None  # Initialize tool to None
 
             # Try getting tool from MCP first
             try:
-                import python.helpers.mcp_handler as mcp_helper 
-                mcp_tool_candidate = mcp_helper.MCPConfig.get_instance().get_tool(self, tool_name)
+                import python.helpers.mcp_handler as mcp_helper
+
+                mcp_tool_candidate = mcp_helper.MCPConfig.get_instance().get_tool(
+                    self, tool_name
+                )
                 if mcp_tool_candidate:
                     tool = mcp_tool_candidate
             except ImportError:
-                PrintStyle(background_color="black", font_color="yellow", padding=True).print(
-                    "MCP helper module not found. Skipping MCP tool lookup."
-                 )
+                PrintStyle(
+                    background_color="black", font_color="yellow", padding=True
+                ).print("MCP helper module not found. Skipping MCP tool lookup.")
             except Exception as e:
-                PrintStyle(background_color="black", font_color="red", padding=True).print(
-                    f"Failed to get MCP tool '{tool_name}': {e}"
-                )
+                PrintStyle(
+                    background_color="black", font_color="red", padding=True
+                ).print(f"Failed to get MCP tool '{tool_name}': {e}")
 
             # Fallback to local get_tool if MCP tool was not found or MCP lookup failed
             if not tool:
-                tool = self.get_tool(name=tool_name, method=tool_method, args=tool_args, message=msg)
+                tool = self.get_tool(
+                    name=tool_name, method=tool_method, args=tool_args, message=msg
+                )
 
             if tool:
                 await self.handle_intervention()
@@ -497,7 +523,9 @@ class Agent:
                 if response.break_loop:
                     return response.message
             else:
-                error_detail = f"Tool '{raw_tool_name}' not found or could not be initialized."
+                error_detail = (
+                    f"Tool '{raw_tool_name}' not found or could not be initialized."
+                )
                 self.hist_add_warning(error_detail)
                 PrintStyle(font_color="red", padding=True).print(error_detail)
                 self.context.log.log(
@@ -508,7 +536,8 @@ class Agent:
             self.hist_add_warning(warning_msg_misformat)
             PrintStyle(font_color="red", padding=True).print(warning_msg_misformat)
             self.context.log.log(
-                type="error", content=f"{self.agent_name}: Message misformat, no valid tool request found."
+                type="error",
+                content=f"{self.agent_name}: Message misformat, no valid tool request found.",
             )
 
     def log_from_stream(self, stream: str, logItem: Log.LogItem):
@@ -522,7 +551,9 @@ class Agent:
         except Exception as e:
             pass
 
-    def get_tool(self, name: str, method: str | None, args: dict, message: str, **kwargs):
+    def get_tool(
+        self, name: str, method: str | None, args: dict, message: str, **kwargs
+    ):
         from python.tools.unknown import Unknown
         from python.helpers.tool import Tool
 
@@ -530,7 +561,9 @@ class Agent:
             "python/tools", name + ".py", Tool
         )
         tool_class = classes[0] if classes else Unknown
-        return tool_class(agent=self, name=name, method=method, args=args, message=message, **kwargs)
+        return tool_class(
+            agent=self, name=name, method=method, args=args, message=message, **kwargs
+        )
 
     async def call_extensions(self, folder: str, **kwargs) -> Any:
         from python.helpers.extension import Extension
@@ -539,4 +572,4 @@ class Agent:
             "python/extensions/" + folder, "*", Extension
         )
         for cls in classes:
-            await cls(agent=self).execute(**kwargs) 
+            await cls(agent=self).execute(**kwargs)

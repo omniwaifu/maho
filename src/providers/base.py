@@ -27,17 +27,17 @@ class ModelProvider(Enum):
 
 class BaseModelProvider(ABC):
     """Base class for all model providers"""
-    
+
     @abstractmethod
     def get_chat_model(self, model_name: str, **kwargs):
         """Get a chat model instance"""
         pass
-    
+
     @abstractmethod
     def get_embedding_model(self, model_name: str, **kwargs):
         """Get an embedding model instance"""
         pass
-    
+
     @abstractmethod
     def get_api_key(self) -> str:
         """Get the API key for this provider"""
@@ -52,4 +52,4 @@ def parse_chunk(chunk: Any) -> str:
         content = str(chunk.content)
     else:
         content = str(chunk)
-    return content 
+    return content

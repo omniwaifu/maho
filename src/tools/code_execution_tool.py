@@ -191,7 +191,7 @@ class CodeExecution(Tool):
         reset_full_output=True,
         first_output_timeout=30,  # Wait up to x seconds for first output
         between_output_timeout=15,  # Wait up to x seconds between outputs
-        max_exec_timeout=180,  #hard cap on total runtime
+        max_exec_timeout=180,  # hard cap on total runtime
         sleep_time=0.1,
     ):
         # Common shell prompt regex patterns (add more as needed)
@@ -228,7 +228,9 @@ class CodeExecution(Tool):
                 got_output = True
 
                 # Check for shell prompt at the end of output
-                last_lines = truncated_output.splitlines()[-3:] if truncated_output else []
+                last_lines = (
+                    truncated_output.splitlines()[-3:] if truncated_output else []
+                )
                 for line in last_lines:
                     for pat in prompt_patterns:
                         if pat.search(line.strip()):

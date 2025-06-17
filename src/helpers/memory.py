@@ -17,7 +17,8 @@ from langchain_community.vectorstores.utils import (
 )
 from langchain_core.embeddings import Embeddings
 
-import os, json
+import os
+import json
 
 import numpy as np
 
@@ -344,7 +345,9 @@ class Memory:
 
     async def delete_documents_by_ids(self, ids: list[str]):
         # aget_by_ids is not yet implemented in faiss, need to do a workaround
-        rem_docs = await self.db.aget_by_ids(ids)  # existing docs to remove (prevents error)
+        rem_docs = await self.db.aget_by_ids(
+            ids
+        )  # existing docs to remove (prevents error)
         if rem_docs:
             rem_ids = [doc.metadata["id"] for doc in rem_docs]  # ids to remove
             await self.db.adelete(ids=rem_ids)

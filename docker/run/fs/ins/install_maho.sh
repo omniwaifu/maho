@@ -11,10 +11,8 @@ if [ -z "$1" ]; then
 fi
 BRANCH="$1"
 
-git clone -b "$BRANCH" "https://github.com/frdel/agent-zero" "/git/agent-zero" || {
-    echo "CRITICAL ERROR: Failed to clone repository. Branch: $BRANCH"
-    exit 1
-}
+# Maho code is already copied to /maho in the Dockerfile
+echo "Using Maho code already available at /maho"
 
 . "/ins/setup_venv.sh" "$@"
 
@@ -24,13 +22,16 @@ git clone -b "$BRANCH" "https://github.com/frdel/agent-zero" "/git/agent-zero" |
 # # Install some packages in specific variants
 # pip install torch --index-url https://download.pytorch.org/whl/cpu
 
-# Install A0 python packages using pyproject.toml (modern approach)
+# Install Maho python packages using pyproject.toml (modern approach)
 echo "Installing Maho dependencies using pyproject.toml..."
-cd /git/agent-zero
-uv pip install -e . || {
-    echo "WARNING: Failed to install from pyproject.toml, falling back to requirements.txt"
-    uv pip install -r requirements.txt
-}
+cd /maho
+
+# Use the existing virtual environment from base image
+export VIRTUAL_ENV=/opt/venv
+export PATH="/opt/venv/bin:$PATH"
+
+# Install dependencies directly with uv pip to avoid venv conflicts
+uv pip install -e .
 
 # Verify MCP installation
 python -c "import mcp; from mcp import ClientSession; print(f'DEBUG: mcp and mcp.ClientSession imported successfully. mcp path: {mcp.__file__}')" || {
@@ -41,8 +42,5 @@ python -c "import mcp; from mcp import ClientSession; print(f'DEBUG: mcp and mcp
 # install playwright
 bash /ins/install_playwright.sh "$@"
 
-# Preload A0 using new script location
-python /git/agent-zero/scripts/preload.py --dockerized=true || {
-    echo "WARNING: New preload script failed, trying old location..."
-    python /git/agent-zero/preload.py --dockerized=true
-}
+# Preload Maho using new script location
+python /maho/scripts/preload.py --dockerized=true

@@ -2,11 +2,10 @@
 
 # cachebuster script, this helps speed up docker builds
 
-# remove repo
-rm -rf /git/agent-zero
+# No need to remove repo since Maho code is built into image
 
 # run the original install script again
-bash /ins/install_A0.sh "$@"
+bash /ins/install_maho.sh "$@"
 
 # remove python packages cache
 . "/ins/setup_venv.sh" "$@"

@@ -1,13 +1,13 @@
 #!/bin/bash
 
 . "/ins/setup_venv.sh" "$@"
-. "/ins/copy_A0.sh" "$@"
+. "/ins/copy_maho.sh" "$@"
 
-python /a0/scripts/prepare.py --dockerized=true
-python /a0/scripts/preload.py --dockerized=true
+python /maho/scripts/prepare.py --dockerized=true
+python /maho/scripts/preload.py --dockerized=true
 
-echo "Starting A0..."
-exec python /a0/scripts/start_ui.py \
+echo "Starting Maho..."
+exec python /maho/scripts/start_ui.py \
     --dockerized=true \
     --port=80 \
     --host="0.0.0.0" \

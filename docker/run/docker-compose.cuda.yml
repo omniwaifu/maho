@@ -1,10 +1,10 @@
 services:
-  agent-zero-cuda:
-    container_name: agent-zero-cuda
-    image: frdel/agent-zero-run-cuda:testing
+  maho-cuda:
+  container_name: maho-cuda
+  image: maho-cuda:latest
     volumes:
-      - ./agent-zero:/a0
-      - ./agent-zero/work_dir:/root
+    - .:/maho
+    - ./work_dir:/root
     ports:
       - "50080:80"
     environment:

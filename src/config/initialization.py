@@ -1,5 +1,5 @@
 """
-Configuration and initialization logic for Agent Zero.
+Configuration and initialization logic for Maho (forked from Agent Zero).
 This replaces the old initialize.py file.
 """
 

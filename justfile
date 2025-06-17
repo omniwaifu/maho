@@ -53,13 +53,28 @@ clean:
     find . -type f -name "*.pyc" -delete
     find . -type f -name "*.pyo" -delete
 
-# Build Docker image
+# Build Docker image (simple, no Agent Zero dependencies)
 docker-build:
-    docker build -t maho:latest -f docker/run/Dockerfile .
+    docker build -t maho:latest -f docker/run/Dockerfile.simple .
 
-# Run Docker container
+# Build Docker image (complex, with Agent Zero base - if you really want it)
+docker-build-complex:
+    docker build -t maho:latest -f docker/run/Dockerfile --build-arg BRANCH=main .
+
+# Run Docker container (production mode - mounts data to ~/.config/maho)
 docker-run:
-    docker run -p 50080:80 -v $(pwd):/a0 maho:latest
+    mkdir -p ~/.config/maho/{memory,logs,tmp,knowledge,work_dir}
+    docker run -p 50080:80 \
+        -v ~/.config/maho/memory:/maho/memory \
+        -v ~/.config/maho/logs:/maho/logs \
+        -v ~/.config/maho/tmp:/maho/tmp \
+        -v ~/.config/maho/knowledge:/maho/knowledge \
+        -v ~/.config/maho/work_dir:/root \
+        maho:latest
+
+# Run Docker container in development mode (mounts entire codebase)
+docker-dev:
+    docker run -p 50080:80 -v $(pwd):/maho maho:latest
 
 # Docker compose up
 docker-up:

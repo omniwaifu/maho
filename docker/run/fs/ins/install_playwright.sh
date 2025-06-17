@@ -6,8 +6,8 @@
 # install playwright if not installed (should be from requirements.txt)
 uv pip install playwright
 
-# set PW installation path to /a0/tmp/playwright
-export PLAYWRIGHT_BROWSERS_PATH=/a0/tmp/playwright
+# set PW installation path to /maho/tmp/playwright
+export PLAYWRIGHT_BROWSERS_PATH=/maho/tmp/playwright
 
 # install chromium with dependencies
 # for kali-based

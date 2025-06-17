@@ -1,0 +1,58 @@
+# Maho Dockerfile - standalone build
+FROM python:3.12-slim
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    git \
+    curl \
+    build-essential \
+    ssh \
+    openssh-server \
+    nginx \
+    supervisor \
+    cron \
+    wget \
+    gnupg \
+    software-properties-common \
+    && rm -rf /var/lib/apt/lists/*
+
+# Install uv
+RUN pip install uv
+
+# Create virtual environment
+RUN python3.12 -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+ENV VIRTUAL_ENV="/opt/venv"
+
+# Set working directory
+WORKDIR /maho
+
+# Copy Docker filesystem first
+COPY docker/run/fs/ /
+
+# Copy project files
+COPY . .
+
+# Run the Maho install script
+RUN bash /ins/install_maho.sh main
+
+# Setup SSH
+RUN mkdir -p /var/run/sshd
+RUN echo 'root:toor' | chpasswd
+RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
+RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+
+# Setup nginx
+COPY docker/run/fs/etc/nginx/nginx.conf /etc/nginx/nginx.conf
+
+# Setup supervisor
+COPY docker/run/fs/etc/supervisor/conf.d/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+
+# Create necessary directories
+RUN mkdir -p /maho/memory /maho/logs /maho/tmp /maho/knowledge /maho/work_dir
+
+# Expose ports
+EXPOSE 22 80
+
+# Run supervisor
+CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"] 

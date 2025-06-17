@@ -70,7 +70,7 @@ class ApiHandler:
             PrintStyle.error(f"API error: {error}")
             return Response(response=error, status=500, mimetype="text/plain")
 
-    # get context to run agent zero in
+    # get context to run maho in
     def get_context(self, ctxid: str):
         with self.thread_lock:
             if not ctxid:

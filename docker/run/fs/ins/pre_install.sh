@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 # fix permissions for cron files if any
 if [ -f /etc/cron.d/* ]; then

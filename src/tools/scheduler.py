@@ -217,7 +217,7 @@ class SchedulerTool(Tool):
             message=f"Adhoc task '{name}' created: {task.uuid}", break_loop=False
         )
 
-    async def create_planned_task(self, **kwargs) -> Response:  # TODO: Implement
+    async def create_planned_task(self, **kwargs) -> Response:
         name: str = kwargs.get("name", None)
         system_prompt: str = kwargs.get("system_prompt", None)
         prompt: str = kwargs.get("prompt", None)

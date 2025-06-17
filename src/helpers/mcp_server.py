@@ -6,11 +6,12 @@ from openai import BaseModel
 from pydantic import Field
 from fastmcp import FastMCP
 
-from agent import AgentContext, AgentContextType, UserMessage
-from python.helpers.persist_chat import save_tmp_chat, remove_chat
-from initialize import initialize_agent
-from python.helpers.print_style import PrintStyle
-from python.helpers import settings
+from src.core.agent import AgentContext, UserMessage
+from src.core.models import AgentContextType
+from src.helpers.persist_chat import save_tmp_chat, remove_chat
+from src.config.initialization import initialize_agent
+from src.helpers.print_style import PrintStyle
+from src.helpers import settings
 from starlette.middleware import Middleware
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.exceptions import HTTPException as StarletteHTTPException

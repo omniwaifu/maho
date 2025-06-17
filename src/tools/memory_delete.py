@@ -1,5 +1,5 @@
-from python.helpers.memory import Memory
-from python.helpers.tool import Tool, Response
+from src.helpers.memory import Memory
+from src.helpers.tool import Tool, Response
 
 
 class MemoryDelete(Tool):

@@ -1,7 +1,7 @@
-from python.helpers.api import ApiHandler, Input, Output, Request, Response
-from agent import AgentContext
-from python.helpers import persist_chat
-from python.helpers.task_scheduler import TaskScheduler
+from src.helpers.api import ApiHandler, Input, Output, Request, Response
+from src.core.agent import AgentContext
+from src.helpers import persist_chat
+from src.helpers.task_scheduler import TaskScheduler
 
 
 class RemoveChat(ApiHandler):

@@ -2,20 +2,20 @@ import asyncio
 import json
 import time
 from typing import Optional
-from agent import Agent, InterventionException
+from src.core.agent import Agent, InterventionException
 from pathlib import Path
 
 
 import models
-from python.helpers.tool import Tool, Response
-from python.helpers import files, defer, persist_chat, strings
-from python.helpers.browser_use import browser_use
-from python.helpers.print_style import PrintStyle
-from python.helpers.playwright import ensure_playwright_binary
-from python.extensions.message_loop_start._10_iteration_no import get_iter_no
+from src.helpers.tool import Tool, Response
+from src.helpers import files, defer, persist_chat, strings
+from src.helpers.browser_use import browser_use
+from src.helpers.print_style import PrintStyle
+from src.helpers.playwright import ensure_playwright_binary
+from src.extensions.message_loop_start._10_iteration_no import get_iter_no
 from pydantic import BaseModel
 import uuid
-from python.helpers.dirty_json import DirtyJson
+from src.helpers.dirty_json import DirtyJson
 
 
 class State:

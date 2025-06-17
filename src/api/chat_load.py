@@ -1,7 +1,7 @@
-from python.helpers.api import ApiHandler, Input, Output, Request, Response
+from src.helpers.api import ApiHandler, Input, Output, Request, Response
 
 
-from python.helpers import persist_chat
+from src.helpers import persist_chat
 
 
 class LoadChats(ApiHandler):

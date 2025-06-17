@@ -1,6 +1,6 @@
 from abc import abstractmethod
 from typing import Any
-from agent import Agent
+from src.core.agent import Agent
 
 
 class Extension:

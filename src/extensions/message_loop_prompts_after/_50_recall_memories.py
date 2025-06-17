@@ -1,7 +1,7 @@
 import asyncio
-from python.helpers.extension import Extension
-from python.helpers.memory import Memory
-from agent import LoopData
+from src.helpers.extension import Extension
+from src.helpers.memory import Memory
+from src.core.agent import LoopData
 
 DATA_NAME_TASK = "_recall_memories_task"
 

@@ -1,7 +1,7 @@
 from flask import Request, Response
-from python.helpers import dotenv, runtime
-from python.helpers.api import ApiHandler
-from python.helpers.tunnel_manager import TunnelManager
+from src.helpers import dotenv, runtime
+from src.helpers.api import ApiHandler
+from src.helpers.tunnel_manager import TunnelManager
 import requests
 
 
@@ -36,6 +36,6 @@ class TunnelProxy(ApiHandler):
                 return {"error": str(e)}
         else:
             # forward to API handler directly
-            from python.api.tunnel import Tunnel
+            from src.api.tunnel import Tunnel
 
             return await Tunnel(self.app, self.thread_lock).process(input, request)

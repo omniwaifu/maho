@@ -1,10 +1,10 @@
 from math import log
-from python.helpers.api import ApiHandler
+from src.helpers.api import ApiHandler
 from flask import Request, Response
 
 from typing import Any
 
-from python.helpers.mcp_handler import MCPConfig
+from src.helpers.mcp_handler import MCPConfig
 
 
 class McpServerGetDetail(ApiHandler):

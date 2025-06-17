@@ -5,7 +5,7 @@ from collections.abc import Mapping
 import json
 import math
 from typing import Coroutine, Literal, TypedDict, cast, Union, Dict, List, Any
-from python.helpers import messages, tokens, settings, call_llm
+from src.helpers import messages, tokens, settings, call_llm
 from enum import Enum
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage, AIMessage
 
@@ -293,7 +293,7 @@ class Bulk(Record):
 
 class History(Record):
     def __init__(self, agent):
-        from agent import Agent
+        from src.core.agent import Agent
 
         self.bulks: list[Bulk] = []
         self.topics: list[Topic] = []

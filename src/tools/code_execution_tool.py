@@ -2,13 +2,13 @@ import asyncio
 from dataclasses import dataclass
 import shlex
 import time
-from python.helpers.tool import Tool, Response
-from python.helpers import files, rfc_exchange
-from python.helpers.print_style import PrintStyle
-from python.helpers.shell_local import LocalInteractiveSession
-from python.helpers.shell_ssh import SSHInteractiveSession
-from python.helpers.docker import DockerContainerManager
-from python.helpers.messages import truncate_text
+from src.helpers.tool import Tool, Response
+from src.helpers import files, rfc_exchange
+from src.helpers.print_style import PrintStyle
+from src.helpers.shell_local import LocalInteractiveSession
+from src.helpers.shell_ssh import SSHInteractiveSession
+from src.helpers.docker import DockerContainerManager
+from src.helpers.messages import truncate_text
 import re
 
 

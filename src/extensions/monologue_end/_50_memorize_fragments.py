@@ -1,9 +1,9 @@
 import asyncio
-from python.helpers.extension import Extension
-from python.helpers.memory import Memory
-from python.helpers.dirty_json import DirtyJson
-from agent import LoopData
-from python.helpers.log import LogItem
+from src.helpers.extension import Extension
+from src.helpers.memory import Memory
+from src.helpers.dirty_json import DirtyJson
+from src.core.agent import LoopData
+from src.helpers.log import LogItem
 
 
 class MemorizeMemories(Extension):

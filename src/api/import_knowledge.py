@@ -1,8 +1,8 @@
-from python.helpers.api import ApiHandler
+from src.helpers.api import ApiHandler
 from flask import Request, Response
 
-from python.helpers.file_browser import FileBrowser
-from python.helpers import files, memory
+from src.helpers.file_browser import FileBrowser
+from src.helpers import files, memory
 import os
 from werkzeug.utils import secure_filename
 

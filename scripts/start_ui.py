@@ -229,7 +229,8 @@ def run():
         register_api_handler(webapp, handler)
 
     # MCP server
-    mcp_server.register_server(webapp)
+    # TODO: Implement MCP server registration
+    # mcp_server.register_server(webapp)
 
     try:
 

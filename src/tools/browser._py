@@ -1,10 +1,10 @@
 # import asyncio
 # from dataclasses import dataclass
 # import time
-# from python.helpers.tool import Tool, Response
-# from python.helpers import files, rfc_exchange
-# from python.helpers.print_style import PrintStyle
-# from python.helpers.browser import Browser as BrowserManager
+# from src.helpers.tool import Tool, Response
+# from src.helpers import files, rfc_exchange
+# from src.helpers.print_style import PrintStyle
+# from src.helpers.browser import Browser as BrowserManager
 # import uuid
 
 

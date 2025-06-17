@@ -1,8 +1,8 @@
-from python.helpers.api import ApiHandler, Input, Output, Request
-from python.helpers.task_scheduler import TaskScheduler
+from src.helpers.api import ApiHandler, Input, Output, Request
+from src.helpers.task_scheduler import TaskScheduler
 import traceback
-from python.helpers.print_style import PrintStyle
-from python.helpers.localization import Localization
+from src.helpers.print_style import PrintStyle
+from src.helpers.localization import Localization
 
 
 class SchedulerTasksList(ApiHandler):

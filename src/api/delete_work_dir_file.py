@@ -1,9 +1,9 @@
-from python.helpers.api import ApiHandler, Input, Output, Request, Response
+from src.helpers.api import ApiHandler, Input, Output, Request, Response
 
 
-from python.helpers.file_browser import FileBrowser
-from python.helpers import files, runtime
-from python.api import get_work_dir_files
+from src.helpers.file_browser import FileBrowser
+from src.helpers import files, runtime
+from src.api import get_work_dir_files
 
 
 class DeleteWorkDirFile(ApiHandler):

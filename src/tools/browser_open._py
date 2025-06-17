@@ -1,7 +1,7 @@
 # import asyncio
-# from python.helpers.tool import Tool, Response
+# from src.helpers.tool import Tool, Response
 # from python.tools import browser
-# from python.tools.browser import Browser
+# from src.tools.browser import Browser
 
 
 # class BrowserOpen(Browser):

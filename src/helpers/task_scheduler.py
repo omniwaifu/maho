@@ -27,13 +27,13 @@ nest_asyncio.apply()
 from crontab import CronTab
 from pydantic import BaseModel, Field, PrivateAttr
 
-from agent import Agent, AgentContext, UserMessage
-from initialize import initialize_agent
-from python.helpers.persist_chat import save_tmp_chat
-from python.helpers.print_style import PrintStyle
-from python.helpers.defer import DeferredTask
-from python.helpers.files import get_abs_path, make_dirs, read_file, write_file
-from python.helpers.localization import Localization
+from src.core.agent import Agent, AgentContext, UserMessage
+from src.config.initialization import initialize_agent
+from src.helpers.persist_chat import save_tmp_chat
+from src.helpers.print_style import PrintStyle
+from src.helpers.defer import DeferredTask
+from src.helpers.files import get_abs_path, make_dirs, read_file, write_file
+from src.helpers.localization import Localization
 import pytz
 from typing import Annotated
 

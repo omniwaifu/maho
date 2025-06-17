@@ -1,8 +1,8 @@
-from python.helpers.api import ApiHandler, Input, Output, Request
-from python.helpers.task_scheduler import TaskScheduler, TaskState
-from python.helpers.localization import Localization
-from agent import AgentContext
-from python.helpers import persist_chat
+from src.helpers.api import ApiHandler, Input, Output, Request
+from src.helpers.task_scheduler import TaskScheduler, TaskState
+from src.helpers.localization import Localization
+from src.core.agent import AgentContext
+from src.helpers import persist_chat
 
 
 class SchedulerTaskDelete(ApiHandler):

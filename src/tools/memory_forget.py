@@ -1,6 +1,6 @@
-from python.helpers.memory import Memory
-from python.helpers.tool import Tool, Response
-from python.tools.memory_load import DEFAULT_THRESHOLD
+from src.helpers.memory import Memory
+from src.helpers.tool import Tool, Response
+from src.tools.memory_load import DEFAULT_THRESHOLD
 
 
 class MemoryForget(Tool):

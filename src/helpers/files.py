@@ -8,7 +8,7 @@ import shutil
 import tempfile
 import zipfile
 
-from python.helpers.strings import sanitize_string
+from src.helpers.strings import sanitize_string
 
 
 def parse_file(_relative_path, _backup_dirs=None, _encoding="utf-8", **kwargs):

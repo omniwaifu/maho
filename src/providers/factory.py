@@ -31,34 +31,9 @@ def get_model(type: ModelType, provider: ModelProvider, name: str, **kwargs):
     """Get a model instance from the specified provider"""
     fnc_name = f"get_{provider.name.lower()}_{type.name.lower()}"  # function name of model getter
 
-    # Import the function dynamically
-    if provider == ModelProvider.OLLAMA:
-        from src.providers.ollama import get_ollama_chat, get_ollama_embedding
-
-        if type == ModelType.CHAT:
-            return get_ollama_chat(name, **kwargs)
-        else:
-            return get_ollama_embedding(name, **kwargs)
-    elif provider == ModelProvider.OPENAI:
-        from src.providers.openai import get_openai_chat, get_openai_embedding
-
-        if type == ModelType.CHAT:
-            return get_openai_chat(name, **kwargs)
-        else:
-            return get_openai_embedding(name, **kwargs)
-    elif provider == ModelProvider.ANTHROPIC:
-        from src.providers.anthropic import get_anthropic_chat, get_anthropic_embedding
-
-        if type == ModelType.CHAT:
-            return get_anthropic_chat(name, **kwargs)
-        else:
-            return get_anthropic_embedding(name, **kwargs)
-    # Add other providers as needed
-    else:
-        # Fallback to the old models.py for now
-        import models
-
-        return models.get_model(type, provider, name, **kwargs)
+    # Fallback to the root models.py for now until provider modules are implemented
+    import models
+    return models.get_model(type, provider, name, **kwargs)
 
 
 def get_rate_limiter(

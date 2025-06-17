@@ -2,10 +2,10 @@ import time
 import docker
 import atexit
 from typing import Optional
-from python.helpers.files import get_abs_path
-from python.helpers.errors import format_error
-from python.helpers.print_style import PrintStyle
-from python.helpers.log import Log
+from src.helpers.files import get_abs_path
+from src.helpers.errors import format_error
+from src.helpers.print_style import PrintStyle
+from src.helpers.log import Log
 
 
 class DockerContainerManager:

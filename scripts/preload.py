@@ -34,7 +34,6 @@ async def preload():
         async def preload_embedding():
             if set["embed_model_provider"] == ModelProvider.HUGGINGFACE.name:
                 try:
-                    # Import here to avoid circular dependency
                     import models
 
                     emb_mod = models.get_huggingface_embedding(set["embed_model_name"])

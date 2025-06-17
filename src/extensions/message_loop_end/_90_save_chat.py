@@ -1,6 +1,6 @@
-from python.helpers.extension import Extension
-from agent import LoopData
-from python.helpers import persist_chat
+from src.helpers.extension import Extension
+from src.core.agent import LoopData
+from src.helpers import persist_chat
 
 
 class SaveChat(Extension):

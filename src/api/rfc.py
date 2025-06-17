@@ -1,7 +1,7 @@
-from python.helpers.api import ApiHandler
+from src.helpers.api import ApiHandler
 from flask import Request, Response
 
-from python.helpers import runtime
+from src.helpers import runtime
 
 
 class RFC(ApiHandler):

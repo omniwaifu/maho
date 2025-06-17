@@ -1,6 +1,6 @@
-from python.helpers import persist_chat, tokens
-from python.helpers.extension import Extension
-from agent import LoopData
+from src.helpers import persist_chat, tokens
+from src.helpers.extension import Extension
+from src.core.agent import LoopData
 import asyncio
 
 

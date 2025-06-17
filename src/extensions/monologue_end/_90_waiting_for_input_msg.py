@@ -1,5 +1,5 @@
-from python.helpers.extension import Extension
-from agent import LoopData
+from src.helpers.extension import Extension
+from src.core.agent import LoopData
 
 
 class WaitingForInputMsg(Extension):

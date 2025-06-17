@@ -1,11 +1,11 @@
 import base64
 from werkzeug.datastructures import FileStorage
-from python.helpers.api import ApiHandler
+from src.helpers.api import ApiHandler
 from flask import Request, Response, send_file
 
-from python.helpers.file_browser import FileBrowser
-from python.helpers import files, runtime
-from python.api import get_work_dir_files
+from src.helpers.file_browser import FileBrowser
+from src.helpers import files, runtime
+from src.api import get_work_dir_files
 import os
 
 

@@ -1,5 +1,5 @@
-from python.helpers.api import ApiHandler, Input, Output, Request
-from python.helpers.task_scheduler import (
+from src.helpers.api import ApiHandler, Input, Output, Request
+from src.helpers.task_scheduler import (
     TaskScheduler,
     ScheduledTask,
     AdHocTask,
@@ -9,7 +9,7 @@ from python.helpers.task_scheduler import (
     parse_task_schedule,
     parse_task_plan,
 )
-from python.helpers.localization import Localization
+from src.helpers.localization import Localization
 
 
 class SchedulerTaskUpdate(ApiHandler):

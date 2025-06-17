@@ -4,10 +4,10 @@ import threading
 from typing import Union, TypedDict, Dict, Any
 from attr import dataclass
 from flask import Request, Response, jsonify, Flask
-from agent import AgentContext
-from initialize import initialize_agent
-from python.helpers.print_style import PrintStyle
-from python.helpers.errors import format_error
+from src.core.agent import AgentContext
+from src.config.initialization import initialize_agent
+from src.helpers.print_style import PrintStyle
+from src.helpers.errors import format_error
 from werkzeug.serving import make_server
 
 

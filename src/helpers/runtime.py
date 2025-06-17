@@ -1,7 +1,7 @@
 import argparse
 import inspect
 from typing import TypeVar, Callable, Awaitable, Union, overload, cast
-from python.helpers import dotenv, rfc, settings
+from src.helpers import dotenv, rfc, settings
 import asyncio
 import threading
 import queue
@@ -50,7 +50,7 @@ def has_arg(name: str):
 
 
 def is_dockerized() -> bool:
-    return get_arg("dockerized")
+    return bool(get_arg("dockerized"))
 
 
 def is_development() -> bool:

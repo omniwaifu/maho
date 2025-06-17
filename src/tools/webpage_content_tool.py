@@ -2,8 +2,8 @@ import requests
 from bs4 import BeautifulSoup
 from urllib.parse import urlparse
 from newspaper import Article
-from python.helpers.tool import Tool, Response
-from python.helpers.errors import handle_error
+from src.helpers.tool import Tool, Response
+from src.helpers.errors import handle_error
 
 
 class WebpageContentTool(Tool):

@@ -8,8 +8,8 @@ import zipfile
 from werkzeug.utils import secure_filename
 from datetime import datetime
 
-from python.helpers import files, runtime
-from python.helpers.print_style import PrintStyle
+from src.helpers import files, runtime
+from src.helpers.print_style import PrintStyle
 
 
 class FileBrowser:

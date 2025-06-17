@@ -1,9 +1,9 @@
 from abc import abstractmethod
 from dataclasses import dataclass
 
-from agent import Agent
-from python.helpers.print_style import PrintStyle
-from python.helpers.strings import sanitize_string
+from src.core.agent import Agent
+from src.helpers.print_style import PrintStyle
+from src.helpers.strings import sanitize_string
 
 
 @dataclass

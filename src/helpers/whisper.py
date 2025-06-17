@@ -3,8 +3,8 @@ import warnings
 import whisper
 import tempfile
 import asyncio
-from python.helpers import runtime, rfc, settings
-from python.helpers.print_style import PrintStyle
+from src.helpers import runtime, rfc, settings
+from src.helpers.print_style import PrintStyle
 
 # Suppress FutureWarning from torch.load
 warnings.filterwarnings("ignore", category=FutureWarning)

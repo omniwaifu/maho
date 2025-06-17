@@ -1,12 +1,12 @@
-from agent import AgentContext
-from python.helpers.api import ApiHandler
+from src.core.agent import AgentContext
+from src.helpers.api import ApiHandler
 from flask import Request, Response
 
-from python.helpers import files
+from src.helpers import files
 import os
 from werkzeug.utils import secure_filename
-from python.helpers.defer import DeferredTask
-from python.api.message import Message
+from src.helpers.defer import DeferredTask
+from src.api.message import Message
 
 
 class MessageAsync(Message):

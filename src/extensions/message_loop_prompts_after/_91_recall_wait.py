@@ -1,9 +1,9 @@
-from python.helpers.extension import Extension
-from agent import LoopData
-from python.extensions.message_loop_prompts_after._50_recall_memories import (
+from src.helpers.extension import Extension
+from src.core.agent import LoopData
+from src.extensions.message_loop_prompts_after._50_recall_memories import (
     DATA_NAME_TASK as DATA_NAME_TASK_MEMORIES,
 )
-from python.extensions.message_loop_prompts_after._51_recall_solutions import (
+from src.extensions.message_loop_prompts_after._51_recall_solutions import (
     DATA_NAME_TASK as DATA_NAME_TASK_SOLUTIONS,
 )
 

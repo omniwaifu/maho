@@ -1,9 +1,9 @@
 from datetime import datetime
 from typing import Any, Optional
-from python.helpers.extension import Extension
-from python.helpers.mcp_handler import MCPConfig
-from agent import Agent, LoopData
-from python.helpers.localization import Localization
+from src.helpers.extension import Extension
+from src.helpers.mcp_handler import MCPConfig
+from src.core.agent import Agent, LoopData
+from src.helpers.localization import Localization
 
 
 class SystemPrompt(Extension):

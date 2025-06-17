@@ -5,7 +5,7 @@ from PIL import Image
 from typing import Dict, List, Optional, Tuple
 from werkzeug.utils import secure_filename
 
-from python.helpers.print_style import PrintStyle
+from src.helpers.print_style import PrintStyle
 
 
 class AttachmentManager:

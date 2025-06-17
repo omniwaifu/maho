@@ -3,7 +3,7 @@ import uuid
 from langchain_community.vectorstores import FAISS
 
 # faiss needs to be patched for python 3.12 on arm #TODO remove once not needed
-from python.helpers import faiss_monkey_patch
+from src.helpers import faiss_monkey_patch
 import faiss
 
 
@@ -15,7 +15,7 @@ from langchain_community.vectorstores.utils import (
 )
 from langchain.embeddings import CacheBackedEmbeddings
 
-from agent import Agent
+from src.core.agent import Agent
 
 
 class MyFaiss(FAISS):

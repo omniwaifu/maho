@@ -7,9 +7,9 @@ import subprocess
 from typing import Any, Literal, TypedDict
 
 import models
-from python.helpers import runtime, whisper, defer
+from src.helpers import runtime, whisper, defer
 from . import files, dotenv
-from python.helpers.print_style import PrintStyle
+from src.helpers.print_style import PrintStyle
 
 
 class Settings(TypedDict):
@@ -964,8 +964,8 @@ def get_default_settings() -> Settings:
 def _apply_settings(previous: Settings | None):
     global _settings
     if _settings:
-        from agent import AgentContext
-        from initialize import initialize_agent
+        from src.core.agent import AgentContext
+        from src.config.initialization import initialize_agent
 
         config = initialize_agent()
         for ctx in AgentContext._contexts.values():
@@ -988,13 +988,13 @@ def _apply_settings(previous: Settings | None):
             or _settings["embed_model_provider"] != previous["embed_model_provider"]
             or _settings["embed_model_kwargs"] != previous["embed_model_kwargs"]
         ):
-            from python.helpers.memory import reload as memory_reload
+            from src.helpers.memory import reload as memory_reload
 
             memory_reload()
 
         # update mcp settings if necessary
         if not previous or _settings["mcp_servers"] != previous["mcp_servers"]:
-            from python.helpers.mcp_handler import MCPConfig
+            from src.helpers.mcp_handler import MCPConfig
 
             async def update_mcp_settings(mcp_servers: str):
                 PrintStyle(
@@ -1047,7 +1047,7 @@ def _apply_settings(previous: Settings | None):
         if not previous or current_token != previous["mcp_server_token"]:
 
             async def update_mcp_token(token: str):
-                from python.helpers.mcp_server import DynamicMcpProxy
+                from src.helpers.mcp_server import DynamicMcpProxy
 
                 DynamicMcpProxy.get_instance().reconfigure(token=token)
 

@@ -1,5 +1,5 @@
-from python.helpers.api import ApiHandler, Input, Output, Request
-from python.helpers.task_scheduler import (
+from src.helpers.api import ApiHandler, Input, Output, Request
+from src.helpers.task_scheduler import (
     TaskScheduler,
     ScheduledTask,
     AdHocTask,
@@ -10,8 +10,8 @@ from python.helpers.task_scheduler import (
     parse_task_plan,
     TaskType,
 )
-from python.helpers.localization import Localization
-from python.helpers.print_style import PrintStyle
+from src.helpers.localization import Localization
+from src.helpers.print_style import PrintStyle
 import random
 
 

@@ -1,7 +1,7 @@
 from flask import Request, Response
-from python.helpers import runtime
-from python.helpers.api import ApiHandler
-from python.helpers.tunnel_manager import TunnelManager
+from src.helpers import runtime
+from src.helpers.api import ApiHandler
+from src.helpers.tunnel_manager import TunnelManager
 
 
 class Tunnel(ApiHandler):

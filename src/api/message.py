@@ -1,12 +1,12 @@
-from agent import AgentContext, UserMessage
-from python.helpers.api import ApiHandler
+from src.core.agent import AgentContext, UserMessage
+from src.helpers.api import ApiHandler
 from flask import Request, Response
 
-from python.helpers import files
+from src.helpers import files
 import os
 from werkzeug.utils import secure_filename
-from python.helpers.defer import DeferredTask
-from python.helpers.print_style import PrintStyle
+from src.helpers.defer import DeferredTask
+from src.helpers.print_style import PrintStyle
 
 
 class Message(ApiHandler):

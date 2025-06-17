@@ -3,8 +3,8 @@ import platform
 import requests
 import subprocess
 import threading
-from python.helpers import files
-from python.helpers.print_style import PrintStyle
+from src.helpers import files
+from src.helpers.print_style import PrintStyle
 
 class CloudflareTunnel:
     def __init__(self, port: int):

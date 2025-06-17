@@ -7,7 +7,7 @@ from langchain.embeddings import CacheBackedEmbeddings
 from langchain_community.vectorstores import FAISS
 
 # faiss needs to be patched for python 3.12 on arm #TODO remove once not needed
-from python.helpers import faiss_monkey_patch
+from src.helpers import faiss_monkey_patch
 import faiss
 
 
@@ -22,14 +22,14 @@ import json
 
 import numpy as np
 
-from python.helpers.print_style import PrintStyle
+from src.helpers.print_style import PrintStyle
 from . import files
 from langchain_core.documents import Document
 import uuid
-from python.helpers import knowledge_import
-from python.helpers.log import Log, LogItem
+from src.helpers import knowledge_import
+from src.helpers.log import Log, LogItem
 from enum import Enum
-from agent import Agent, ModelConfig
+from src.core.agent import Agent, ModelConfig
 import models
 
 

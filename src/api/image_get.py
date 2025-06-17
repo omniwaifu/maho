@@ -1,7 +1,7 @@
 import os
 import re
-from python.helpers.api import ApiHandler
-from python.helpers import files
+from src.helpers.api import ApiHandler
+from src.helpers import files
 from flask import Request, Response, send_file
 
 

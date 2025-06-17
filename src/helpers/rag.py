@@ -1,7 +1,7 @@
 from typing import List
 
 from langchain_core.documents import Document
-from python.helpers import files
+from src.helpers import files
 
 from langchain_community.document_loaders import (
     CSVLoader,

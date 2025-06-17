@@ -2,12 +2,13 @@ from collections import OrderedDict
 from datetime import datetime
 from typing import Any
 import uuid
-from agent import Agent, AgentConfig, AgentContext, AgentContextType
-from python.helpers import files, history
+from src.core.agent import Agent, AgentContext
+from src.core.models import AgentConfig, AgentContextType
+from src.helpers import files, history
 import json
-from initialize import initialize_agent
+from src.config.initialization import initialize_agent
 
-from python.helpers.log import Log, LogItem
+from src.helpers.log import Log, LogItem
 
 CHATS_FOLDER = "tmp/chats"
 LOG_SIZE = 1000

@@ -11,9 +11,9 @@ from langchain_community.document_loaders import (
     UnstructuredHTMLLoader,
     UnstructuredMarkdownLoader,
 )
-from python.helpers import files
-from python.helpers.log import LogItem
-from python.helpers.print_style import PrintStyle
+from src.helpers import files
+from src.helpers.log import LogItem
+from src.helpers.print_style import PrintStyle
 
 text_loader_kwargs = {"autodetect_encoding": True}
 
@@ -42,7 +42,7 @@ def load_knowledge(
     filename_pattern: str = "**/*",
 ) -> Dict[str, KnowledgeImport]:
 
-    # from python.helpers.memory import Memory
+    # from src.helpers.memory import Memory
 
     # Mapping file extensions to corresponding loader classes
     file_types_loaders = {

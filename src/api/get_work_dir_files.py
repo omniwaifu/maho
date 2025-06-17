@@ -1,8 +1,8 @@
-from python.helpers.api import ApiHandler
+from src.helpers.api import ApiHandler
 from flask import Request, Response
 
-from python.helpers.file_browser import FileBrowser
-from python.helpers import files, runtime
+from src.helpers.file_browser import FileBrowser
+from src.helpers import files, runtime
 
 
 class GetWorkDirFiles(ApiHandler):

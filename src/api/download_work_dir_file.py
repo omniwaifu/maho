@@ -1,11 +1,11 @@
 import base64
 from io import BytesIO
 
-from python.helpers.api import ApiHandler, Input, Output, Request, Response
+from src.helpers.api import ApiHandler, Input, Output, Request, Response
 from flask import send_file
 
-from python.helpers import files, runtime
-from python.api import file_info
+from src.helpers import files, runtime
+from src.api import file_info
 import os
 
 

@@ -1,5 +1,5 @@
-from agent import Agent, UserMessage
-from python.helpers.tool import Tool, Response
+from src.core.agent import Agent, UserMessage
+from src.helpers.tool import Tool, Response
 
 
 class Delegation(Tool):

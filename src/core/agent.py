@@ -490,7 +490,7 @@ class Agent:
 
             # Try getting tool from MCP first
             try:
-                import python.helpers.mcp_handler as mcp_helper
+                import src.helpers.mcp_handler as mcp_helper
 
                 mcp_tool_candidate = mcp_helper.MCPConfig.get_instance().get_tool(
                     self, tool_name
@@ -554,8 +554,8 @@ class Agent:
     def get_tool(
         self, name: str, method: str | None, args: dict, message: str, **kwargs
     ):
-        from python.tools.unknown import Unknown
-        from python.helpers.tool import Tool
+        from src.tools.unknown import Unknown
+        from src.helpers.tool import Tool
 
         classes = extract_tools.load_classes_from_folder(
             "python/tools", name + ".py", Tool
@@ -566,7 +566,7 @@ class Agent:
         )
 
     async def call_extensions(self, folder: str, **kwargs) -> Any:
-        from python.helpers.extension import Extension
+        from src.helpers.extension import Extension
 
         classes = extract_tools.load_classes_from_folder(
             "python/extensions/" + folder, "*", Extension

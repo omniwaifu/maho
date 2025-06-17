@@ -1,7 +1,7 @@
 from datetime import datetime, timezone
-from python.helpers.extension import Extension
-from agent import LoopData
-from python.helpers.localization import Localization
+from src.helpers.extension import Extension
+from src.core.agent import LoopData
+from src.helpers.localization import Localization
 
 
 class IncludeCurrentDatetime(Extension):

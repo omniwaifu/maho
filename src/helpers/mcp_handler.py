@@ -21,8 +21,8 @@ from contextlib import AsyncExitStack
 from shutil import which
 from datetime import timedelta
 import json
-from python.helpers import errors
-from python.helpers import settings
+from src.helpers import errors
+from src.helpers import settings
 
 import os
 
@@ -39,10 +39,10 @@ from anyio.streams.memory import (
 )
 
 from pydantic import BaseModel, Field, Discriminator, Tag, PrivateAttr
-from python.helpers import dirty_json
-from python.helpers.dirty_json import DirtyJson
-from python.helpers.print_style import PrintStyle
-from python.helpers.tool import Tool, Response
+from src.helpers import dirty_json
+from src.helpers.dirty_json import DirtyJson
+from src.helpers.print_style import PrintStyle
+from src.helpers.tool import Tool, Response
 
 
 def normalize_name(name: str) -> str:
@@ -60,7 +60,7 @@ def initialize_mcp(mcp_servers_config: str):
         try:
             MCPConfig.update(mcp_servers_config)
         except Exception as e:
-            from agent import AgentContext
+            from src.core.agent import AgentContext
 
             AgentContext.log_to_all(
                 type="warning",

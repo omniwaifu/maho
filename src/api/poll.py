@@ -1,20 +1,22 @@
 import time
 from datetime import datetime
-from python.helpers.api import ApiHandler
+from src.helpers.api import ApiHandler
 from flask import Request, Response
 
-from agent import AgentContext
+from src.core.agent import AgentContext
 
-from python.helpers import persist_chat
-from python.helpers.task_scheduler import TaskScheduler
-from python.helpers.localization import Localization
-from python.helpers.dotenv import get_dotenv_value
+from src.helpers import persist_chat
+from src.helpers.task_scheduler import TaskScheduler
+from src.helpers.localization import Localization
+from src.helpers.dotenv import get_dotenv_value
 
 
 class Poll(ApiHandler):
 
     async def process(self, input: dict, request: Request) -> dict | Response:
         ctxid = input.get("context", None)
+        if ctxid is not None:
+            ctxid = str(ctxid)
         from_no = input.get("log_from", 0)
 
         # Get timezone from input (default to dotenv default or UTC if not provided)

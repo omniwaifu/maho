@@ -1,3 +1,9 @@
+#!/usr/bin/env python3
+"""
+Main UI entry point for the Agent Zero application.
+This replaces the old run_ui.py file.
+"""
+
 import os
 import sys
 import time
@@ -8,13 +14,17 @@ import threading
 import signal
 from flask import Flask, request, Response
 from flask_basicauth import BasicAuth
-import initialize
-from python.helpers import errors, files, git, mcp_server
-from python.helpers.files import get_abs_path
-from python.helpers import runtime, dotenv, process
-from python.helpers.extract_tools import load_classes_from_folder
-from python.helpers.api import ApiHandler
-from python.helpers.print_style import PrintStyle
+
+# Add the project root to Python path so we can import from src
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from src.config.initialization import initialize_agent
+from src.helpers import errors, files, git, mcp_server
+from src.helpers.files import get_abs_path
+from src.helpers import runtime, dotenv, process
+from src.helpers.extract_tools import load_classes_from_folder
+from src.helpers.api import ApiHandler
+from src.helpers.print_style import PrintStyle
 
 
 # Set the new timezone to 'UTC'
@@ -138,6 +148,20 @@ async def serve_index():
     )
 
 
+def init_a0():
+    """Initialize contexts and MCP"""
+    from src.config.initialization import initialize_chats, initialize_mcp, initialize_job_loop
+    
+    # initialize chats
+    initialize_chats()
+    
+    # initialize MCP
+    initialize_mcp()
+    
+    # initialize job loop
+    initialize_job_loop()
+
+
 def run():
     PrintStyle().print("Initializing framework...")
 
@@ -196,52 +220,44 @@ def run():
         )
 
     # initialize and register API handlers
-    handlers = load_classes_from_folder("python/api", "*.py", ApiHandler)
+    handlers = load_classes_from_folder("src/api", "*.py", ApiHandler)
     for handler in handlers:
         register_api_handler(webapp, handler)
 
-    # add the webapp and mcp to the app
-    app = DispatcherMiddleware(
-        webapp,
-        {
-            "/mcp": ASGIMiddleware(app=mcp_server.DynamicMcpProxy.get_instance()),  # type: ignore
-        },
-    )
-    PrintStyle().debug("Registered middleware for MCP and MCP token")
+    # MCP server
+    mcp_server.register_server(webapp)
 
-    PrintStyle().debug(f"Starting server at {host}:{port}...")
+    try:
+        def signal_handler(sig, frame):
+            PrintStyle().print("Received interrupt signal. Shutting down gracefully...")
+            if server:
+                server.shutdown()
+            sys.exit(0)
 
-    server = make_server(
-        host=host,
-        port=port,
-        app=app,
-        request_handler=NoRequestLoggingWSGIRequestHandler,
-        threaded=True,
-    )
-    process.set_server(server)
-    server.log_startup()
+        signal.signal(signal.SIGINT, signal_handler)
+        signal.signal(signal.SIGTERM, signal_handler)
 
-    # Start init_a0 in a background thread when server starts
-    # threading.Thread(target=init_a0, daemon=True).start()
-    init_a0()
+        # Create the server
+        server = make_server(
+            host,
+            port,
+            webapp,
+            request_handler=NoRequestLoggingWSGIRequestHandler,
+            threaded=True,
+        )
 
-    # run the server
-    server.serve_forever()
+        PrintStyle().print(f"Agent Zero Web UI running at http://{host}:{port}")
 
+        # initialize A0 in background
+        threading.Thread(target=init_a0, daemon=True).start()
 
-def init_a0():
-    # initialize contexts and MCP
-    init_chats = initialize.initialize_chats()
-    initialize.initialize_mcp()
-    # start job loop
-    initialize.initialize_job_loop()
+        # Serve forever
+        server.serve_forever()
 
-    # only wait for init chats, otherwise they would seem to dissapear for a while on restart
-    init_chats.result_sync()
+    except Exception as e:
+        PrintStyle().error(f"Failed to start server: {e}")
+        sys.exit(1)
 
 
-# run the internal server
 if __name__ == "__main__":
-    runtime.initialize()
-    dotenv.load_dotenv()
-    run()
+    run() 

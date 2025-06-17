@@ -1,293 +1,40 @@
 import asyncio
-import nest_asyncio
-nest_asyncio.apply()
-
-from collections import OrderedDict
-from dataclasses import dataclass, field
 from datetime import datetime, timezone
-from typing import Any, Awaitable, Coroutine, Dict
-from enum import Enum
-import uuid
-import models
+from typing import Any, Awaitable, Callable
 
-from python.helpers import extract_tools, files, errors, history, tokens
-from python.helpers import dirty_json
-from python.helpers.print_style import PrintStyle
-from langchain_core.prompts import (
-    ChatPromptTemplate,
-)
+from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.messages import HumanMessage, SystemMessage, BaseMessage
 
-import python.helpers.log as Log
-from python.helpers.dirty_json import DirtyJson
-from python.helpers.defer import DeferredTask
-from typing import Callable
-from python.helpers.localization import Localization
-
-
-class AgentContextType(Enum):
-    USER = "user"
-    TASK = "task"
-    MCP = "mcp"
-
-
-class AgentContext:
-
-    _contexts: dict[str, "AgentContext"] = {}
-    _counter: int = 0
-
-    def __init__(
-        self,
-        config: "AgentConfig",
-        id: str | None = None,
-        name: str | None = None,
-        agent0: "Agent|None" = None,
-        log: Log.Log | None = None,
-        paused: bool = False,
-        streaming_agent: "Agent|None" = None,
-        created_at: datetime | None = None,
-        type: AgentContextType = AgentContextType.USER,
-        last_message: datetime | None = None,
-    ):
-        # build context
-        self.id = id or str(uuid.uuid4())
-        self.name = name
-        self.config = config
-        self.log = log or Log.Log()
-        self.agent0 = agent0 or Agent(0, self.config, self)
-        self.paused = paused
-        self.streaming_agent = streaming_agent
-        self.task: DeferredTask | None = None
-        self.created_at = created_at or datetime.now(timezone.utc)
-        self.type = type
-        AgentContext._counter += 1
-        self.no = AgentContext._counter
-        # set to start of unix epoch
-        self.last_message = last_message or datetime.now(timezone.utc)
-
-        existing = self._contexts.get(self.id, None)
-        if existing:
-            AgentContext.remove(self.id)
-        self._contexts[self.id] = self
-
-    @staticmethod
-    def get(id: str):
-        return AgentContext._contexts.get(id, None)
-
-    @staticmethod
-    def first():
-        if not AgentContext._contexts:
-            return None
-        return list(AgentContext._contexts.values())[0]
-    
-    @staticmethod
-    def all():
-        return list(AgentContext._contexts.values())
-
-    @staticmethod
-    def remove(id: str):
-        context = AgentContext._contexts.pop(id, None)
-        if context and context.task:
-            context.task.kill()
-        return context
-
-    def serialize(self):
-        return {
-            "id": self.id,
-            "name": self.name,
-            "created_at": (
-                Localization.get().serialize_datetime(self.created_at)
-                if self.created_at else Localization.get().serialize_datetime(datetime.fromtimestamp(0))
-            ),
-            "no": self.no,
-            "log_guid": self.log.guid,
-            "log_version": len(self.log.updates),
-            "log_length": len(self.log.logs),
-            "paused": self.paused,
-            "last_message": (
-                Localization.get().serialize_datetime(self.last_message)
-                if self.last_message else Localization.get().serialize_datetime(datetime.fromtimestamp(0))
-            ),
-            "type": self.type.value,
-        }
-
-    @staticmethod
-    def log_to_all(
-        type: Log.Type,
-        heading: str | None = None,
-        content: str | None = None,
-        kvps: dict | None = None,
-        temp: bool | None = None,
-        update_progress: Log.ProgressUpdate | None = None,
-        id: str | None = None,  # Add id parameter
-        **kwargs,
-    ) -> list[Log.LogItem]:
-        items: list[Log.LogItem] = []
-        for context in AgentContext.all():
-            items.append(context.log.log(type, heading, content, kvps, temp, update_progress, id, **kwargs))
-        return items
-
-    def kill_process(self):
-        if self.task:
-            self.task.kill()
-
-    def reset(self):
-        self.kill_process()
-        self.log.reset()
-        self.agent0 = Agent(0, self.config, self)
-        self.streaming_agent = None
-        self.paused = False
-
-    def nudge(self):
-        self.kill_process()
-        self.paused = False
-        self.task = self.run_task(self.get_agent().monologue)
-        return self.task
-
-    def get_agent(self):
-        return self.streaming_agent or self.agent0
-
-    def communicate(self, msg: "UserMessage", broadcast_level: int = 1):
-        self.paused = False  # unpause if paused
-
-        current_agent = self.get_agent()
-
-        if self.task and self.task.is_alive():
-            # set intervention messages to agent(s):
-            intervention_agent = current_agent
-            while intervention_agent and broadcast_level != 0:
-                intervention_agent.intervention = msg
-                broadcast_level -= 1
-                intervention_agent = intervention_agent.data.get(
-                    Agent.DATA_NAME_SUPERIOR, None
-                )
-        else:
-            self.task = self.run_task(self._process_chain, current_agent, msg)
-
-        return self.task
-
-    def run_task(
-        self, func: Callable[..., Coroutine[Any, Any, Any]], *args: Any, **kwargs: Any
-    ):
-        if not self.task:
-            self.task = DeferredTask(
-                thread_name=self.__class__.__name__,
-            )
-        self.task.start_task(func, *args, **kwargs)
-        return self.task
-
-    # this wrapper ensures that superior agents are called back if the chat was loaded from file and original callstack is gone
-    async def _process_chain(self, agent: "Agent", msg: "UserMessage|str", user=True):
-        try:
-            msg_template = (
-                agent.hist_add_user_message(msg)  # type: ignore
-                if user
-                else agent.hist_add_tool_result(
-                    tool_name="call_subordinate", tool_result=msg  # type: ignore
-                )
-            )
-            response = await agent.monologue()  # type: ignore
-            superior = agent.data.get(Agent.DATA_NAME_SUPERIOR, None)
-            if superior:
-                response = await self._process_chain(superior, response, False)  # type: ignore
-            return response
-        except Exception as e:
-            agent.handle_critical_exception(e)
-
-
-@dataclass
-class ModelConfig:
-    provider: models.ModelProvider
-    name: str
-    ctx_length: int = 0
-    limit_requests: int = 0
-    limit_input: int = 0
-    limit_output: int = 0
-    vision: bool = False
-    kwargs: dict = field(default_factory=dict)
-
-
-@dataclass
-class AgentConfig:
-    chat_model: ModelConfig
-    utility_model: ModelConfig
-    embeddings_model: ModelConfig
-    browser_model: ModelConfig
-    mcp_servers: str
-    prompts_subdir: str = ""
-    memory_subdir: str = ""
-    knowledge_subdirs: list[str] = field(default_factory=lambda: ["default", "custom"])
-    code_exec_docker_enabled: bool = False
-    code_exec_docker_name: str = "A0-dev"
-    code_exec_docker_image: str = "frdel/agent-zero-run:development"
-    code_exec_docker_ports: dict[str, int] = field(
-        default_factory=lambda: {"22/tcp": 55022, "80/tcp": 55080}
-    )
-    code_exec_docker_volumes: dict[str, dict[str, str]] = field(
-        default_factory=lambda: {
-            files.get_base_dir(): {"bind": "/a0", "mode": "rw"},
-            files.get_abs_path("work_dir"): {"bind": "/root", "mode": "rw"},
-        }
-    )
-    code_exec_ssh_enabled: bool = True
-    code_exec_ssh_addr: str = "localhost"
-    code_exec_ssh_port: int = 55022
-    code_exec_ssh_user: str = "root"
-    code_exec_ssh_pass: str = ""
-    additional: Dict[str, Any] = field(default_factory=dict)
-
-
-@dataclass
-class UserMessage:
-    message: str
-    attachments: list[str] = field(default_factory=list[str])
-    system_message: list[str] = field(default_factory=list[str])
-
-
-class LoopData:
-    def __init__(self, **kwargs):
-        self.iteration = -1
-        self.system = []
-        self.user_message: history.Message | None = None
-        self.history_output: list[history.OutputMessage] = []
-        self.extras_temporary: OrderedDict[str, history.MessageContent] = OrderedDict()
-        self.extras_persistent: OrderedDict[str, history.MessageContent] = OrderedDict()
-        self.last_response = ""
-
-        # override values with kwargs
-        for key, value in kwargs.items():
-            setattr(self, key, value)
-
-
-# intervention exception class - skips rest of message loop iteration
-class InterventionException(Exception):
-    pass
-
-
-# killer exception class - not forwarded to LLM, cannot be fixed on its own, ends message loop
-class RepairableException(Exception):
-    pass
-
-
-class HandledException(Exception):
-    pass
+from src.core.models import (
+    AgentConfig, ModelConfig, UserMessage, LoopData,
+    InterventionException, RepairableException, HandledException
+)
+from src.helpers import extract_tools, files, errors, history, tokens
+from src.helpers import dirty_json
+from src.helpers.print_style import PrintStyle
+from src.helpers.dirty_json import DirtyJson
+import src.helpers.log as Log
 
 
 class Agent:
+    """Main Agent class that handles conversation loops and tool execution"""
 
     DATA_NAME_SUPERIOR = "_superior"
     DATA_NAME_SUBORDINATE = "_subordinate"
     DATA_NAME_CTX_WINDOW = "ctx_window"
 
     def __init__(
-        self, number: int, config: AgentConfig, context: AgentContext | None = None
+        self, number: int, config: AgentConfig, context: "AgentContext | None" = None
     ):
-
         # agent config
         self.config = config
 
-        # agent context
-        self.context = context or AgentContext(config)
+        # agent context - avoid circular import
+        if context:
+            self.context = context
+        else:
+            from src.core.context import AgentContext
+            self.context = AgentContext(config)
 
         # non-config vars
         self.number = number
@@ -408,11 +155,6 @@ class Agent:
         await self.call_extensions("message_loop_prompts_after", loop_data=loop_data)
 
         # extras (memory etc.)
-        # extras: list[history.OutputMessage] = []
-        # for extra in loop_data.extras_persistent.values():
-        #     extras += history.Message(False, content=extra).output()
-        # for extra in loop_data.extras_temporary.values():
-        #     extras += history.Message(False, content=extra).output()
         extras = history.Message(
             False, 
             content=self.read_prompt("agent.context.extras.md", extras=dirty_json.stringify(
@@ -431,7 +173,6 @@ class Agent:
             [
                 SystemMessage(content=system_text),
                 *history_langchain,
-                # AIMessage(content="JSON:"), # force the LLM to start with json
             ]
         )
 
@@ -567,6 +308,8 @@ class Agent:
         return self.history.output_text(human_label="user", ai_label="assistant")
 
     def get_chat_model(self):
+        # Import here to avoid circular dependency
+        import models
         return models.get_model(
             models.ModelType.CHAT,
             self.config.chat_model.provider,
@@ -575,6 +318,8 @@ class Agent:
         )
 
     def get_utility_model(self):
+        # Import here to avoid circular dependency
+        import models
         return models.get_model(
             models.ModelType.CHAT,
             self.config.utility_model.provider,
@@ -583,6 +328,8 @@ class Agent:
         )
 
     def get_embedding_model(self):
+        # Import here to avoid circular dependency
+        import models
         return models.get_model(
             models.ModelType.EMBEDDING,
             self.config.embeddings_model.provider,
@@ -614,6 +361,8 @@ class Agent:
         async for chunk in (prompt | model).astream({}):
             await self.handle_intervention()  # wait for intervention and handle it, if paused
 
+            # Import here to avoid circular dependency
+            import models
             content = models.parse_chunk(chunk)
             limiter.add(output=tokens.approximate_tokens(content))
             response += content
@@ -639,6 +388,8 @@ class Agent:
         async for chunk in (prompt | model).astream({}):
             await self.handle_intervention()  # wait for intervention and handle it, if paused
 
+            # Import here to avoid circular dependency
+            import models
             content = models.parse_chunk(chunk)
             limiter.add(output=tokens.approximate_tokens(content))
             response += content
@@ -667,7 +418,8 @@ class Agent:
             if not background:
                 self.context.log.set_progress(msg, -1)
 
-        # rate limiter
+        # rate limiter - Import here to avoid circular dependency
+        import models
         limiter = models.get_rate_limiter(
             model_config.provider,
             model_config.name,
@@ -787,4 +539,4 @@ class Agent:
             "python/extensions/" + folder, "*", Extension
         )
         for cls in classes:
-            await cls(agent=self).execute(**kwargs)
+            await cls(agent=self).execute(**kwargs) 

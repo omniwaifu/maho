@@ -1,9 +1,20 @@
+#!/usr/bin/env python3
+"""
+Tunnel API server entry point for Agent Zero.
+This replaces the old run_tunnel.py file.
+"""
+
+import os
+import sys
 import threading
 from flask import Flask, request
-from python.helpers import runtime, dotenv, process
-from python.helpers.print_style import PrintStyle
 
-from python.api.tunnel import Tunnel
+# Add the project root to Python path so we can import from src
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from src.helpers import runtime, dotenv, process
+from src.helpers.print_style import PrintStyle
+from src.api.tunnel import Tunnel
 
 # initialize the internal Flask server
 app = Flask("app")
@@ -53,8 +64,11 @@ def run():
             tunnel.stop()
 
 
-# run the internal server
-if __name__ == "__main__":
+def main():
     runtime.initialize()
     dotenv.load_dotenv()
     run()
+
+
+if __name__ == "__main__":
+    main() 

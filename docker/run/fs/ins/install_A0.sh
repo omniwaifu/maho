@@ -24,24 +24,25 @@ git clone -b "$BRANCH" "https://github.com/frdel/agent-zero" "/git/agent-zero" |
 # # Install some packages in specific variants
 # pip install torch --index-url https://download.pytorch.org/whl/cpu
 
-uv pip install -v mcp==1.3.0 || {
-    echo "ERROR: Failed during separate attempt to install mcp==1.3.0. Will proceed to full requirements.txt install anyway."
+# Install A0 python packages using pyproject.toml (modern approach)
+echo "Installing Maho dependencies using pyproject.toml..."
+cd /git/agent-zero
+uv pip install -e . || {
+    echo "WARNING: Failed to install from pyproject.toml, falling back to requirements.txt"
+    uv pip install -r requirements.txt
 }
-python -c "import mcp; from mcp import ClientSession; print(f'DEBUG: mcp and mcp.ClientSession imported successfully after separate install. mcp path: {mcp.__file__}')" || {
-    echo "ERROR: mcp package or mcp.ClientSession NOT importable after separate mcp==1.3.0 installation attempt. Full requirements.txt will run next."
-}
 
-# Install remaining A0 python packages
-uv pip install -r /git/agent-zero/requirements.txt
-
-uv pip install langchain-anthropic==0.3.15 # TODO: remove after browser-use update
-
-python -c "import mcp; from mcp import ClientSession; print(f'DEBUG: mcp and mcp.ClientSession imported successfully after requirements.txt. mcp path: {mcp.__file__}')" || {
-    echo "CRITICAL ERROR: mcp package or mcp.ClientSession not found or failed to import after requirements.txt processing."
+# Verify MCP installation
+python -c "import mcp; from mcp import ClientSession; print(f'DEBUG: mcp and mcp.ClientSession imported successfully. mcp path: {mcp.__file__}')" || {
+    echo "ERROR: mcp package or mcp.ClientSession not importable. Attempting manual install..."
+    uv pip install -v mcp==1.9.0
 }
 
 # install playwright
 bash /ins/install_playwright.sh "$@"
 
-# Preload A0
-python /git/agent-zero/preload.py --dockerized=true
+# Preload A0 using new script location
+python /git/agent-zero/scripts/preload.py --dockerized=true || {
+    echo "WARNING: New preload script failed, trying old location..."
+    python /git/agent-zero/preload.py --dockerized=true
+}

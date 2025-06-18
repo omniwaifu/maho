@@ -125,7 +125,7 @@
 }
 
 #path-text {
-  font-family: 'Roboto Mono', monospace;
+  font-family: 'Geist Mono', ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
   font-optical-sizing: auto;
   -webkit-font-optical-sizing: auto;
   opacity: 0.9;

@@ -1,4 +1,5 @@
-@import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&family=Rubik:ital,wght@0,300..900;1,300..900&display=swap');
+@import url('https://cdn.jsdelivr.net/npm/@vercel/style-guide@6/fonts/geist-sans.css');
+@import url('https://cdn.jsdelivr.net/npm/@vercel/style-guide@6/fonts/geist-mono.css');
 
 /* Add box-sizing globally for better cross-browser consistency */
 *, *::before, *::after {
@@ -68,7 +69,7 @@ body,
 html {
   background-color: var(--color-background);
   color: var(--color-text);
-  font-family: "Rubik", Arial, Helvetica, sans-serif;
+  font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   width: 100%;
   height: 100%;
   min-width: 320px !important;
@@ -431,7 +432,7 @@ h4 {
 }
 
 pre {
-  font-family: 'Roboto Mono', monospace;
+  font-family: 'Geist Mono', ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
   font-optical-sizing: auto;
   -webkit-font-optical-sizing: auto;
   font-size: 0.75rem;
@@ -602,7 +603,7 @@ pre {
 
 .message-user > div {
   padding-top: var(--spacing-xs);
-  font-family: 'Roboto Mono', monospace;
+  font-family: 'Geist Mono', ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
   font-optical-sizing: auto;
   -webkit-font-optical-sizing: auto;
   font-size: var(--font-size-small);
@@ -838,7 +839,7 @@ pre {
   border-radius: 8px;
   color: var(--color-text);
   flex-grow: 1;
-  font-family: 'Roboto Mono', monospace;
+  font-family: 'Geist Mono', ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
   font-optical-sizing: auto;
   -webkit-font-optical-sizing: auto;
   font-size: 0.90rem;
@@ -955,7 +956,7 @@ pre {
   border-radius: var(--spacing-xs);
   cursor: pointer;
   display: inline;
-  font-family: "Rubik", Arial, Helvetica, sans-serif;
+  font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: var(--font-size-small);
   opacity: 0.8;
   text-wrap: nowrap;
@@ -1231,7 +1232,7 @@ pre {
   border: none;
   border-radius: 5px;
   color: var(--color-text);
-  font-family: "Rubik", Arial, Helvetica, sans-serif;
+  font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: 0.6rem;
   padding: 6px var(--spacing-sm);
   cursor: pointer;
@@ -1461,7 +1462,7 @@ input:checked + .slider:before {
   transition: opacity var(--transition-speed) ease-in-out;
   color: inherit;
   font-size: 12px;
-  font-family: "Rubik", Arial, Helvetica, sans-serif;
+  font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 .copy-button:hover {
@@ -1475,7 +1476,7 @@ input:checked + .slider:before {
 }
 
 .copy-button.copied {
-  font-family: "Rubik", Arial, Helvetica, sans-serif !important;
+  font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
   opacity: 1 !important;
 }
 
@@ -1816,7 +1817,7 @@ input:checked + .slider:before {
     content: 'Copied!';
     position: absolute;
     opacity: 0;
-    font-family: "Rubik", Arial, Helvetica, sans-serif;
+    font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-size: 0.7rem;
     padding: 6px var(--spacing-sm);
     -webkit-transition: opacity var(--transition-speed) ease-in-out;

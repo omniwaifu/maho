@@ -47,7 +47,8 @@ def get_openai_embedding(model_name: str, **kwargs):
 
 def get_iointel_chat(model_name: str, **kwargs):
     api_key = get_api_key("iointel")
-    return ChatOpenAI(model=model_name, api_key=SecretStr(api_key), **kwargs)
+    base_url = dotenv.get_dotenv_value("IOINTEL_BASE_URL") or "https://api.intelligence.io.solutions/api/v1"
+    return ChatOpenAI(model=model_name, api_key=SecretStr(api_key), base_url=base_url, **kwargs)
 
 def get_anthropic_chat(model_name: str, **kwargs):
     api_key = get_api_key("anthropic")

@@ -2977,9 +2977,95 @@ nav ul li a img {
 
 /* Smaller status badge for task list */
 .scheduler-status-badge-small {
-    font-size: 10px;
-    padding: 2px 6px;
-    margin-right: 5px;
-    min-width: 40px;
-    text-align: center;
+  font-size: 10px;
+  padding: 2px 6px;
+  margin-right: 5px;
+  min-width: 40px;
+  text-align: center;
+}
+
+/* Markdown in messages */
+.msg-content {
+  font-size: var(--font-size-small);
+}
+
+.message-agent-response .msg-content {
+  font-size: var(--font-size-smaller);
+}
+
+.msg-content h1 {
+  font-size: 1.25em;
+  font-weight: 800;
+  margin-bottom: 0.2em;
+}
+
+.msg-content h2 {
+  font-size: 1.2em;
+  font-weight: 700;
+  margin-bottom: 0.2em;
+}
+
+.msg-content h3 {
+  font-size: 1.15em;
+  font-weight: 600;
+  margin-bottom: 0.2em;
+}
+
+.msg-content h4 {
+  font-size: 1.1em;
+  font-weight: 500;
+  margin-bottom: 0.2em;
+}
+
+.msg-content h5 {
+  font-size: 1.05em;
+  font-weight: 500;
+  margin-bottom: 0.2em;
+}
+
+.msg-content h6 {
+  font-size: 1em;
+  font-weight: 500;
+  margin-bottom: 0.2em;
+}
+
+.msg-content table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  font-size: 0.98em;
+  background: transparent;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.msg-content th,
+.msg-content td {
+  padding: 0.55em 1em;
+  border: 1px solid rgba(142, 142, 142, 0.1);
+  text-align: left;
+  background: transparent;
+}
+
+.msg-content th {
+  font-weight: 600;
+  background: rgba(142, 142, 142, 0.1);
+}
+
+.msg-content tr:nth-child(even) {
+  background: rgba(142, 142, 142, 0.1);
+}
+
+.msg-content tr:nth-child(odd) {
+  background: transparent;
+}
+
+.msg-content table {
+  box-shadow: none;
+}
+
+.msg-content pre:has(code) {
+  padding: 0.5em;
+  border: 1px solid rgba(142, 142, 142, 0.1);
+  border-radius: 0.3em;
 }

@@ -113,10 +113,11 @@ export function _drawMessage(
       messageDiv.appendChild(contentDiv);
 
       // KaTeX rendering for markdown
-      if (window.renderMathInElement && latex) {
-        renderMathInElement(contentDiv, {
-          delimiters: [{ left: "$", right: "$", display: true }],
-          throwOnError: false,
+      if (latex) {
+        spanElement.querySelectorAll("latex").forEach((element) => {
+          katex.render(element.innerHTML, element, {
+            throwOnError: false,
+          });
         });
       }
     } else {
@@ -138,12 +139,13 @@ export function _drawMessage(
     messageDiv.appendChild(preElement);
 
     // Render LaTeX math within the span
-    if (window.renderMathInElement && latex) {
-      renderMathInElement(spanElement, {
-        delimiters: [{ left: "$", right: "$", display: true }],
-        throwOnError: false,
+    if (latex) {
+      spanElement.querySelectorAll("latex").forEach((element) => {
+        katex.render(element.innerHTML, element, {
+          throwOnError: false,
+        });
       });
-      }
+    }
     }
   }
 
@@ -587,10 +589,12 @@ function drawKvps(container, kvps, latex) {
             copyText(span.textContent, span);
           });
 
-          if (window.renderMathInElement && latex) {
-            renderMathInElement(span, {
-              delimiters: [{ left: "$", right: "$", display: true }],
-              throwOnError: false,
+          // KaTeX rendering for markdown
+          if (latex) {
+            span.querySelectorAll("latex").forEach((element) => {
+              katex.render(element.innerHTML, element, {
+                throwOnError: false,
+              });
             });
           }
         }

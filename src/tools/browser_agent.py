@@ -1,4 +1,4 @@
-import asyncio
+import anyio
 import json
 import time
 from typing import Optional
@@ -86,12 +86,17 @@ class State:
             self.task = None
         if self.browser_session:
             try:
-                import asyncio
-
-                loop = asyncio.new_event_loop()
-                asyncio.set_event_loop(loop)
-                loop.run_until_complete(self.browser_session.close())
-                loop.close()
+                # Use sniffio to run the async close operation in a new event loop
+                import sniffio
+                try:
+                    # If we're already in an async context, we can't use run_sync
+                    sniffio.current_async_library()
+                    # We're in an async context, so we need to handle this differently
+                    # For now, just set browser_session to None and let it be garbage collected
+                    pass
+                except sniffio.AsyncLibraryNotFoundError:
+                    # We're not in an async context, so we can use anyio.run
+                    anyio.run(self.browser_session.close)
             except Exception as e:
                 PrintStyle().error(f"Error closing browser session: {e}")
             finally:
@@ -216,21 +221,37 @@ class BrowserAgent(Tool):
                 break
 
             await self.agent.handle_intervention()
-            await asyncio.sleep(1)
+            await anyio.sleep(1)
             try:
                 if task.is_ready():  # otherwise get_update hangs
                     break
                 try:
-                    update = await asyncio.wait_for(self.get_update(), timeout=10)
-                    fail_counter = 0  # reset on success
-                except asyncio.TimeoutError:
+                    with anyio.move_on_after(10) as cancel_scope:
+                        update = await self.get_update()
+                    
+                    if cancel_scope.cancelled_caught:
+                        # Timeout occurred
+                        fail_counter += 1
+                        PrintStyle().warning(
+                            f"browser_agent.get_update timed out ({fail_counter}/3)"
+                        )
+                        if fail_counter >= 3:
+                            PrintStyle().warning(
+                                "3 consecutive browser_agent.get_update timeouts, breaking loop"
+                            )
+                            break
+                        continue
+                    else:
+                        fail_counter = 0  # reset on success
+                except Exception as e:
+                    # If get_update() raised an exception
                     fail_counter += 1
                     PrintStyle().warning(
-                        f"browser_agent.get_update timed out ({fail_counter}/3)"
+                        f"browser_agent.get_update failed with exception: {e} ({fail_counter}/3)"
                     )
                     if fail_counter >= 3:
                         PrintStyle().warning(
-                            "3 consecutive browser_agent.get_update timeouts, breaking loop"
+                            "3 consecutive browser_agent.get_update failures, breaking loop"
                         )
                         break
                     continue

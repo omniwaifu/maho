@@ -3,52 +3,83 @@ from dataclasses import dataclass
 import threading
 from concurrent.futures import Future
 from typing import Any, Callable, Optional, Coroutine, TypeVar, Awaitable
+from anyio.from_thread import start_blocking_portal, BlockingPortal
 
 T = TypeVar("T")
 
 
 class EventLoopThread:
-    _instances = {}
+    """Singleton managing a background AnyIO portal for a given *thread_name*."""
+
+    _instances: dict[str, "EventLoopThread"] = {}
     _lock = threading.Lock()
 
-    def __init__(self, thread_name: str = "Background") -> None:
-        """Initialize the event loop thread."""
-        self.thread_name = thread_name
-        self._start()
-
     def __new__(cls, thread_name: str = "Background"):
+        # Guarantee single instance per *thread_name*
         with cls._lock:
             if thread_name not in cls._instances:
-                instance = super(EventLoopThread, cls).__new__(cls)
+                instance = super().__new__(cls)
                 cls._instances[thread_name] = instance
             return cls._instances[thread_name]
 
-    def _start(self):
-        if not hasattr(self, "loop") or not self.loop:
-            self.loop = asyncio.new_event_loop()
-        if not hasattr(self, "thread") or not self.thread:
-            self.thread = threading.Thread(
-                target=self._run_event_loop, daemon=True, name=self.thread_name
-            )
-            self.thread.start()
+    def __init__(self, thread_name: str = "Background") -> None:  # type: ignore[override]
+        # Prevent double-initialisation if the singleton already existed
+        if getattr(self, "_initialised", False):
+            return
+        self.thread_name = thread_name
+        self.portal: BlockingPortal | None = None
+        self._portal_cm = None  # type: ignore
+        self._start()
+        self._initialised = True
 
-    def _run_event_loop(self):
-        if not self.loop:
-            raise RuntimeError("Event loop is not initialized")
-        asyncio.set_event_loop(self.loop)
-        self.loop.run_forever()
+    # ---------------------------------------------------------------------
+    # Portal lifecycle helpers
+    # ---------------------------------------------------------------------
 
-    def terminate(self):
-        if self.loop and self.loop.is_running():
-            self.loop.stop()
-        self.loop = None
-        self.thread = None
+    def _start(self) -> None:
+        """Start the background AnyIO portal if it's not already running."""
+        if self.portal is not None:
+            return
+
+        # start_blocking_portal() spins up a new thread that hosts an event-loop
+        # (asyncio backend here for maximum compatibility with the existing
+        # code-base that still uses asyncio primitives like asyncio.sleep()).
+        #
+        # Using the *context manager* form allows us to get a proper shutdown
+        # implementation simply by calling __exit__() later.
+        self._portal_cm = start_blocking_portal(backend="asyncio")
+        self.portal = self._portal_cm.__enter__()
+
+    def terminate(self) -> None:
+        """Stop the portal and clean up the background thread."""
+        if self.portal is None or self._portal_cm is None:
+            return
+
+        # __exit__ will ensure the portal is stopped and the event-loop thread
+        # is joined.
+        try:
+            self._portal_cm.__exit__(None, None, None)
+        finally:
+            self.portal = None
+            self._portal_cm = None
+
+    # ------------------------------------------------------------------
+    # Public helpers
+    # ------------------------------------------------------------------
 
     def run_coroutine(self, coro):
+        """Schedule *coro* on the background portal and return a Future."""
         self._start()
-        if not self.loop:
-            raise RuntimeError("Event loop is not initialized")
-        return asyncio.run_coroutine_threadsafe(coro, self.loop)
+        if self.portal is None:
+            raise RuntimeError("Portal is not initialized")
+
+        async def _runner():  # noqa: D401 – simple helper
+            return await coro
+
+        # start_task_soon() gives us a concurrent.futures.Future that mirrors
+        # the task's outcome which is exactly what run_coroutine_threadsafe()
+        # previously returned.
+        return self.portal.start_task_soon(_runner)
 
 
 @dataclass
@@ -121,30 +152,9 @@ class DeferredTask:
         if self._future and not self._future.done():
             self._future.cancel()
 
-        if (
-            terminate_thread
-            and self.event_loop_thread.loop
-            and self.event_loop_thread.loop.is_running()
-        ):
-
-            def cleanup():
-                tasks = [
-                    t
-                    for t in asyncio.all_tasks(self.event_loop_thread.loop)
-                    if t is not asyncio.current_task(self.event_loop_thread.loop)
-                ]
-                for task in tasks:
-                    task.cancel()
-                    try:
-                        # Give tasks a chance to cleanup
-                        if self.event_loop_thread.loop:
-                            self.event_loop_thread.loop.run_until_complete(
-                                asyncio.gather(task, return_exceptions=True)
-                            )
-                    except Exception:
-                        pass  # Ignore cleanup errors
-
-            self.event_loop_thread.loop.call_soon_threadsafe(cleanup)
+        if terminate_thread and self.event_loop_thread.portal:
+            # Gracefully stop the background portal which will, in turn,
+            # cancel any remaining tasks.
             self.event_loop_thread.terminate()
 
     def kill_children(self) -> None:
@@ -174,26 +184,22 @@ class DeferredTask:
         return result
 
     def execute_inside(self, func: Callable[..., T], *args, **kwargs) -> Awaitable[T]:
-        if not self.event_loop_thread.loop:
-            raise RuntimeError("Event loop is not initialized")
+        if not self.event_loop_thread.portal:
+            raise RuntimeError("Portal is not initialized")
 
         future: Future = Future()
 
         async def wrapped():
-            if not self.event_loop_thread.loop:
-                raise RuntimeError("Event loop is not initialized")
+            if not self.event_loop_thread.portal:
+                raise RuntimeError("Portal is not initialized")
             try:
                 result = await self._execute_in_task_context(func, *args, **kwargs)
                 # Keep awaiting until we get a concrete value
                 while isinstance(result, Awaitable):
                     result = await result
-                self.event_loop_thread.loop.call_soon_threadsafe(
-                    future.set_result, result
-                )
+                future.set_result(result)
             except Exception as e:
-                self.event_loop_thread.loop.call_soon_threadsafe(
-                    future.set_exception, e
-                )
+                future.set_exception(e)
 
-        asyncio.run_coroutine_threadsafe(wrapped(), self.event_loop_thread.loop)
+        self.event_loop_thread.portal.start_task_soon(wrapped)
         return asyncio.wrap_future(future)

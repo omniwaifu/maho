@@ -1,4 +1,4 @@
-import asyncio
+import anyio
 from datetime import datetime
 import time
 from src.helpers.task_scheduler import TaskScheduler
@@ -34,7 +34,7 @@ async def run_loop():
                 await scheduler_tick()
             except Exception as e:
                 PrintStyle().error(errors.format_error(e))
-        await asyncio.sleep(
+        await anyio.sleep(
             SLEEP_TIME
         )  # TODO! - if we lower it under 1min, it can run a 5min job multiple times in it's target minute
 

@@ -1,11 +1,11 @@
 import re
 import traceback
-import asyncio
+import anyio
 
 
 def handle_error(e: Exception):
-    # if asyncio.CancelledError, re-raise
-    if isinstance(e, asyncio.CancelledError):
+    # if anyio CancelledError, re-raise
+    if isinstance(e, anyio.get_cancelled_exc_class()):
         raise e
 
 

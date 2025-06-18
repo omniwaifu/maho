@@ -1,4 +1,4 @@
-import asyncio
+import anyio
 from datetime import datetime, timezone, timedelta
 import os
 import random
@@ -19,10 +19,6 @@ from typing import (
     cast,
     ClassVar,
 )
-
-import nest_asyncio
-
-nest_asyncio.apply()
 
 from crontab import CronTab
 from pydantic import BaseModel, Field, PrivateAttr
@@ -505,11 +501,11 @@ class SchedulerTaskList(BaseModel):
         if cls.__instance is None:
             if not exists(path):
                 make_dirs(path)
-                cls.__instance = asyncio.run(cls(tasks=[]).save())
+                cls.__instance = anyio.run(cls(tasks=[]).save)
             else:
                 cls.__instance = cls.model_validate_json(read_file(path))
         else:
-            asyncio.run(cls.__instance.reload())
+            anyio.run(cls.__instance.reload)
         return cls.__instance
 
     def __init__(self, *args, **kwargs):
@@ -1010,7 +1006,16 @@ class TaskScheduler:
 
         # Ensure background execution doesn't exit immediately on async await, especially in script contexts
         # This helps prevent premature exits when running from non-event-loop contexts
-        asyncio.create_task(asyncio.sleep(0.1))
+        # With anyio, we use a task group to manage background tasks
+        async def background_sleep():
+            await anyio.sleep(0.1)
+        
+        # Start the background task
+        try:
+            anyio.run(background_sleep)
+        except RuntimeError:
+            # If we're already in an async context, just pass
+            pass
 
     def serialize_all_tasks(self) -> list[Dict[str, Any]]:
         """

@@ -1,5 +1,6 @@
 import os
-import asyncio
+import anyio
+import anyio.to_thread
 from src.helpers import dotenv, memory, perplexity_search, duckduckgo_search
 from src.helpers.tool import Tool, Response
 from src.helpers.print_style import PrintStyle
@@ -20,8 +21,23 @@ class Knowledge(Tool):
             self.mem_search(question),
         ]
 
-        # Run all tasks concurrently
-        results = await asyncio.gather(*tasks, return_exceptions=True)
+        # Run all tasks concurrently - simple replacement
+        # Convert to anyio task group
+        results = []
+        async with anyio.create_task_group() as tg:
+            async def run_task(task, index):
+                try:
+                    result = await task
+                    while len(results) <= index:
+                        results.append(None)
+                    results[index] = result
+                except Exception as e:
+                    while len(results) <= index:
+                        results.append(None)
+                    results[index] = e
+            
+            for i, task in enumerate(tasks):
+                tg.start_soon(run_task, task, i)
 
         # perplexity_result, duckduckgo_result, memory_result = results
         searxng_result, memory_result = results
@@ -47,7 +63,7 @@ class Knowledge(Tool):
 
     async def perplexity_search(self, question):
         if dotenv.get_dotenv_value("API_KEY_PERPLEXITY"):
-            return await asyncio.to_thread(
+            return await anyio.to_thread.run_sync(
                 perplexity_search.perplexity_search, question
             )
         else:
@@ -61,7 +77,7 @@ class Knowledge(Tool):
             return None
 
     async def duckduckgo_search(self, question):
-        return await asyncio.to_thread(duckduckgo_search.search, question)
+        return await anyio.to_thread.run_sync(duckduckgo_search.search, question)
 
     async def searxng_search(self, question):
         return await searxng(question)

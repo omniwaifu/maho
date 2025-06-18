@@ -1,4 +1,4 @@
-import asyncio
+import anyio
 from datetime import datetime
 import json
 import random
@@ -279,7 +279,7 @@ class SchedulerTool(Tool):
                 )
 
             if task.state == TaskState.RUNNING:
-                await asyncio.sleep(1)
+                await anyio.sleep(1)
                 elapsed += 1
                 if elapsed > DEFAULT_WAIT_TIMEOUT:
                     return Response(

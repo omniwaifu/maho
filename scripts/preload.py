@@ -6,7 +6,12 @@ This replaces the old preload.py file.
 
 import os
 import sys
-import asyncio
+import json
+import time
+import uuid
+import traceback
+from pathlib import Path
+import anyio
 
 # Add the project root to Python path so we can import from src
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -42,10 +47,10 @@ async def preload():
                 except Exception as e:
                     PrintStyle().error(f"Error in preload_embedding: {e}")
 
-        # async tasks to preload
-        tasks = [preload_whisper(), preload_embedding()]
-
-        await asyncio.gather(*tasks, return_exceptions=True)
+        # Process tasks concurrently using anyio task group
+        async with anyio.create_task_group() as tg:
+            tg.start_soon(preload_whisper)
+            tg.start_soon(preload_embedding)
         PrintStyle().print("Preload completed")
 
     except Exception as e:
@@ -53,7 +58,7 @@ async def preload():
 
 
 def main():
-    asyncio.run(preload())
+    anyio.run(preload)
 
 
 if __name__ == "__main__":

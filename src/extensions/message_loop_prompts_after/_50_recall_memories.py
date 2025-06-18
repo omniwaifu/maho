@@ -1,4 +1,4 @@
-import asyncio
+import anyio
 from src.helpers.extension import Extension
 from src.helpers.memory import Memory
 from src.core.agent import LoopData
@@ -17,14 +17,12 @@ class RecallMemories(Extension):
 
         # every 3 iterations (or the first one) recall memories
         if loop_data.iteration % RecallMemories.INTERVAL == 0:
-            task = asyncio.create_task(
-                self.search_memories(loop_data=loop_data, **kwargs)
-            )
-        else:
-            task = None
-
-        # set to agent to be able to wait for it
-        self.agent.set_data(DATA_NAME_TASK, task)
+            # Use anyio task group for structured concurrency
+            async with anyio.create_task_group() as tg:
+                tg.start_soon(self.search_memories, loop_data, **kwargs)
+        
+        # No need to store task reference with anyio task groups
+        self.agent.set_data(DATA_NAME_TASK, None)
 
     async def search_memories(self, loop_data: LoopData, **kwargs):
 

@@ -1,4 +1,4 @@
-import asyncio
+import anyio
 from dataclasses import dataclass
 import shlex
 import time
@@ -208,7 +208,7 @@ class CodeExecution(Tool):
         got_output = False
 
         while True:
-            await asyncio.sleep(sleep_time)
+            await anyio.sleep(sleep_time)
             full_output, partial_output = await self.state.shells[session].read_output(
                 timeout=3, reset_full_output=reset_full_output
             )

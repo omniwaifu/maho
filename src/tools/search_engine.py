@@ -1,5 +1,4 @@
 import os
-import asyncio
 from src.helpers import dotenv, memory, perplexity_search, duckduckgo_search
 from src.helpers.tool import Tool, Response
 from src.helpers.print_style import PrintStyle

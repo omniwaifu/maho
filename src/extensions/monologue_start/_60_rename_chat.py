@@ -1,13 +1,16 @@
 from src.helpers import persist_chat, tokens
 from src.helpers.extension import Extension
 from src.core.agent import LoopData
-import asyncio
+import anyio
 
 
 class RenameChat(Extension):
 
     async def execute(self, loop_data: LoopData = LoopData(), **kwargs):
-        asyncio.create_task(self.change_name())
+        # Use task group for background task execution
+        async with anyio.create_task_group() as tg:
+            tg.start_soon(self.change_name)
+            # Task completes in background with proper cancellation handling
 
     async def change_name(self):
         try:

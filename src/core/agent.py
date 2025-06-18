@@ -1,4 +1,4 @@
-import asyncio
+import anyio
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any, Awaitable, Callable
 
@@ -207,8 +207,8 @@ class Agent:
     def handle_critical_exception(self, exception: Exception):
         if isinstance(exception, HandledException):
             raise exception  # Re-raise the exception to kill the loop
-        elif isinstance(exception, asyncio.CancelledError):
-            # Handling for asyncio.CancelledError
+        elif isinstance(exception, anyio.get_cancelled_exc_class()):
+            # Handling for anyio CancelledError
             PrintStyle(font_color="white", background_color="red", padding=True).print(
                 f"Context {self.context.id} terminated during message loop"
             )
@@ -458,7 +458,7 @@ class Agent:
 
     async def handle_intervention(self, progress: str = ""):
         while self.context.paused:
-            await asyncio.sleep(0.1)  # wait if paused
+            await anyio.sleep(0.1)  
         if (
             self.intervention
         ):  # if there is an intervention message, but not yet processed
@@ -472,7 +472,7 @@ class Agent:
 
     async def wait_if_paused(self):
         while self.context.paused:
-            await asyncio.sleep(0.1)
+            await anyio.sleep(0.1) 
 
     async def process_tools(self, msg: str):
         # search for tool usage requests in agent message

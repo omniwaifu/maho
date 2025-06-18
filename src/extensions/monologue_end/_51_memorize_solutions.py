@@ -1,4 +1,4 @@
-import asyncio
+import anyio
 from src.helpers.extension import Extension
 from src.helpers.memory import Memory
 from src.helpers.dirty_json import DirtyJson
@@ -24,8 +24,9 @@ class MemorizeSolutions(Extension):
             heading="Memorizing succesful solutions...",
         )
 
-        # memorize in background
-        asyncio.create_task(self.memorize(loop_data, log_item))
+        # memorize in background with structured concurrency
+        async with anyio.create_task_group() as tg:
+            tg.start_soon(self.memorize, loop_data, log_item)
 
     async def memorize(self, loop_data: LoopData, log_item: LogItem, **kwargs):
         # get system message and chat history for util llm

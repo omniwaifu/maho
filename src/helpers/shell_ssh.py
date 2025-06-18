@@ -1,4 +1,4 @@
-import asyncio
+import anyio
 import paramiko
 import time
 import re
@@ -129,7 +129,7 @@ class SSHInteractiveSession:
 
             partial_output += data
             self.full_output += data
-            await asyncio.sleep(0.1)  # Prevent busy waiting
+            await anyio.sleep(0.1)  # Prevent busy waiting
 
         # Decode once at the end
         decoded_partial_output = partial_output.decode("utf-8", errors="replace")

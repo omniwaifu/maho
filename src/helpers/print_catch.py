@@ -1,4 +1,4 @@
-import asyncio
+import anyio
 import io
 import sys
 from typing import Callable, Any, Awaitable, Tuple
@@ -27,4 +27,5 @@ def capture_prints_async(
             sys.stdout = original_stdout
 
     # Return the wrapped awaitable and the output retriever
-    return asyncio.create_task(wrapped_func()), get_current_output
+    # For anyio, we create a coroutine directly instead of using create_task
+    return wrapped_func(), get_current_output

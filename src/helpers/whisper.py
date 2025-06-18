@@ -2,7 +2,7 @@ import base64
 import warnings
 import whisper
 import tempfile
-import asyncio
+import anyio
 from src.helpers import runtime, rfc, settings
 from src.helpers.print_style import PrintStyle
 
@@ -26,7 +26,7 @@ async def _preload(model_name: str):
     global _model, _model_name, is_updating_model
 
     while is_updating_model:
-        await asyncio.sleep(0.1)
+        await anyio.sleep(0.1)
 
     try:
         is_updating_model = True

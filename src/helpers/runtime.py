@@ -1,10 +1,14 @@
 import argparse
 import inspect
-from typing import TypeVar, Callable, Awaitable, Union, overload, cast
+from typing import TypeVar, Callable, Awaitable, Union, overload, cast, Any
 from src.helpers import dotenv, rfc, settings
-import asyncio
+import anyio
 import threading
 import queue
+import os
+import sys
+import importlib.util
+import anyio
 
 T = TypeVar("T")
 R = TypeVar("R")
@@ -125,7 +129,7 @@ def call_development_function_sync(
     result_queue = queue.Queue()
 
     def run_in_thread():
-        result = asyncio.run(call_development_function(func, *args, **kwargs))
+        result = anyio.run(call_development_function, func, *args, **kwargs)
         result_queue.put(result)
 
     thread = threading.Thread(target=run_in_thread)
@@ -153,3 +157,6 @@ def get_tunnel_api_port():
         or 55520
     )
     return tunnel_api_port
+
+
+

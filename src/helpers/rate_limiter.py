@@ -1,4 +1,4 @@
-import asyncio
+import anyio
 import time
 from typing import Callable, Awaitable
 
@@ -11,7 +11,7 @@ class RateLimiter:
             for key, value in (limits or {}).items()
         }
         self.values = {key: [] for key in self.limits.keys()}
-        self._lock = asyncio.Lock()
+        self._lock = anyio.Lock()
 
     def add(self, **kwargs: int):
         now = time.time()
@@ -56,4 +56,4 @@ class RateLimiter:
             if not should_wait:
                 break
 
-            await asyncio.sleep(1)
+            await anyio.sleep(1)

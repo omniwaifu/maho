@@ -1,5 +1,5 @@
 from abc import abstractmethod
-import asyncio
+import anyio
 from collections import OrderedDict
 from collections.abc import Mapping
 import json
@@ -424,13 +424,22 @@ class History(Record):
         # if bulks is empty, return False
         if len(self.bulks) == 0:
             return False
-        # merge bulks in groups of count, even if there are fewer than count
-        bulks = await asyncio.gather(
-            *[
-                self.merge_bulks(self.bulks[i : i + count])
-                for i in range(0, len(self.bulks), count)
-            ]
-        )
+        # merge bulks in groups of count using structured concurrency
+        tasks = [
+            self.merge_bulks(self.bulks[i : i + count])
+            for i in range(0, len(self.bulks), count)
+        ]
+        
+        bulks = []
+        async with anyio.create_task_group() as tg:
+            async def run_merge(task, index):
+                result = await task
+                while len(bulks) <= index:
+                    bulks.append(None)
+                bulks[index] = result
+            
+            for i, task in enumerate(tasks):
+                tg.start_soon(run_merge, task, i)
         self.bulks = bulks
         return True
 

@@ -16,7 +16,7 @@ from typing import (
     TypeVar,
 )
 import threading
-import asyncio
+import anyio
 from contextlib import AsyncExitStack
 from shutil import which
 from datetime import timedelta
@@ -269,7 +269,7 @@ class MCPServerRemote(BaseModel):
 
                     setattr(self, key, value)
             # We already run in an event loop, dont believe Pylance
-            return asyncio.run(self.__on_update())
+            return anyio.run(self.__on_update)
 
     async def __on_update(self) -> "MCPServerRemote":
         await self.__client.update_tools()  # type: ignore
@@ -343,7 +343,7 @@ class MCPServerLocal(BaseModel):
                         value = normalize_name(value)
                     setattr(self, key, value)
             # We already run in an event loop, dont believe Pylance
-            return asyncio.run(self.__on_update())
+            return anyio.run(self.__on_update)
 
     async def __on_update(self) -> "MCPServerLocal":
         await self.__client.update_tools()  # type: ignore

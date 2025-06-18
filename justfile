@@ -40,9 +40,9 @@ lint:
 lint-fix:
     uv run ruff check --fix src/ scripts/
 
-# Type check with mypy
+# Type check with pyright
 typecheck:
-    uv run mypy src/
+    uv run pyright src/
 
 # Run all quality checks
 check: lint typecheck

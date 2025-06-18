@@ -70,11 +70,15 @@ dependencies = [
     "fastmcp==2.3.4",
     "flaredantic==0.1.4",
     
+    # Async framework
+    "anyio[trio]>=4.0.0",
+    "trio>=0.23.0",
+    
     # Utilities
     "python-dotenv==1.1.0",
     "pytz==2024.2",
     "webcolors==24.6.0",
-    "nest-asyncio==1.6.0",
+    "nest-asyncio==1.6.0",  # Keep for compatibility during migration
     "crontab==1.0.1",
     "ansio==0.0.1",
     "inputimeout==1.0.4",

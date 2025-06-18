@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
     supervisor \
     openssh-server \
     nginx \
+    cron \
     fonts-unifont \
     libnss3 \
     libnspr4 \
@@ -23,16 +24,20 @@ RUN apt-get update && apt-get install -y \
     libasound2 \
     && rm -rf /var/lib/apt/lists/*
 
+# Create SSH privilege separation directory
+RUN mkdir -p /run/sshd
+
 # Install uv
 RUN pip install uv
 
-# Create Python virtual environment (matching base image setup)
-RUN python3.12 -m venv /opt/venv
-ENV VIRTUAL_ENV=/opt/venv
-ENV PATH="/opt/venv/bin:$PATH"
+# Set UV environment variables to avoid warnings
+ENV UV_LINK_MODE=copy
 
 # Copy Docker filesystem (all components)
 COPY ./docker/run/fs/ /
+
+# Create a simplified supervisor config without problematic services
+RUN sed -i '/\[program:sshd\]/,/^$/d; /\[program:cron\]/,/^$/d' /etc/supervisor/conf.d/supervisord.conf
 
 # Install SearXNG
 RUN chmod +x /ins/install_searxng.sh /ins/install_searxng2.sh
@@ -42,20 +47,19 @@ RUN bash /ins/install_searxng.sh
 WORKDIR /maho
 COPY . .
 
-# Install Maho dependencies
-RUN uv pip install -e .
+# Install Maho dependencies using UV sync
+RUN uv sync --frozen
 
 # Verify MCP installation
-RUN python -c "import mcp; from mcp import ClientSession; print(f'DEBUG: mcp and mcp.ClientSession imported successfully. mcp path: {mcp.__file__}')" || \
-    uv pip install -v mcp==1.9.0
+RUN uv run python -c "import mcp; from mcp import ClientSession; print(f'DEBUG: mcp and mcp.ClientSession imported successfully. mcp path: {mcp.__file__}')" || \
+    uv add mcp==1.9.0
 
-# Install Playwright
-RUN uv pip install playwright
+# Install Playwright browsers (playwright is already in dependencies)
 ENV PLAYWRIGHT_BROWSERS_PATH=/maho/tmp/playwright
-RUN playwright install chromium --only-shell
+RUN uv run playwright install chromium --only-shell
 
 # Preload models
-RUN python /maho/scripts/preload.py --dockerized=true
+RUN uv run python /maho/scripts/preload.py --dockerized=true
 
 # Set permissions
 RUN chmod +x /exe/initialize.sh /exe/run_maho_ui.sh /exe/run_searxng.sh /exe/run_tunnel_api.sh

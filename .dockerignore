@@ -1,0 +1,43 @@
+# Virtual environments
+.venv/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Development files
+.git/
+.gitignore
+.pytest_cache/
+.coverage
+.mypy_cache/
+.ruff_cache/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs and temporary files
+logs/
+tmp/
+*.log
+
+# Build artifacts
+build/
+dist/
+*.egg-info/
+
+# Node modules (if any)
+node_modules/
+
+# Memory and knowledge (will be mounted as volumes)
+memory/
+knowledge/
+work_dir/ 

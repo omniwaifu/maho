@@ -60,7 +60,7 @@ def initialize_mcp(mcp_servers_config: str):
         try:
             MCPConfig.update(mcp_servers_config)
         except Exception as e:
-            from src.core.agent import AgentContext
+            from src.core.context import AgentContext
 
             AgentContext.log_to_all(
                 type="warning",

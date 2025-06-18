@@ -1,58 +1,67 @@
-# Maho Dockerfile - standalone build
 FROM python:3.12-slim
 
-# Install system dependencies
+# Install system dependencies (matching base image requirements)
 RUN apt-get update && apt-get install -y \
     git \
-    curl \
-    build-essential \
-    ssh \
+    sudo \
+    supervisor \
     openssh-server \
     nginx \
-    supervisor \
-    cron \
-    wget \
-    gnupg \
-    software-properties-common \
+    fonts-unifont \
+    libnss3 \
+    libnspr4 \
+    libatk1.0-0 \
+    libatspi2.0-0 \
+    libxcomposite1 \
+    libxdamage1 \
+    libatk-bridge2.0-0 \
+    libcups2 \
+    libxfixes3 \
+    libxrandr2 \
+    libgtk-3-0 \
+    libxss1 \
+    libasound2 \
     && rm -rf /var/lib/apt/lists/*
 
 # Install uv
 RUN pip install uv
 
-# Create virtual environment
+# Create Python virtual environment (matching base image setup)
 RUN python3.12 -m venv /opt/venv
+ENV VIRTUAL_ENV=/opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
-ENV VIRTUAL_ENV="/opt/venv"
 
-# Set working directory
+# Copy Docker filesystem (all components)
+COPY ./docker/run/fs/ /
+
+# Install SearXNG
+RUN chmod +x /ins/install_searxng.sh /ins/install_searxng2.sh
+RUN bash /ins/install_searxng.sh
+
+# Copy Maho code
 WORKDIR /maho
-
-# Copy Docker filesystem first
-COPY docker/run/fs/ /
-
-# Copy project files
 COPY . .
 
-# Run the Maho install script
-RUN bash /ins/install_maho.sh main
+# Install Maho dependencies
+RUN uv pip install -e .
 
-# Setup SSH
-RUN mkdir -p /var/run/sshd
-RUN echo 'root:toor' | chpasswd
-RUN sed -i 's/#PermitRootLogin prohibit-password/PermitRootLogin yes/' /etc/ssh/sshd_config
-RUN sed -i 's/#PasswordAuthentication yes/PasswordAuthentication yes/' /etc/ssh/sshd_config
+# Verify MCP installation
+RUN python -c "import mcp; from mcp import ClientSession; print(f'DEBUG: mcp and mcp.ClientSession imported successfully. mcp path: {mcp.__file__}')" || \
+    uv pip install -v mcp==1.9.0
 
-# Setup nginx
-COPY docker/run/fs/etc/nginx/nginx.conf /etc/nginx/nginx.conf
+# Install Playwright
+RUN uv pip install playwright
+ENV PLAYWRIGHT_BROWSERS_PATH=/maho/tmp/playwright
+RUN playwright install chromium --only-shell
 
-# Setup supervisor
-COPY docker/run/fs/etc/supervisor/conf.d/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+# Preload models
+RUN python /maho/scripts/preload.py --dockerized=true
 
-# Create necessary directories
-RUN mkdir -p /maho/memory /maho/logs /maho/tmp /maho/knowledge /maho/work_dir
+# Set permissions
+RUN chmod +x /exe/initialize.sh /exe/run_maho_ui.sh /exe/run_searxng.sh /exe/run_tunnel_api.sh
 
-# Expose ports
-EXPOSE 22 80
+# Expose ports (matching complex setup)
+EXPOSE 22 80 9000-9009
 
-# Run supervisor
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisor/conf.d/supervisord.conf"] 
+# Use initialize script like complex setup
+CMD ["/exe/initialize.sh", "main"]

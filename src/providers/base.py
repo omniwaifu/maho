@@ -15,6 +15,7 @@ class ModelProvider(Enum):
     GOOGLE = "Google"
     GROQ = "Groq"
     HUGGINGFACE = "HuggingFace"
+    IOINTEL = "io.net"
     LMSTUDIO = "LM Studio"
     MISTRALAI = "Mistral AI"
     OLLAMA = "Ollama"

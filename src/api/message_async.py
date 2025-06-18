@@ -1,4 +1,4 @@
-from src.core.agent import AgentContext
+from src.core.context import AgentContext
 from src.helpers.api import ApiHandler
 from flask import Request, Response
 

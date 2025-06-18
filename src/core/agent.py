@@ -324,10 +324,11 @@ class Agent:
 
     def get_chat_model(self):
         # Import here to avoid circular dependency
-        import models
+        from src.providers.factory import get_model
+        from src.providers.base import ModelType
 
-        return models.get_model(
-            models.ModelType.CHAT,
+        return get_model(
+            ModelType.CHAT,
             self.config.chat_model.provider,
             self.config.chat_model.name,
             **self.config.chat_model.kwargs,
@@ -335,10 +336,11 @@ class Agent:
 
     def get_utility_model(self):
         # Import here to avoid circular dependency
-        import models
+        from src.providers.factory import get_model
+        from src.providers.base import ModelType
 
-        return models.get_model(
-            models.ModelType.CHAT,
+        return get_model(
+            ModelType.CHAT,
             self.config.utility_model.provider,
             self.config.utility_model.name,
             **self.config.utility_model.kwargs,
@@ -346,10 +348,11 @@ class Agent:
 
     def get_embedding_model(self):
         # Import here to avoid circular dependency
-        import models
+        from src.providers.factory import get_model
+        from src.providers.base import ModelType
 
-        return models.get_model(
-            models.ModelType.EMBEDDING,
+        return get_model(
+            ModelType.EMBEDDING,
             self.config.embeddings_model.provider,
             self.config.embeddings_model.name,
             **self.config.embeddings_model.kwargs,
@@ -380,9 +383,9 @@ class Agent:
             await self.handle_intervention()  # wait for intervention and handle it, if paused
 
             # Import here to avoid circular dependency
-            import models
+            from src.providers.factory import parse_chunk
 
-            content = models.parse_chunk(chunk)
+            content = parse_chunk(chunk)
             limiter.add(output=tokens.approximate_tokens(content))
             response += content
 
@@ -408,9 +411,9 @@ class Agent:
             await self.handle_intervention()  # wait for intervention and handle it, if paused
 
             # Import here to avoid circular dependency
-            import models
+            from src.providers.factory import parse_chunk
 
-            content = models.parse_chunk(chunk)
+            content = parse_chunk(chunk)
             limiter.add(output=tokens.approximate_tokens(content))
             response += content
 
@@ -439,9 +442,9 @@ class Agent:
                 self.context.log.set_progress(msg, -1)
 
         # rate limiter - Import here to avoid circular dependency
-        import models
+        from src.providers.factory import get_rate_limiter
 
-        limiter = models.get_rate_limiter(
+        limiter = get_rate_limiter(
             model_config.provider,
             model_config.name,
             model_config.limit_requests,
@@ -558,7 +561,7 @@ class Agent:
         from src.helpers.tool import Tool
 
         classes = extract_tools.load_classes_from_folder(
-            "python/tools", name + ".py", Tool
+            "src/tools", name + ".py", Tool
         )
         tool_class = classes[0] if classes else Unknown
         return tool_class(
@@ -569,7 +572,7 @@ class Agent:
         from src.helpers.extension import Extension
 
         classes = extract_tools.load_classes_from_folder(
-            "python/extensions/" + folder, "*", Extension
+            "src/extensions/" + folder, "*", Extension
         )
         for cls in classes:
             await cls(agent=self).execute(**kwargs)

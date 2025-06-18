@@ -16,7 +16,7 @@ from src.helpers.task_scheduler import (
     parse_datetime,
     serialize_datetime,
 )
-from src.core.agent import AgentContext
+from src.core.context import AgentContext
 from src.helpers import persist_chat
 
 DEFAULT_WAIT_TIMEOUT = 300

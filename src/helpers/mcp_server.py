@@ -6,7 +6,8 @@ from openai import BaseModel
 from pydantic import Field
 from fastmcp import FastMCP
 
-from src.core.agent import AgentContext, UserMessage
+from src.core.context import AgentContext
+from src.core.models import UserMessage
 from src.core.models import AgentContextType
 from src.helpers.persist_chat import save_tmp_chat, remove_chat
 from src.config.initialization import initialize_agent

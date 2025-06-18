@@ -1,7 +1,7 @@
 from src.helpers.api import ApiHandler, Input, Output, Request
 from src.helpers.task_scheduler import TaskScheduler, TaskState
 from src.helpers.localization import Localization
-from src.core.agent import AgentContext
+from src.core.context import AgentContext
 from src.helpers import persist_chat
 
 

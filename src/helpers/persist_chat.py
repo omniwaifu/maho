@@ -2,7 +2,8 @@ from collections import OrderedDict
 from datetime import datetime
 from typing import Any
 import uuid
-from src.core.agent import Agent, AgentContext
+from src.core.agent import Agent
+from src.core.context import AgentContext
 from src.core.models import AgentConfig, AgentContextType
 from src.helpers import files, history
 import json

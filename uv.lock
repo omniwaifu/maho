@@ -1589,7 +1589,6 @@ dependencies = [
     { name = "langchain-community" },
     { name = "langchain-google-genai" },
     { name = "langchain-groq" },
-    { name = "langchain-huggingface" },
     { name = "langchain-mistralai" },
     { name = "langchain-ollama" },
     { name = "langchain-openai" },
@@ -1598,13 +1597,11 @@ dependencies = [
     { name = "mcp" },
     { name = "nest-asyncio" },
     { name = "newspaper3k" },
-    { name = "openai-whisper" },
     { name = "paramiko" },
     { name = "playwright" },
     { name = "pypdf" },
     { name = "python-dotenv" },
     { name = "pytz" },
-    { name = "sentence-transformers" },
     { name = "tiktoken" },
     { name = "unstructured" },
     { name = "unstructured-client" },
@@ -1613,6 +1610,7 @@ dependencies = [
 
 [package.optional-dependencies]
 cuda = [
+    { name = "langchain-huggingface" },
     { name = "nvidia-cublas-cu12" },
     { name = "nvidia-cuda-cupti-cu12" },
     { name = "nvidia-cuda-nvrtc-cu12" },
@@ -1627,6 +1625,8 @@ cuda = [
     { name = "nvidia-nccl-cu12" },
     { name = "nvidia-nvjitlink-cu12" },
     { name = "nvidia-nvtx-cu12" },
+    { name = "openai-whisper" },
+    { name = "sentence-transformers" },
     { name = "torch" },
     { name = "triton" },
 ]
@@ -1636,6 +1636,13 @@ dev = [
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "ruff" },
+]
+embeddings = [
+    { name = "langchain-huggingface" },
+    { name = "sentence-transformers" },
+]
+speech = [
+    { name = "openai-whisper" },
 ]
 
 [package.dev-dependencies]
@@ -1667,7 +1674,8 @@ requires-dist = [
     { name = "langchain-community", specifier = "==0.3.19" },
     { name = "langchain-google-genai", specifier = "==2.1.2" },
     { name = "langchain-groq", specifier = "==0.2.2" },
-    { name = "langchain-huggingface", specifier = "==0.1.2" },
+    { name = "langchain-huggingface", marker = "extra == 'cuda'", specifier = "==0.1.2" },
+    { name = "langchain-huggingface", marker = "extra == 'embeddings'", specifier = "==0.1.2" },
     { name = "langchain-mistralai", specifier = "==0.2.4" },
     { name = "langchain-ollama", specifier = "==0.3.0" },
     { name = "langchain-openai", specifier = "==0.3.11" },
@@ -1691,7 +1699,8 @@ requires-dist = [
     { name = "nvidia-nccl-cu12", marker = "extra == 'cuda'" },
     { name = "nvidia-nvjitlink-cu12", marker = "extra == 'cuda'" },
     { name = "nvidia-nvtx-cu12", marker = "extra == 'cuda'" },
-    { name = "openai-whisper", specifier = "==20240930" },
+    { name = "openai-whisper", marker = "extra == 'cuda'", specifier = "==20240930" },
+    { name = "openai-whisper", marker = "extra == 'speech'", specifier = "==20240930" },
     { name = "paramiko", specifier = "==3.5.0" },
     { name = "playwright", specifier = "==1.52.0" },
     { name = "pypdf", specifier = "==4.3.1" },
@@ -1700,7 +1709,8 @@ requires-dist = [
     { name = "python-dotenv", specifier = "==1.1.0" },
     { name = "pytz", specifier = "==2024.2" },
     { name = "ruff", marker = "extra == 'dev'", specifier = ">=0.1.0" },
-    { name = "sentence-transformers", specifier = "==3.0.1" },
+    { name = "sentence-transformers", marker = "extra == 'cuda'", specifier = "==3.0.1" },
+    { name = "sentence-transformers", marker = "extra == 'embeddings'", specifier = "==3.0.1" },
     { name = "tiktoken", specifier = "==0.8.0" },
     { name = "torch", marker = "extra == 'cuda'" },
     { name = "triton", marker = "extra == 'cuda'" },
@@ -1708,7 +1718,7 @@ requires-dist = [
     { name = "unstructured-client", specifier = "==0.25.9" },
     { name = "webcolors", specifier = "==24.6.0" },
 ]
-provides-extras = ["dev", "cuda"]
+provides-extras = ["dev", "speech", "embeddings", "cuda"]
 
 [package.metadata.requires-dev]
 dev = [

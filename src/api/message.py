@@ -1,4 +1,5 @@
-from src.core.agent import AgentContext, UserMessage
+from src.core.context import AgentContext
+from src.core.models import UserMessage
 from src.helpers.api import ApiHandler
 from flask import Request, Response
 

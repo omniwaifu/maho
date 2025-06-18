@@ -964,7 +964,7 @@ def get_default_settings() -> Settings:
 def _apply_settings(previous: Settings | None):
     global _settings
     if _settings:
-        from src.core.agent import AgentContext
+        from src.core.context import AgentContext
         from src.config.initialization import initialize_agent
 
         config = initialize_agent()

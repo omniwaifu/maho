@@ -4,7 +4,7 @@ import threading
 from typing import Union, TypedDict, Dict, Any
 from attr import dataclass
 from flask import Request, Response, jsonify, Flask
-from src.core.agent import AgentContext
+from src.core.context import AgentContext
 from src.config.initialization import initialize_agent
 from src.helpers.print_style import PrintStyle
 from src.helpers.errors import format_error

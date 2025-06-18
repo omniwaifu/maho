@@ -167,6 +167,9 @@ def init_a0():
 
 
 def run():
+    # Initialize runtime to parse command line arguments
+    runtime.initialize()
+    
     PrintStyle().print("Initializing framework...")
 
     # Suppress only request logs but keep the startup messages
@@ -184,7 +187,7 @@ def run():
     # Get configuration from environment
     port = runtime.get_web_ui_port()
     host = (
-        runtime.get_arg("host") or dotenv.get_dotenv_value("WEB_UI_HOST") or "localhost"
+        runtime.get_arg("host") or dotenv.get_dotenv_value("WEB_UI_HOST") or "0.0.0.0"
     )
     server = None
 

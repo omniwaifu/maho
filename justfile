@@ -72,6 +72,18 @@ docker-run:
         -v ~/.config/maho/work_dir:/root \
         maho:latest
 
+# Run Docker container for testing (ephemeral - auto-removes on exit)
+docker-test:
+    mkdir -p ~/.config/maho/{memory,logs,tmp,knowledge,work_dir}
+    docker run --rm -it --init -p 50080:80 \
+        --env-file .env \
+        -v ~/.config/maho/memory:/maho/memory \
+        -v ~/.config/maho/logs:/maho/logs \
+        -v ~/.config/maho/tmp:/maho/tmp \
+        -v ~/.config/maho/knowledge:/maho/knowledge \
+        -v ~/.config/maho/work_dir:/root \
+        maho:latest
+
 # Run Docker container in development mode (mounts entire codebase)
 docker-dev:
     docker run -p 50080:80 -v $(pwd):/maho maho:latest
@@ -113,4 +125,10 @@ info:
     @echo "Maho - Refactored Agent Zero"
     @echo "Python: $(python --version)"
     @echo "UV: $(uv --version)"
-    @uv tree --depth 1 
+    @uv tree --depth 1
+
+# Clean up maho Docker images and containers
+docker-clean:
+    docker container prune -f
+    docker image rm maho:latest || true
+    docker system prune -f 

@@ -145,7 +145,7 @@ body,
   min-height: 0;
   overflow: hidden;
   margin-top: 3.5rem;
-  padding: var(--spacing-md) var(--spacing-md) 0 var(--spacing-md);
+  padding: var(--spacing-md) 0 0 0;
 }
 
 .left-panel-top::-webkit-scrollbar {
@@ -223,7 +223,7 @@ body,
 .chat-list-button {
     display: block;
     width: 100%;
-    padding: 8px 5px;
+    padding: 8px 16px;
     cursor: pointer;
     overflow: hidden;
     position: relative;
@@ -248,7 +248,7 @@ body,
 
 .chat-name {
   display: inline-block;
-  max-width: 210px; /* Much wider for better readability */
+  max-width: calc(100% - 80px); /* Full width minus space for action buttons */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -256,7 +256,7 @@ body,
   padding: 3px 8px;
   border-radius: 4px;
   transition: background-color 0.2s;
-  margin-right: 60px; /* Make space for buttons */
+  margin-right: 10px; /* Small space for buttons */
   font-size: var(--font-size-small); /* Match config button font size */
 }
 
@@ -352,7 +352,7 @@ body,
 
 .pref-section {
   font-size: var(--font-size-small);
-  padding: 0.6rem var(--spacing-md) 0.05rem var(--spacing-md);
+  padding: 0.6rem 16px 0.05rem 16px;
 }
 
 /* Collapse transition */
@@ -364,7 +364,7 @@ body,
 .version-info {
   line-height: 0.8rem;
   position: relative;
-  margin: 0 var(--spacing-md) 1rem var(--spacing-md);
+  margin: 0 16px 1rem 16px;
   padding-top: 10px;
   border-top: 1px solid var(--color-border);
 }
@@ -448,7 +448,7 @@ pre {
   overflow-y: scroll;
   overflow-x: hidden;
   scroll-behavior: auto !important; /* avoid infinite scrolling! */
-  padding: var(--spacing-md) var(--spacing-md) 0;
+  padding: var(--spacing-md) 0 0;
   -webkit-transition: all 0.3s ease;
   transition: all 0.3s ease;
   scrollbar-width: thin;
@@ -567,7 +567,10 @@ pre {
 .message-container {
   animation: fadeIn 0.5s;
   -webkit-animation: fadeIn 0.5s;
-  margin-bottom: var(--spacing-sm);
+  margin: 0 auto var(--spacing-sm) auto;
+  width: 100%;
+  max-width: 800px;
+  padding: 0 5%;
 }
 
 .message {
@@ -577,8 +580,9 @@ pre {
 }
 
 .user-container {
-  align-self: flex-end;
-  margin: var(--spacing-sm) var(--spacing-md);
+  display: flex;
+  justify-content: flex-end;
+  margin: var(--spacing-sm) 0;
 }
 
 .ai-container {
@@ -622,7 +626,6 @@ pre {
 }
 
 .message-followup {
-  margin-left: var(--spacing-lg);
   margin-bottom: var(--spacing-lg);
 }
 
@@ -934,6 +937,7 @@ pre {
   list-style-type: none;
   margin: 0;
   padding: 0;
+  width: 100%;
 }
 
 .config-list li {
@@ -958,16 +962,16 @@ pre {
   border: 0.1rem solid var(--color-border);
   border-radius: var(--spacing-xs);
   cursor: pointer;
-  display: inline;
+  display: inline-block;
   font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: var(--font-size-small);
   opacity: 0.8;
   text-wrap: nowrap;
   width: calc(50% - var(--spacing-xs));
-  float:left;
   margin: 0 var(--spacing-xs) var(--spacing-xs) 0;
   padding: var(--spacing-sm) 0.75rem;
   max-height: 2.3rem;
+  box-sizing: border-box;
   -webkit-transition: all var(--transition-speed), transform 0.1s ease-in-out;
   transition: all var(--transition-speed), transform 0.1s ease-in-out;
 }
@@ -992,6 +996,7 @@ pre {
   border-radius: 0.1875rem;
   color: var(--color-primary);
   cursor: pointer;
+  margin-right: 5px;
   padding: 0.125rem 0.5rem;
   -webkit-transition: all var(--transition-speed) ease-in-out;
   transition: all var(--transition-speed) ease-in-out;

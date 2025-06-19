@@ -367,7 +367,7 @@ For developers or users who need to run Maho directly on their system,see the [I
 
 > [!WARNING]  
 > - If you update manually, beware: save your .env file with the API keys, and look for new dependencies in requirements.txt. 
-> - If any changes are made to the requirements of the updated version, you have to execute this command inside the a0 conda env after activating it:
+> - If any changes are made to the requirements of the updated version, you have to execute this command inside the maho conda env after activating it:
 > ```bash
 > pip install -r requirements.txt
 
@@ -441,16 +441,16 @@ You should see your folder has changed on the next terminal line.
 <img src="res/setup/image-16.png" alt="maho cd" height="100"/>
 <br><br>
 
-3. Create Conda environment using command **"conda create"**. After **"-n"** is your environment name, you can choose your own, i will use **"a0"** - short for Maho. After **"python"** is the Python version that Conda will install for you into this environment, right now, 3.12 works fine. **-y** skips confirmations.
+3. Create Conda environment using command **"conda create"**. After **"-n"** is your environment name, you can choose your own, i will use **"maho"** - short for Maho. After **"python"** is the Python version that Conda will install for you into this environment, right now, 3.12 works fine. **-y** skips confirmations.
 ~~~
-conda create -n a0 python=3.12 -y
+conda create -n maho python=3.12 -y
 ~~~
 
 4. Once done, activate the new environment for this terminal window by another command:
 ~~~
-conda activate a0
+conda activate maho
 ~~~
-And you should see that the **(base)** on the left has changed to **(a0)**. This means that this terminal now uses the new **a0** virtual environment and all packages will be installed into this environment.
+And you should see that the **(base)** on the left has changed to **(maho)**. This means that this terminal now uses the new **maho** virtual environment and all packages will be installed into this environment.
 
 <img src="res/setup/image-17.png" alt="conda env" height="200"/>
 <img src="res/setup/image-18.png" alt="conda env" height="200"/>
@@ -458,7 +458,7 @@ And you should see that the **(base)** on the left has changed to **(a0)**. This
 
 > [!IMPORTANT]  
 > If you open a new terminal window, you will need to activate the environment with 
-> "conda activate a0" again for that window.
+> "conda activate maho" again for that window.
 
 5. Install requirements using **"pip"**. Pip is a Python package manager. We can install all required packages from requirements.txt file using command:
 ~~~

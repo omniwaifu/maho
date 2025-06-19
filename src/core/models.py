@@ -44,7 +44,7 @@ class AgentConfig:
     )
     code_exec_docker_volumes: dict[str, dict[str, str]] = field(
         default_factory=lambda: {
-            files.get_base_dir(): {"bind": "/a0", "mode": "rw"},
+            files.get_base_dir(): {"bind": "/maho", "mode": "rw"},
             files.get_abs_path("work_dir"): {"bind": "/root", "mode": "rw"},
         }
     )

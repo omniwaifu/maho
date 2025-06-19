@@ -1277,7 +1277,7 @@ function initializeActiveTab() {
 }
 
 /*
- * A0 Chat UI
+ * Maho Chat UI
  *
  * Tasks tab functionality:
  * - Tasks are displayed in the Tasks tab with the same mechanics as chats

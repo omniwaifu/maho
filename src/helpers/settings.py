@@ -570,7 +570,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
         #     {
         #         "id": "rfc_auto_docker",
         #         "title": "RFC Auto Docker Management",
-        #         "description": "Automatically create dockerized instance of A0 for RFCs using this instance's code base and, settings and .env.",
+        #         "description": "Automatically create dockerized instance of Maho for RFCs using this instance's code base and, settings and .env.",
         #         "type": "text",
         #         "value": settings["rfc_auto_docker"],
         #     }
@@ -580,7 +580,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
             {
                 "id": "rfc_url",
                 "title": "RFC Destination URL",
-                "description": "URL of dockerized A0 instance for remote function calls. Do not specify port here.",
+                "description": "URL of dockerized Maho instance for remote function calls. Do not specify port here.",
                 "type": "text",
                 "value": settings["rfc_url"],
             }
@@ -605,7 +605,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
             {
                 "id": "rfc_port_http",
                 "title": "RFC HTTP port",
-                "description": "HTTP port for dockerized instance of A0.",
+                "description": "HTTP port for dockerized instance of Maho.",
                 "type": "text",
                 "value": settings["rfc_port_http"],
             }
@@ -615,7 +615,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
             {
                 "id": "rfc_port_ssh",
                 "title": "RFC SSH port",
-                "description": "SSH port for dockerized instance of A0.",
+                "description": "SSH port for dockerized instance of Maho.",
                 "type": "text",
                 "value": settings["rfc_port_ssh"],
             }
@@ -624,7 +624,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
     dev_section: SettingsSection = {
         "id": "dev",
         "title": "Development",
-        "description": "Parameters for A0 framework development. RFCs (remote function calls) are used to call functions on another A0 instance. You can develop and debug A0 natively on your local system while redirecting some functions to A0 instance in docker. This is crucial for development as A0 needs to run in standardized environment to support all features.",
+                    "description": "Parameters for Maho framework development. RFCs (remote function calls) are used to call functions on another Maho instance. You can develop and debug Maho natively on your local system while redirecting some functions to Maho instance in docker. This is crucial for development as Maho needs to run in standardized environment to support all features.",
         "fields": dev_fields,
         "tab": "developer",
     }

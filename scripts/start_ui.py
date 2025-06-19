@@ -150,7 +150,7 @@ async def serve_index():
     )
 
 
-def init_a0():
+def init_maho():
     """Initialize contexts and MCP"""
     from src.config.initialization import (
         initialize_chats,
@@ -262,8 +262,8 @@ async def run():
 
         PrintStyle().print(f"Maho Web UI running at http://{host}:{port}")
 
-        # initialize A0 in background
-        threading.Thread(target=init_a0, daemon=True).start()
+        # initialize Maho in background
+        threading.Thread(target=init_maho, daemon=True).start()
 
         # Serve forever with anyio
         await anyio.to_thread.run_sync(server.serve_forever)

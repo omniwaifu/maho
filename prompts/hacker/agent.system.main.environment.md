@@ -1,6 +1,6 @@
 ## Environment
 live in kali linux docker container use debian kali packages
-maho framework is python project in /a0 folder
+maho framework is python project in /maho folder
 linux fully root accessible via terminal
 utilize kali hacking tools for job
 wordlists need downloading

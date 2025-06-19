@@ -26,12 +26,12 @@ document.addEventListener('alpine:init', () => {
                     // Update the stored URL if it's different from what we have
                     if (this.tunnelLink !== data.tunnel_url) {
                         this.tunnelLink = data.tunnel_url;
-                        localStorage.setItem('agent_zero_tunnel_url', data.tunnel_url);
+                        localStorage.setItem('maho_tunnel_url', data.tunnel_url);
                     }
                     this.linkGenerated = true;
                 } else {
                     // Check if we have a stored tunnel URL
-                    const storedTunnelUrl = localStorage.getItem('agent_zero_tunnel_url');
+                    const storedTunnelUrl = localStorage.getItem('maho_tunnel_url');
                     
                     if (storedTunnelUrl) {
                         // Use the stored URL but verify it's still valid
@@ -50,7 +50,7 @@ document.addEventListener('alpine:init', () => {
                             this.linkGenerated = true;
                         } else {
                             // Clear stale URL
-                            localStorage.removeItem('agent_zero_tunnel_url');
+                            localStorage.removeItem('maho_tunnel_url');
                             this.tunnelLink = '';
                             this.linkGenerated = false;
                         }
@@ -191,7 +191,7 @@ document.addEventListener('alpine:init', () => {
                 
                 if (data.success && data.tunnel_url) {
                     // Store the tunnel URL in localStorage for persistence
-                    localStorage.setItem('agent_zero_tunnel_url', data.tunnel_url);
+                    localStorage.setItem('maho_tunnel_url', data.tunnel_url);
                     
                     this.tunnelLink = data.tunnel_url;
                     this.linkGenerated = true;
@@ -219,7 +219,7 @@ document.addEventListener('alpine:init', () => {
                         
                         if (statusData.success && statusData.tunnel_url) {
                             // Tunnel is now running, we can update the UI
-                            localStorage.setItem('agent_zero_tunnel_url', statusData.tunnel_url);
+                            localStorage.setItem('maho_tunnel_url', statusData.tunnel_url);
                             this.tunnelLink = statusData.tunnel_url;
                             this.linkGenerated = true;
                             window.toast("Tunnel created successfully", "success", 3000);
@@ -271,7 +271,7 @@ document.addEventListener('alpine:init', () => {
                     
                     if (data.success) {
                         // Clear the stored URL
-                        localStorage.removeItem('agent_zero_tunnel_url');
+                        localStorage.removeItem('maho_tunnel_url');
                         
                         // Update UI state
                         this.tunnelLink = '';

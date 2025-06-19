@@ -1,15 +1,38 @@
+<!DOCTYPE html>
 <html>
 
 <head>
-    <title>Connection to A0 MCP Server</title>
+    <title>Connection to Maho MCP Server</title>
 
 </head>
 
 <body>
-    <div x-data>
-        <p>Maho MCP Server is an SSE MCP running on the same URL and port as the Web UI + /mcp/sse path.</p>
-        <p>The same applies if you run A0 on a public URL using a tunnel.</p>
+    <h1>Connection to Maho MCP Server</h1>
+    <p>Use this configuration to connect to the Maho MCP server from an external client.</p>
+    <p>In most cases, you will need the IP address where Maho is running.</p>
+    <p>If Maho is running on your local machine, replace localhost with your machine's IP address.</p>
+    <p>The same applies if you run Maho on a public URL using a tunnel.</p>
+    
+    <pre><code>
+{
+  "mcpServers": {
+    "maho": {
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "-m",
+        "mcp.server",
+        "stdio"
+      ],
+      "transport": "sse",
+      "endpoint": "http://localhost:50001/mcp_server_get_detail"
+    }
+  }
+}
+    </code></pre>
 
+    <div x-data>
         <h3>Example MCP Server Configuration JSON</h3>
         <div id="mcp-server-example"></div>
 
@@ -20,9 +43,17 @@
                 const jsonExample = JSON.stringify({
                     "mcpServers":
                     {
-                        "agent-zero": {
-                            "type": "sse",
-                            "serverUrl": `${url}/mcp/t-${token}/sse`
+                        "maho": {
+                            "command": "uv",
+                            "args": [
+                                "run",
+                                "python",
+                                "-m",
+                                "mcp.server",
+                                "stdio"
+                            ],
+                            "transport": "sse",
+                            "endpoint": "http://localhost:50001/mcp_server_get_detail"
                         }
                     }
                 }, null, 2);

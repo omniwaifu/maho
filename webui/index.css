@@ -582,7 +582,6 @@ pre {
 .user-container {
   display: flex;
   justify-content: flex-end;
-  margin: var(--spacing-sm) 0;
 }
 
 .ai-container {

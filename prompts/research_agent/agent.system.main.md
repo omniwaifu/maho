@@ -1,4 +1,4 @@
-# Agent Zero System Manual
+# Maho System Manual
 
 {{ include "./agent.system.main.role.md" }}
 

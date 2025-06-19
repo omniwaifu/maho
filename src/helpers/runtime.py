@@ -157,4 +157,75 @@ def get_tunnel_api_port():
     return tunnel_api_port
 
 
+def suppress_httpx_cleanup_warnings():
+    """
+    Suppress the asyncio task exception reporting for httpx AsyncClient cleanup
+    that occurs when the event loop is closed during shutdown.
+    These are harmless cleanup exceptions and don't affect functionality.
+    """
+    import asyncio
+    import sys
+    import io
+    
+    # Store the original exception handler
+    original_exception_handler = None
+    
+    def custom_exception_handler(loop, context):
+        # Check if this is an httpx cleanup exception we want to suppress
+        exception = context.get('exception')
+        message = context.get('message', '')
+        
+        # Suppress httpx AsyncClient cleanup exceptions
+        if (exception and isinstance(exception, RuntimeError) and 
+            str(exception) == 'Event loop is closed' and
+            ('AsyncClient.aclose' in message or 'httpx' in message)):
+            return  # Suppress this exception
+            
+        # Suppress general "Task exception was never retrieved" for httpx
+        if ('Task exception was never retrieved' in message and
+            ('AsyncClient.aclose' in message or 'Event loop is closed' in str(exception))):
+            return  # Suppress this exception
+            
+        # For all other exceptions, use the original handler
+        if original_exception_handler:
+            original_exception_handler(loop, context)
+        else:
+            # Default behavior if no original handler
+            loop.default_exception_handler(context)
+    
+    # Get the current event loop and set our custom exception handler
+    try:
+        loop = asyncio.get_event_loop()
+        original_exception_handler = loop.get_exception_handler()
+        loop.set_exception_handler(custom_exception_handler)
+    except RuntimeError:
+        # No event loop running yet, set it later
+        pass
+    
+    # Also redirect stderr temporarily to suppress direct prints
+    original_stderr = sys.stderr
+    
+    class FilteredStderr:
+        def __init__(self, original_stderr):
+            self.original_stderr = original_stderr
+            
+        def write(self, text):
+            # Filter out the specific httpx cleanup messages
+            if ('Task exception was never retrieved' in text and 
+                ('AsyncClient.aclose' in text or 'Event loop is closed' in text)):
+                return  # Don't write this
+            if ('RuntimeError: Event loop is closed' in text and 
+                'httpx' in text):
+                return  # Don't write this
+            self.original_stderr.write(text)
+            
+        def flush(self):
+            self.original_stderr.flush()
+            
+        def __getattr__(self, name):
+            return getattr(self.original_stderr, name)
+    
+    sys.stderr = FilteredStderr(original_stderr)
+
+
 

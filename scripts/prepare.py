@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Environment preparation script for Agent Zero.
+Environment preparation script for Maho.
 This replaces the old prepare.py file.
 """
 

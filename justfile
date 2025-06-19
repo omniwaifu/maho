@@ -53,11 +53,11 @@ clean:
     find . -type f -name "*.pyc" -delete
     find . -type f -name "*.pyo" -delete
 
-# Build Docker image (simple, no Agent Zero dependencies)
+# Build Docker image (simple, no Maho dependencies)
 docker-build:
     docker build -t maho:latest -f docker/run/Dockerfile.simple .
 
-# Build Docker image (complex, with Agent Zero base - if you really want it)
+# Build Docker image (complex, with Maho base - if you really want it)
 docker-build-complex:
     docker build -t maho:latest -f docker/run/Dockerfile --build-arg BRANCH=main .
 

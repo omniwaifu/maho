@@ -52,10 +52,11 @@
   --spacing-md: 1.25rem;
   --spacing-lg: 2rem;
 
-  /* Font sizes */
-  --font-size-small: 0.8rem;
-  --font-size-normal: 1rem;
-  --font-size-large: 1.2rem;
+  /* Font sizes - MUCH BIGGER AND MORE READABLE */
+  --font-size-small: 1rem;    /* Was 0.8rem - too damn small! */
+  --font-size-normal: 1.1rem; /* Was 1rem - bump it up */
+  --font-size-large: 1.4rem;  /* Was 1.2rem - make it actually large */
+  --font-size-message: 1.1rem; /* New dedicated message text size */
 
   /* Other variables */
   --border-radius: 1.125rem;
@@ -125,15 +126,15 @@ body,
   justify-content: space-between;
   -webkit-transition: all var(--transition-speed) ease-in-out;
   transition: all var(--transition-speed) ease-in-out;
-  width: 250px;
-  min-width: 250px;
+  width: 300px;
+  min-width: 300px;
   color: var(--color-text);
   box-shadow: 1px 0 5px rgba(0, 0, 0, 0.3);
   user-select: none;
 }
 
 #left-panel.hidden {
-  margin-left: -250px;
+  margin-left: -300px;
 }
 
 .left-panel-top {
@@ -247,7 +248,7 @@ body,
 
 .chat-name {
   display: inline-block;
-  max-width: 160px;
+  max-width: 210px; /* Much wider for better readability */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -606,7 +607,9 @@ pre {
   font-family: 'Geist Mono', ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
   font-optical-sizing: auto;
   -webkit-font-optical-sizing: auto;
-  font-size: var(--font-size-small);
+  font-size: var(--font-size-message);  /* Use readable message size */
+  font-weight: 600;  /* Make user messages bolder too */
+  line-height: 1.4;  /* Better spacing */
 }
 
 .message-ai {
@@ -1521,13 +1524,16 @@ input:checked + .slider:before {
 
 /* Utility Classes */
 .kvps-key {
-  font-weight: 500;
-  font-size: var(--font-size-small);
+  font-weight: 600;  /* Make bolder */
+  font-size: var(--font-size-normal);  /* Use normal size instead of small */
 }
 
 .kvps-val {
   margin: 0.65rem 0 0.65rem 0.4rem;
   white-space: pre-wrap;
+  font-size: var(--font-size-message);  /* Use readable size */
+  font-weight: 500;  /* Slightly bold */
+  line-height: 1.5;  /* Better spacing */
 }
 
 .kvps-img {
@@ -1553,6 +1559,10 @@ input:checked + .slider:before {
 
 .msg-content {
   margin-bottom: 0;
+  font-size: var(--font-size-message);  /* Use our readable message size */
+  font-weight: 600;                     /* Make text much bolder */
+  line-height: 1.5;                     /* Better line spacing */
+  color: #e8e8e8;                       /* Slightly brighter text */
 }
 
 .message-temp {
@@ -1750,8 +1760,8 @@ input:checked + .slider:before {
     left: 0;
     top: 0;
     bottom: 0;
-    width: 250px !important; /* Force width */
-    min-width: 250px;
+    width: 300px !important; /* Force width */
+    min-width: 300px;
     z-index: 1003;
     -webkit-transition: all var(--transition-speed) ease-in-out;
     transition: all var(--transition-speed) ease-in-out;

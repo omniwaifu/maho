@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Model preloading script for Agent Zero.
+Model preloading script for Maho.
 This replaces the old preload.py file.
 """
 

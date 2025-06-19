@@ -1,4 +1,4 @@
-# Use the pre-built base image for Maho (forked from Agent Zero)
+# Use the pre-built base image for Maho (forked from Maho)
 # FROM agent-zero-base:local
 FROM frdel/agent-zero-base:latest
 

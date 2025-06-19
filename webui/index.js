@@ -89,6 +89,13 @@ export async function sendMessage() {
         const hasAttachments = attachments && attachments.length > 0;
 
         if (message || hasAttachments) {
+            // Clear input and attachments immediately for better UX (no duplication)
+            chatInput.value = '';
+            inputAD.attachments = [];
+            inputAD.hasAttachments = false;
+            adjustTextareaHeight();
+            
+            const context = getContext();
             let response;
             const messageId = generateGUID();
 
@@ -126,7 +133,9 @@ export async function sendMessage() {
                     body: formData
                 });
             } else {
-                // For text-only messages
+                // For text-only messages - display user message first
+                setMessage(messageId, 'user', '', message, false);
+                
                 const data = {
                     text: message,
                     context,
@@ -156,12 +165,6 @@ export async function sendMessage() {
             else {
                 setContext(jsonResponse.context);
             }
-
-            // Clear input and attachments
-            chatInput.value = '';
-            inputAD.attachments = [];
-            inputAD.hasAttachments = false;
-            adjustTextareaHeight();
         }
     } catch (e) {
         toastFetchError("Error sending message", e)

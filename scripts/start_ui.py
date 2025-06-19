@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Main UI entry point for the Agent Zero application.
+Main UI entry point for the Maho application.
 This replaces the old run_ui.py file.
 """
 
@@ -172,6 +172,9 @@ async def run():
     # Initialize runtime to parse command line arguments
     runtime.initialize()
     
+    # Suppress httpx cleanup warnings during shutdown
+    runtime.suppress_httpx_cleanup_warnings()
+    
     PrintStyle().print("Initializing framework...")
 
     # Suppress only request logs but keep the startup messages
@@ -257,7 +260,7 @@ async def run():
             threaded=True,
         )
 
-        PrintStyle().print(f"Agent Zero Web UI running at http://{host}:{port}")
+        PrintStyle().print(f"Maho Web UI running at http://{host}:{port}")
 
         # initialize A0 in background
         threading.Thread(target=init_a0, daemon=True).start()

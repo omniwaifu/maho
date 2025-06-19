@@ -9,7 +9,7 @@ description = "Maho - A refactored Agent Zero fork with proper architecture"
 readme = "README.md"
 license = { file = "LICENSE" }
 authors = [
-    { name = "Agent Zero Contributors" },
+    { name = "Maho Contributors" },
 ]
 classifiers = [
     "Development Status :: 4 - Beta",

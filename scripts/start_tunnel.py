@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Tunnel API server entry point for Agent Zero.
+Tunnel API server entry point for Maho.
 This replaces the old run_tunnel.py file.
 """
 

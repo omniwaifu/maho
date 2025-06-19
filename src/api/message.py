@@ -24,8 +24,8 @@ class Message(ApiHandler):
         # get context
         context = self.get_context(input.get("context", ""))
 
-        # get message from input
-        message = input.get("message", "")
+        # get message from input (check both "message" and "text" fields for compatibility)
+        message = input.get("message", "") or input.get("text", "")
 
         # get attachments from input
         attachments = input.get("attachments", [])

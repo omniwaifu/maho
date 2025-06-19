@@ -96,7 +96,7 @@ export function _drawMessage(
     messageDiv.appendChild(headingElement);
   }
 
-  drawKvps(messageDiv, kvps, latex);
+  drawKvps(messageDiv, kvps, false);
 
   if (content && content.trim().length > 0) {
     if (markdown) {

@@ -6,7 +6,7 @@ import re
 import subprocess
 from typing import Any, Literal, TypedDict
 
-import models
+from src import models
 from src.helpers import runtime, whisper
 from . import files, dotenv
 from src.helpers.print_style import PrintStyle
@@ -129,7 +129,7 @@ def _get_settings_portal():
 
 
 def convert_out(settings: Settings) -> SettingsOutput:
-    from models import ModelProvider
+    from src.models import ModelProvider
 
     # main model section
     chat_model_fields: list[SettingsField] = []
@@ -924,7 +924,7 @@ def _write_sensitive_settings(settings: Settings):
 
 
 def get_default_settings() -> Settings:
-    from models import ModelProvider
+    from src.models import ModelProvider
 
     return Settings(
         chat_model_provider=ModelProvider.OPENAI.name,

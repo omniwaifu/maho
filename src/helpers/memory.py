@@ -31,7 +31,7 @@ from src.helpers import knowledge_import
 from src.helpers.log import Log, LogItem
 from enum import Enum
 from src.core.agent import Agent, ModelConfig
-import models
+from src import models
 
 
 class MyFaiss(FAISS):

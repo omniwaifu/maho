@@ -9,7 +9,7 @@ import threading
 from concurrent.futures import Future
 
 
-import models
+from src import models
 from src.helpers import files, persist_chat, strings
 from src.helpers.browser_use import browser_use
 from src.helpers.print_style import PrintStyle

@@ -1,43 +1,89 @@
-# Virtual environments
-.venv/
-venv/
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
-
-# Development files
-.git/
+# Git and version control
+.git
 .gitignore
-.pytest_cache/
-.coverage
-.mypy_cache/
-.ruff_cache/
+.gitattributes
 
-# IDE files
+# Documentation
+docs/
+# README.md  # Keep README.md for pyproject.toml
+# *.md       # Keep some .md files for build
+
+# IDE and editor files
 .vscode/
 .idea/
 *.swp
 *.swo
+*~
 
-# OS files
-.DS_Store
-Thumbs.db
+# Python cache and artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+env/
+ENV/
+.venv/
 
 # Logs and temporary files
 logs/
-tmp/
 *.log
+tmp/
+temp/
+.tmp/
 
-# Build artifacts
-build/
-dist/
-*.egg-info/
-
-# Node modules (if any)
-node_modules/
-
-# Memory and knowledge (will be mounted as volumes)
+# Memory and knowledge files (runtime data)
 memory/
 knowledge/
-work_dir/ 
+
+# Instruments (runtime data)
+instruments/
+
+# Node.js (if any)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Docker files (don't include other docker contexts)
+docker/base/
+docker/run/Dockerfile
+docker/run/docker-compose.yml
+
+# Test files
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Environment files (may contain secrets)
+.env
+.env.local
+.env.*.local
+example.env 

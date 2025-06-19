@@ -84,4 +84,4 @@ def parse_chunk(chunk: Any):
 
 
 def get_huggingface_embedding(model_name: str, **kwargs):
-    return HuggingFaceEmbeddings(model_name=model_name, **kwargs)
+    return HuggingFaceEmbeddings(model_name=model_name, **kwargs) 

@@ -1,5 +1,5 @@
 from openai import OpenAI
-import models
+from src import models
 
 
 def perplexity_search(

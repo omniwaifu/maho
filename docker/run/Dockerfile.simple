@@ -1,4 +1,7 @@
-FROM python:3.12-slim
+# =============================================================================
+# STAGE 1: Base system dependencies (rarely changes)
+# =============================================================================
+FROM python:3.12-slim as base-system
 
 # Install system dependencies (matching base image requirements)
 RUN apt-get update && apt-get install -y \
@@ -27,39 +30,75 @@ RUN apt-get update && apt-get install -y \
 # Create SSH privilege separation directory
 RUN mkdir -p /run/sshd
 
-# Install uv
+# Install uv (package manager)
 RUN pip install uv
 
 # Set UV environment variables to avoid warnings
 ENV UV_LINK_MODE=copy
 
-# Copy Docker filesystem (all components)
-COPY ./docker/run/fs/ /
+# =============================================================================
+# STAGE 2: SearXNG installation (changes occasionally)
+# =============================================================================
+FROM base-system as searxng-stage
 
-# Create a simplified supervisor config without problematic services
-RUN sed -i '/\[program:sshd\]/,/^$/d; /\[program:cron\]/,/^$/d' /etc/supervisor/conf.d/supervisord.conf
+# Copy Docker filesystem for SearXNG installation
+COPY ./docker/run/fs/ins/install_searxng.sh /ins/install_searxng.sh
+COPY ./docker/run/fs/ins/install_searxng2.sh /ins/install_searxng2.sh
+COPY ./docker/run/fs/etc/searxng/ /etc/searxng/
 
 # Install SearXNG
 RUN chmod +x /ins/install_searxng.sh /ins/install_searxng2.sh
 RUN bash /ins/install_searxng.sh
 
-# Copy Maho code
-WORKDIR /maho
-COPY . .
+# =============================================================================
+# STAGE 3: Python dependencies (changes when pyproject.toml changes)
+# =============================================================================
+FROM searxng-stage as python-deps
 
-# Install Maho dependencies using UV sync
+WORKDIR /maho
+
+# Copy only dependency files first for better caching
+COPY pyproject.toml uv.lock LICENSE README.md ./
+
+# Install Python dependencies using UV sync
 RUN uv sync --frozen
 
 # Verify MCP installation
 RUN uv run python -c "import mcp; from mcp import ClientSession; print(f'DEBUG: mcp and mcp.ClientSession imported successfully. mcp path: {mcp.__file__}')" || \
     uv add mcp==1.9.0
 
+# =============================================================================
+# STAGE 4: Heavy assets (browsers, models - changes rarely)
+# =============================================================================
+FROM python-deps as heavy-assets
+
 # Install Playwright browsers (playwright is already in dependencies)
 ENV PLAYWRIGHT_BROWSERS_PATH=/maho/tmp/playwright
 RUN uv run playwright install chromium --only-shell
 
+# Copy preload script for model downloading
+COPY scripts/preload.py scripts/preload.py
+COPY src/ src/
+
 # Preload models
 RUN uv run python /maho/scripts/preload.py --dockerized=true
+
+# =============================================================================
+# STAGE 5: Final runtime (code changes frequently)
+# =============================================================================
+FROM heavy-assets as runtime
+
+# Copy remaining Docker filesystem
+COPY ./docker/run/fs/ /
+
+# Create a simplified supervisor config without problematic services
+RUN sed -i '/\[program:sshd\]/,/^$/d; /\[program:cron\]/,/^$/d' /etc/supervisor/conf.d/supervisord.conf
+
+# Copy all Maho code (this layer will rebuild when code changes)
+COPY . .
+
+# Re-sync in case any new dependencies were added
+RUN uv sync --frozen
 
 # Set permissions
 RUN chmod +x /exe/initialize.sh /exe/run_maho_ui.sh /exe/run_searxng.sh /exe/run_tunnel_api.sh

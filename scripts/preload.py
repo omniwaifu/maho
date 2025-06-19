@@ -39,7 +39,7 @@ async def preload():
         async def preload_embedding():
             if set["embed_model_provider"] == ModelProvider.HUGGINGFACE.name:
                 try:
-                    import models
+                    from src import models
 
                     emb_mod = models.get_huggingface_embedding(set["embed_model_name"])
                     emb_txt = await emb_mod.aembed_query("test")

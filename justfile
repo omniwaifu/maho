@@ -53,9 +53,13 @@ clean:
     find . -type f -name "*.pyc" -delete
     find . -type f -name "*.pyo" -delete
 
-# Build Docker image (simple, no Maho dependencies)
+# Build Docker image (optimized multi-stage build)
 docker-build:
-    docker build -t maho:latest -f docker/run/Dockerfile.simple .
+    ./docker/run/build-optimized.sh
+
+# Build Docker image with specific branch
+docker-build-branch BRANCH:
+    ./docker/run/build-optimized.sh {{BRANCH}}
 
 # Build Docker image (complex, with Maho base - if you really want it)
 docker-build-complex:
@@ -65,6 +69,7 @@ docker-build-complex:
 docker-run:
     mkdir -p ~/.config/maho/{memory,logs,tmp,knowledge,work_dir}
     docker run -p 50080:80 \
+        --env-file .env \
         -v ~/.config/maho/memory:/maho/memory \
         -v ~/.config/maho/logs:/maho/logs \
         -v ~/.config/maho/tmp:/maho/tmp \

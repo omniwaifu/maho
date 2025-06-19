@@ -1,7 +1,7 @@
 import aiohttp
 from src.helpers import runtime
 
-URL = "http://localhost:55510/search"
+URL = "http://localhost:55520/search"
 
 
 async def search(query: str):

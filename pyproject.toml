@@ -56,10 +56,11 @@ dependencies = [
     
     # Document processing
     "pypdf==4.3.1",
-    "unstructured==0.15.13",
-    "unstructured-client>=0.27.0,<1",
-    "langchain-unstructured==0.1.6",
+    "unstructured[all-docs]==0.16.23",
+    "unstructured-client==0.31.0",
+    "langchain-unstructured[all-docs]==0.1.6",
     "markdown==3.7",
+    "markdownify==1.1.0",
     "pymupdf==1.25.3",
     "pytesseract==0.3.13",
     "pdf2image==1.17.0",

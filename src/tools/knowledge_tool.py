@@ -13,46 +13,29 @@ SEARCH_ENGINE_RESULTS = 10
 
 class Knowledge(Tool):
     async def execute(self, question="", **kwargs):
-        # Create tasks for all three search methods
-        tasks = [
-            self.searxng_search(question),
-            # self.perplexity_search(question),
-            # self.duckduckgo_search(question),
-            self.mem_search(question),
-        ]
-
-        # Run all tasks concurrently - simple replacement
-        # Convert to anyio task group
-        results = []
-        async with anyio.create_task_group() as tg:
-
-            async def run_task(task, index):
-                try:
-                    result = await task
-                    while len(results) <= index:
-                        results.append(None)
-                    results[index] = result
-                except Exception as e:
-                    while len(results) <= index:
-                        results.append(None)
-                    results[index] = e
-
-            for i, task in enumerate(tasks):
-                tg.start_soon(run_task, task, i)
-
-        # perplexity_result, duckduckgo_result, memory_result = results
-        searxng_result, memory_result = results
-
-        # Handle exceptions and format results
-        # perplexity_result = self.format_result(perplexity_result, "Perplexity")
-        # duckduckgo_result = self.format_result(duckduckgo_result, "DuckDuckGo")
-        searxng_result = self.format_result_searxng(searxng_result, "Search Engine")
+        # Try searxng first, fallback to duckduckgo if it fails
+        searxng_result = await self.searxng_search(question)
+        
+        # Check if searxng failed or returned no results
+        if (isinstance(searxng_result, Exception) or 
+            not searxng_result or 
+            not isinstance(searxng_result, dict) or 
+            "results" not in searxng_result or 
+            not searxng_result["results"]):
+            
+            # Fallback to DuckDuckGo
+            duckduckgo_result = await self.duckduckgo_search(question)
+            online_result = self.format_result(duckduckgo_result, "DuckDuckGo")
+        else:
+            online_result = self.format_result_searxng(searxng_result, "SearXNG")
+        
+        # Get memory results
+        memory_result = await self.mem_search(question)
         memory_result = self.format_result(memory_result, "Memory")
 
         msg = self.agent.read_prompt(
             "tool.knowledge.response.md",
-            #   online_sources = ((perplexity_result + "\n\n") if perplexity_result else "") + str(duckduckgo_result),
-            online_sources=((searxng_result + "\n\n") if searxng_result else ""),
+            online_sources=online_result,
             memory=memory_result,
         )
 

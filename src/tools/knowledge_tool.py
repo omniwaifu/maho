@@ -102,8 +102,14 @@ class Knowledge(Tool):
             handle_error(result)
             return f"{source} search failed: {str(result)}"
 
+        if not result or not isinstance(result, dict) or "results" not in result:
+            return f"{source} search returned no results"
+
         outputs = []
         for item in result["results"]:
-            outputs.append(f"{item['title']}\n{item['url']}\n{item['content']}")
+            title = item.get("title", "No title")
+            url = item.get("url", "No URL")
+            content = item.get("content", "No content")
+            outputs.append(f"{title}\n{url}\n{content}")
 
         return "\n\n".join(outputs[:SEARCH_ENGINE_RESULTS]).strip()

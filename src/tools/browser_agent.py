@@ -4,6 +4,9 @@ import time
 from typing import Optional
 from src.core.agent import Agent, InterventionException
 from pathlib import Path
+from anyio.from_thread import start_blocking_portal
+import threading
+from concurrent.futures import Future
 
 
 import models
@@ -15,8 +18,20 @@ from src.extensions.message_loop_start._10_iteration_no import get_iter_no
 from pydantic import BaseModel
 import uuid
 from src.helpers.dirty_json import DirtyJson
-from src.helpers.task_manager import TaskManager
 from src.helpers.tool import Tool, Response
+
+# Module-level portal for browser agent background tasks
+_browser_portal_cm = None
+_browser_portal = None
+
+
+def _get_browser_portal():
+    """Get or create the browser portal"""
+    global _browser_portal_cm, _browser_portal
+    if _browser_portal is None:
+        _browser_portal_cm = start_blocking_portal(backend="asyncio")
+        _browser_portal = _browser_portal_cm.__enter__()
+    return _browser_portal
 
 
 class State:
@@ -28,7 +43,7 @@ class State:
     def __init__(self, agent: Agent):
         self.agent = agent
         self.browser_session: Optional[browser_use.BrowserSession] = None
-        self.task: TaskManager | None = None
+        self.task: Future | None = None
         self.use_agent: Optional[browser_use.Agent] = None
         self.iter_no = 0
 
@@ -70,19 +85,17 @@ class State:
             await self.browser_session.browser_context.add_init_script(path=js_override)
 
     def start_task(self, task: str):
-        if self.task and self.task.is_alive():
+        if self.task and not self.task.done():
             self.kill_task()
 
-        self.task = TaskManager(thread_name="BrowserAgent" + self.agent.context.id)
-        if self.agent.context.task:
-            self.agent.context.task.add_child_task(self.task, terminate_thread=True)
-        self.task.start_task(self._run_task, task)
+        portal = _get_browser_portal()
+        self.task = portal.start_task_soon(self._run_task, task)
         return self.task
 
     def kill_task(self):
-        if self.task:
-            self.task.kill(terminate_thread=True)
-            self.task = None
+        if self.task and not self.task.done():
+            self.task.cancel()
+        self.task = None
         if self.browser_session:
             try:
                 # Use sniffio to run the async close operation in a new event loop
@@ -212,7 +225,7 @@ class BrowserAgent(Tool):
         start_time = time.time()
 
         fail_counter = 0
-        while not task.is_ready():
+        while not task.done():
             # Check for timeout to prevent infinite waiting
             if time.time() - start_time > timeout_seconds:
                 PrintStyle().warning(
@@ -223,8 +236,9 @@ class BrowserAgent(Tool):
             await self.agent.handle_intervention()
             await anyio.sleep(1)
             try:
-                if task.is_ready():  # otherwise get_update hangs
+                if task.done():  # otherwise get_update hangs
                     break
+                update = {}  # initialize to prevent unbound variable
                 try:
                     with anyio.move_on_after(10) as cancel_scope:
                         update = await self.get_update()
@@ -243,6 +257,12 @@ class BrowserAgent(Tool):
                         continue
                     else:
                         fail_counter = 0  # reset on success
+                        
+                        log = update.get("log", get_use_agent_log(None))
+                        self.update_progress("\n".join(log))
+                        screenshot = update.get("screenshot", None)
+                        if screenshot:
+                            self.log.update(screenshot=screenshot)
                 except Exception as e:
                     # If get_update() raised an exception
                     fail_counter += 1
@@ -255,15 +275,10 @@ class BrowserAgent(Tool):
                         )
                         break
                     continue
-                log = update.get("log", get_use_agent_log(None))
-                self.update_progress("\n".join(log))
-                screenshot = update.get("screenshot", None)
-                if screenshot:
-                    self.log.update(screenshot=screenshot)
             except Exception as e:
                 PrintStyle().error(f"Error getting update: {str(e)}")
 
-        if not task.is_ready():
+        if not task.done():
             PrintStyle().warning("browser_agent.get_update timed out, killing the task")
             self.state.kill_task()
             return Response(
@@ -396,8 +411,8 @@ class BrowserAgent(Tool):
                     await page.screenshot(path=path, full_page=False, timeout=3000)
                     result["screenshot"] = f"img://{path}&t={str(time.time())}"
 
-                if self.state.task and not self.state.task.is_ready():
-                    await self.state.task.execute_inside(_get_update)
+                if self.state.task and not self.state.task.done():
+                    await _get_update()
 
             except Exception:
                 pass

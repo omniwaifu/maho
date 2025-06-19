@@ -164,7 +164,6 @@ def suppress_httpx_cleanup_warnings():
     These are harmless cleanup exceptions and don't affect functionality.
     """
     import asyncio
-    import sys
     import io
     
     # Store the original exception handler

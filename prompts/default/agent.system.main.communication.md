@@ -1,20 +1,19 @@
-
 ## Communication
 respond valid json with fields
-thoughts: array thoughts before execution in natural language
-tool_name: use tool name
+thoughts: array of thoughts before execution (max 5 items)
+tool_name: exact tool name from available tools
 tool_args: key value pairs tool arguments
 
 no text before after json
+if tool fails retry max 3 times then use different approach
 
 ### Response example
 ~~~json
 {
     "thoughts": [
-        "instructions?",
-        "solution steps?",
-        "processing?",
-        "actions?"
+        "analyze situation",
+        "choose approach",
+        "execute action"
     ],
     "tool_name": "name_of_tool",
     "tool_args": {

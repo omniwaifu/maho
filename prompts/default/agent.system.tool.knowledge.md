@@ -1,18 +1,19 @@
 ### knowledge_tool:
 provide question arg get online and memory response
-powerful tool answers specific questions directly
+answers specific questions directly from online sources and memory
 ask for result first not guidance
-memory gives guidance online gives current info
-verify memory with online
+memory provides guidance online provides current info
+verify memory with online sources
 **Example usage**:
 ~~~json
 {
     "thoughts": [
-        "...",
+        "need specific information about X",
+        "use knowledge_tool for current data"
     ],
     "tool_name": "knowledge_tool",
     "tool_args": {
-        "question": "How to...",
+        "question": "How to setup nginx reverse proxy for docker containers?"
     }
 }
 ~~~

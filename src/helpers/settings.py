@@ -7,9 +7,10 @@ import subprocess
 from typing import Any, Literal, TypedDict
 
 import models
-from src.helpers import runtime, whisper, defer
+from src.helpers import runtime, whisper
 from . import files, dotenv
 from src.helpers.print_style import PrintStyle
+from anyio.from_thread import start_blocking_portal
 
 
 class Settings(TypedDict):
@@ -113,6 +114,19 @@ PASSWORD_PLACEHOLDER = "****PSWD****"
 SETTINGS_FILE = files.get_abs_path("tmp/settings.json")
 _settings: Settings | None = None
 
+# Module-level portal for settings background tasks
+_settings_portal_cm = None
+_settings_portal = None
+
+
+def _get_settings_portal():
+    """Get or create the settings portal"""
+    global _settings_portal_cm, _settings_portal
+    if _settings_portal is None:
+        _settings_portal_cm = start_blocking_portal(backend="asyncio")
+        _settings_portal = _settings_portal_cm.__enter__()
+    return _settings_portal
+
 
 def convert_out(settings: Settings) -> SettingsOutput:
     from models import ModelProvider
@@ -131,7 +145,6 @@ def convert_out(settings: Settings) -> SettingsOutput:
     )
     chat_model_fields.append(
         {
-            "id": "chat_model_name",
             "title": "Chat model name",
             "description": "Exact name of model from selected provider",
             "type": "text",
@@ -215,7 +228,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
     chat_model_section: SettingsSection = {
         "id": "chat_model",
         "title": "Chat Model",
-                    "description": "Selection and settings for main chat model used by Maho",
+        "description": "Selection and settings for main chat model used by Maho",
         "fields": chat_model_fields,
         "tab": "agent",
     }
@@ -345,7 +358,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
     embed_model_section: SettingsSection = {
         "id": "embed_model",
         "title": "Embedding Model",
-                    "description": "Settings for the embedding model used by Maho.",
+        "description": "Settings for the embedding model used by Maho.",
         "fields": embed_model_fields,
         "tab": "agent",
     }
@@ -395,7 +408,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
     browser_model_section: SettingsSection = {
         "id": "browser_model",
         "title": "Web Browser Model",
-                    "description": "Settings for the web browser model. Maho uses <a href='https://github.com/browser-use/browser-use' target='_blank'>browser-use</a> agentic framework to handle web interactions.",
+        "description": "Settings for the web browser model. Maho uses <a href='https://github.com/browser-use/browser-use' target='_blank'>browser-use</a> agentic framework to handle web interactions.",
         "fields": browser_model_fields,
         "tab": "agent",
     }
@@ -460,7 +473,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
     auth_section: SettingsSection = {
         "id": "auth",
         "title": "Authentication",
-                    "description": "Settings for authentication to use Maho Web UI.",
+        "description": "Settings for authentication to use Maho Web UI.",
         "fields": auth_fields,
         "tab": "external",
     }
@@ -492,7 +505,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
     api_keys_section: SettingsSection = {
         "id": "api_keys",
         "title": "API Keys",
-                    "description": "API keys for model providers and services used by Maho.",
+        "description": "API keys for model providers and services used by Maho.",
         "fields": api_keys_fields,
         "tab": "external",
     }
@@ -735,7 +748,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
     mcp_client_section: SettingsSection = {
         "id": "mcp_client",
         "title": "External MCP Servers",
-                    "description": "Maho can use external MCP servers, local or remote as tools.",
+        "description": "Maho can use external MCP servers, local or remote as tools.",
         "fields": mcp_client_fields,
         "tab": "mcp",
     }
@@ -766,7 +779,7 @@ def convert_out(settings: Settings) -> SettingsOutput:
     mcp_server_section: SettingsSection = {
         "id": "mcp_server",
         "title": "Maho MCP Server",
-                    "description": "Maho can be exposed as an SSE MCP server. See <a href=\"javascript:openModal('settings/mcp/server/example.html')\">connection example</a>.",
+        "description": "Maho can be exposed as an SSE MCP server. See <a href=\"javascript:openModal('settings/mcp/server/example.html')\">connection example</a>.",
         "fields": mcp_server_fields,
         "tab": "mcp",
     }
@@ -806,6 +819,9 @@ def convert_in(settings: dict) -> Settings:
     for section in settings["sections"]:
         if "fields" in section:
             for field in section["fields"]:
+                # Skip fields without an id (like button fields)
+                if "id" not in field:
+                    continue
                 if field["value"] != PASSWORD_PLACEHOLDER:
                     if field["id"].endswith("_kwargs"):
                         current[field["id"]] = _env_to_dict(field["value"])
@@ -979,9 +995,9 @@ def _apply_settings(previous: Settings | None):
 
         # reload whisper model if necessary
         if not previous or _settings["stt_model_size"] != previous["stt_model_size"]:
-            task = defer.DeferredTask().start_task(
-                whisper.preload, _settings["stt_model_size"]
-            )  # TODO overkill, replace with background task
+            # Use AnyIO portal for background whisper preload
+            portal = _get_settings_portal()
+            portal.start_task_soon(whisper.preload, _settings["stt_model_size"])
 
         # force memory reload on embedding model change
         if not previous or (
@@ -1037,9 +1053,9 @@ def _apply_settings(previous: Settings | None):
                     type="info", content="Finished updating MCP settings.", temp=True
                 )
 
-            task2 = defer.DeferredTask().start_task(
-                update_mcp_settings, config.mcp_servers
-            )  # TODO overkill, replace with background task
+            # Use AnyIO portal for background MCP settings update
+            portal = _get_settings_portal()
+            portal.start_task_soon(update_mcp_settings, config.mcp_servers)
 
         # update token in mcp server
         current_token = (
@@ -1052,9 +1068,9 @@ def _apply_settings(previous: Settings | None):
 
                 DynamicMcpProxy.get_instance().reconfigure(token=token)
 
-            task3 = defer.DeferredTask().start_task(
-                update_mcp_token, current_token
-            )  # TODO overkill, replace with background task
+            # Use AnyIO portal for background MCP token update
+            portal = _get_settings_portal()
+            portal.start_task_soon(update_mcp_token, current_token)
 
 
 def _env_to_dict(data: str):

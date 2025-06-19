@@ -6,8 +6,11 @@ This replaces the old run_tunnel.py file.
 
 import os
 import sys
+from flask import Flask, request, Response
+from werkzeug.serving import make_server
 import threading
-from flask import Flask, request
+import anyio
+import anyio.to_thread
 
 # Add the project root to Python path so we can import from src
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -16,59 +19,39 @@ from src.helpers import runtime, dotenv, process
 from src.helpers.print_style import PrintStyle
 from src.api.tunnel import Tunnel
 
-# initialize the internal Flask server
-app = Flask("app")
-app.config["JSON_SORT_KEYS"] = False  # Disable key sorting in jsonify
 
-
-def run():
-    # Suppress only request logs but keep the startup messages
-    from werkzeug.serving import WSGIRequestHandler
-    from werkzeug.serving import make_server
-
+async def main():
+    """Initializes and runs the tunnel server."""
     PrintStyle().print("Starting tunnel server...")
 
-    class NoRequestLoggingWSGIRequestHandler(WSGIRequestHandler):
-        def log_request(self, code="-", size="-"):
-            pass  # Override to suppress request logging
-
-    # Get configuration from environment
-    tunnel_api_port = runtime.get_tunnel_api_port()
-    host = (
-        runtime.get_arg("host") or dotenv.get_dotenv_value("WEB_UI_HOST") or "localhost"
-    )
-    server = None
+    app = Flask(__name__)
     lock = threading.Lock()
     tunnel = Tunnel(app, lock)
 
     # handle api request
     @app.route("/", methods=["POST"])
     async def handle_request():
-        return await tunnel.handle_request(request=request)  # type: ignore
+        return tunnel.handle_request(request=request)
 
     try:
+        host = "127.0.0.1"
+        port = runtime.get_tunnel_api_port()
         server = make_server(
             host=host,
-            port=tunnel_api_port,
+            port=port,
             app=app,
-            request_handler=NoRequestLoggingWSGIRequestHandler,
-            threaded=True,
+            threaded=False,
         )
-
-        process.set_server(server)
-        # server.log_startup()
-        server.serve_forever()
-    finally:
-        # Clean up tunnel if it was started
-        if tunnel:
-            tunnel.stop()
-
-
-def main():
-    runtime.initialize()
-    dotenv.load_dotenv()
-    run()
+        print(f"Tunnel API server running at http://{host}:{port}")
+        await anyio.to_thread.run_sync(server.serve_forever)
+    except KeyboardInterrupt:
+        print("Server stopped.")
+    except Exception as e:
+        PrintStyle().error(f"Failed to start tunnel server: {e}")
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        anyio.run(main)
+    except KeyboardInterrupt:
+        pass

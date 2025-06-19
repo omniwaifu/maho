@@ -25,6 +25,7 @@ class Knowledge(Tool):
         # Convert to anyio task group
         results = []
         async with anyio.create_task_group() as tg:
+
             async def run_task(task, index):
                 try:
                     result = await task
@@ -35,7 +36,7 @@ class Knowledge(Tool):
                     while len(results) <= index:
                         results.append(None)
                     results[index] = e
-            
+
             for i, task in enumerate(tasks):
                 tg.start_soon(run_task, task, i)
 

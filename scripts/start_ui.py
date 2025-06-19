@@ -14,6 +14,8 @@ import threading
 import signal
 from flask import Flask, request, Response
 from flask_basicauth import BasicAuth
+import anyio
+import anyio.to_thread
 
 # Add the project root to Python path so we can import from src
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -166,7 +168,7 @@ def init_a0():
     initialize_job_loop()
 
 
-def run():
+async def run():
     # Initialize runtime to parse command line arguments
     runtime.initialize()
     
@@ -199,25 +201,25 @@ def run():
 
             @requires_loopback
             async def handle_request():
-                return await instance.handle_request(request=request)
+                return instance.handle_request(request=request)
 
         elif handler.requires_auth():
 
             @requires_auth
             async def handle_request():
-                return await instance.handle_request(request=request)
+                return instance.handle_request(request=request)
 
         elif handler.requires_api_key():
 
             @requires_api_key
             async def handle_request():
-                return await instance.handle_request(request=request)
+                return instance.handle_request(request=request)
 
         else:
             # Fallback to requires_auth
             @requires_auth
             async def handle_request():
-                return await instance.handle_request(request=request)
+                return instance.handle_request(request=request)
 
         app.add_url_rule(
             f"/{name}",
@@ -260,8 +262,8 @@ def run():
         # initialize A0 in background
         threading.Thread(target=init_a0, daemon=True).start()
 
-        # Serve forever
-        server.serve_forever()
+        # Serve forever with anyio
+        await anyio.to_thread.run_sync(server.serve_forever)
 
     except Exception as e:
         PrintStyle().error(f"Failed to start server: {e}")
@@ -269,5 +271,5 @@ def run():
 
 
 if __name__ == "__main__":
-    run()
+    anyio.run(run)
  

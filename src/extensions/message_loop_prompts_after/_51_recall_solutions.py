@@ -21,7 +21,7 @@ class RecallSolutions(Extension):
             # Use anyio task group for structured concurrency
             async with anyio.create_task_group() as tg:
                 tg.start_soon(self.search_solutions, loop_data, **kwargs)
-        
+
         # No need to store task reference with anyio task groups
         self.agent.set_data(DATA_NAME_TASK, None)
 

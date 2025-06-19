@@ -5,8 +5,34 @@ This replaces the old initialize.py file.
 
 from src.core.models import AgentConfig, ModelConfig
 from src.providers.base import ModelProvider
-from src.helpers import runtime, settings, defer
+from src.helpers import runtime, settings
 from src.helpers.print_style import PrintStyle
+from anyio.from_thread import start_blocking_portal
+from concurrent.futures import Future
+
+# Module-level portals for background tasks
+_init_portal_cm = None
+_init_portal = None
+_job_loop_portal_cm = None
+_job_loop_portal = None
+
+
+def _get_init_portal():
+    """Get or create the initialization portal"""
+    global _init_portal_cm, _init_portal
+    if _init_portal is None:
+        _init_portal_cm = start_blocking_portal(backend="asyncio")
+        _init_portal = _init_portal_cm.__enter__()
+    return _init_portal
+
+
+def _get_job_loop_portal():
+    """Get or create the job loop portal"""
+    global _job_loop_portal_cm, _job_loop_portal
+    if _job_loop_portal is None:
+        _job_loop_portal_cm = start_blocking_portal(backend="asyncio")
+        _job_loop_portal = _job_loop_portal_cm.__enter__()
+    return _job_loop_portal
 
 
 def initialize_agent():
@@ -81,7 +107,9 @@ def initialize_chats():
     async def initialize_chats_async():
         persist_chat.load_tmp_chats()
 
-    return defer.DeferredTask().start_task(initialize_chats_async)
+    # Use persistent portal and return a Future for compatibility
+    portal = _get_init_portal()
+    return portal.start_task_soon(initialize_chats_async)
 
 
 def initialize_mcp():
@@ -93,14 +121,18 @@ def initialize_mcp():
 
         return _initialize_mcp(set["mcp_servers"])
 
-    return defer.DeferredTask().start_task(initialize_mcp_async)
+    # Use persistent portal and return a Future for compatibility
+    portal = _get_init_portal()
+    return portal.start_task_soon(initialize_mcp_async)
 
 
 def initialize_job_loop():
     """Initialize the background job loop"""
     from src.helpers.job_loop import run_loop
 
-    return defer.DeferredTask("JobLoop").start_task(run_loop)
+    # JobLoop gets its own dedicated portal since it runs indefinitely
+    portal = _get_job_loop_portal()
+    return portal.start_task_soon(run_loop)
 
 
 def _args_override(config):

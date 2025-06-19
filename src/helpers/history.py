@@ -429,15 +429,16 @@ class History(Record):
             self.merge_bulks(self.bulks[i : i + count])
             for i in range(0, len(self.bulks), count)
         ]
-        
+
         bulks = []
         async with anyio.create_task_group() as tg:
+
             async def run_merge(task, index):
                 result = await task
                 while len(bulks) <= index:
                     bulks.append(None)
                 bulks[index] = result
-            
+
             for i, task in enumerate(tasks):
                 tg.start_soon(run_merge, task, i)
         self.bulks = bulks

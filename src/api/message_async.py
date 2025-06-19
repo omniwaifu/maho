@@ -5,13 +5,12 @@ from flask import Request, Response
 from src.helpers import files
 import os
 from werkzeug.utils import secure_filename
-from src.helpers.defer import DeferredTask
 from src.api.message import Message
 
 
 class MessageAsync(Message):
-    async def respond(self, task: DeferredTask, context: AgentContext):
+    async def respond(self, context: AgentContext):
         return {
-            "message": "Message received.",
+            "message": "Message received",
             "context": context.id,
         }

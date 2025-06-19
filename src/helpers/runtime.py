@@ -8,8 +8,6 @@ import queue
 import os
 import sys
 import importlib.util
-import anyio
-
 T = TypeVar("T")
 R = TypeVar("R")
 

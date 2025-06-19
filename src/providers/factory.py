@@ -16,8 +16,16 @@ from langchain_anthropic import ChatAnthropic
 from langchain_groq import ChatGroq
 from langchain_ollama import ChatOllama
 from langchain_community.embeddings import OllamaEmbeddings
-from langchain_google_genai import ChatGoogleGenerativeAI, HarmBlockThreshold, HarmCategory
-from langchain_huggingface import ChatHuggingFace, HuggingFaceEndpoint, HuggingFaceEmbeddings
+from langchain_google_genai import (
+    ChatGoogleGenerativeAI,
+    HarmBlockThreshold,
+    HarmCategory,
+)
+from langchain_huggingface import (
+    ChatHuggingFace,
+    HuggingFaceEndpoint,
+    HuggingFaceEmbeddings,
+)
 from langchain_mistralai import ChatMistralAI
 
 # environment variables
@@ -37,18 +45,27 @@ def get_api_key(service):
         or "None"
     )
 
+
 def get_openai_chat(model_name: str, **kwargs):
     api_key = get_api_key("openai")
     return ChatOpenAI(model=model_name, api_key=SecretStr(api_key), **kwargs)
+
 
 def get_openai_embedding(model_name: str, **kwargs):
     api_key = get_api_key("openai")
     return OpenAIEmbeddings(model=model_name, api_key=SecretStr(api_key), **kwargs)
 
+
 def get_iointel_chat(model_name: str, **kwargs):
     api_key = get_api_key("iointel")
-    base_url = dotenv.get_dotenv_value("IOINTEL_BASE_URL") or "https://api.intelligence.io.solutions/api/v1"
-    return ChatOpenAI(model=model_name, api_key=SecretStr(api_key), base_url=base_url, **kwargs)
+    base_url = (
+        dotenv.get_dotenv_value("IOINTEL_BASE_URL")
+        or "https://api.intelligence.io.solutions/api/v1"
+    )
+    return ChatOpenAI(
+        model=model_name, api_key=SecretStr(api_key), base_url=base_url, **kwargs
+    )
+
 
 def get_anthropic_chat(model_name: str, **kwargs):
     api_key = get_api_key("anthropic")
@@ -88,9 +105,7 @@ def get_google_chat(model_name: str, **kwargs):
 def get_huggingface_chat(model_name: str, **kwargs):
     token = get_api_key("huggingface") or dotenv.get_dotenv_value("HF_TOKEN")
     endpoint = HuggingFaceEndpoint(
-        repo_id=model_name,
-        huggingfacehub_api_token=token,
-        **kwargs
+        repo_id=model_name, huggingfacehub_api_token=token, **kwargs
     )
     return ChatHuggingFace(llm=endpoint)
 
@@ -101,7 +116,7 @@ def get_huggingface_embedding(model_name: str, **kwargs):
 
 def get_mistralai_chat(model_name: str, **kwargs):
     api_key = get_api_key("mistral")
-    return ChatMistralAI(model=model_name, api_key=SecretStr(api_key), **kwargs) 
+    return ChatMistralAI(model=model_name, api_key=SecretStr(api_key), **kwargs)
 
 
 def get_model(type: ModelType, provider: ModelProvider, name: str, **kwargs):
@@ -123,4 +138,3 @@ def get_rate_limiter(
     limiter.limits["input"] = input or 0
     limiter.limits["output"] = output or 0
     return limiter
- 

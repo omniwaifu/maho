@@ -7,8 +7,7 @@ from pathlib import Path
 
 
 import models
-from src.helpers.tool import Tool, Response
-from src.helpers import files, defer, persist_chat, strings
+from src.helpers import files, persist_chat, strings
 from src.helpers.browser_use import browser_use
 from src.helpers.print_style import PrintStyle
 from src.helpers.playwright import ensure_playwright_binary
@@ -16,6 +15,8 @@ from src.extensions.message_loop_start._10_iteration_no import get_iter_no
 from pydantic import BaseModel
 import uuid
 from src.helpers.dirty_json import DirtyJson
+from src.helpers.task_manager import TaskManager
+from src.helpers.tool import Tool, Response
 
 
 class State:
@@ -27,7 +28,7 @@ class State:
     def __init__(self, agent: Agent):
         self.agent = agent
         self.browser_session: Optional[browser_use.BrowserSession] = None
-        self.task: Optional[defer.DeferredTask] = None
+        self.task: TaskManager | None = None
         self.use_agent: Optional[browser_use.Agent] = None
         self.iter_no = 0
 
@@ -72,9 +73,7 @@ class State:
         if self.task and self.task.is_alive():
             self.kill_task()
 
-        self.task = defer.DeferredTask(
-            thread_name="BrowserAgent" + self.agent.context.id
-        )
+        self.task = TaskManager(thread_name="BrowserAgent" + self.agent.context.id)
         if self.agent.context.task:
             self.agent.context.task.add_child_task(self.task, terminate_thread=True)
         self.task.start_task(self._run_task, task)
@@ -88,6 +87,7 @@ class State:
             try:
                 # Use sniffio to run the async close operation in a new event loop
                 import sniffio
+
                 try:
                     # If we're already in an async context, we can't use run_sync
                     sniffio.current_async_library()
@@ -228,7 +228,7 @@ class BrowserAgent(Tool):
                 try:
                     with anyio.move_on_after(10) as cancel_scope:
                         update = await self.get_update()
-                    
+
                     if cancel_scope.cancelled_caught:
                         # Timeout occurred
                         fail_counter += 1

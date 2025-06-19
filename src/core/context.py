@@ -1,13 +1,14 @@
 import uuid
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any, Awaitable, Coroutine, Callable
+import anyio
+from anyio.abc import TaskGroup
 
 if TYPE_CHECKING:
     from src.core.agent import Agent
 
 from src.core.models import AgentConfig, AgentContextType, UserMessage
 from src.helpers import log as Log
-from src.helpers.defer import DeferredTask
 from src.helpers.localization import Localization
 
 
@@ -41,7 +42,8 @@ class AgentContext:
         self.agent0 = agent0 or Agent(0, self.config, self)
         self.paused = paused
         self.streaming_agent = streaming_agent
-        self.task: DeferredTask | None = None
+        self._task_group: TaskGroup | None = None
+        self._cancel_scope: anyio.CancelScope | None = None
         self.created_at = created_at or datetime.now(timezone.utc)
         self.type = type
         AgentContext._counter += 1
@@ -71,8 +73,8 @@ class AgentContext:
     @staticmethod
     def remove(id: str):
         context = AgentContext._contexts.pop(id, None)
-        if context and context.task:
-            context.task.kill()
+        if context:
+            context.kill_process()
         return context
 
     def serialize(self):
@@ -118,8 +120,8 @@ class AgentContext:
         return items
 
     def kill_process(self):
-        if self.task:
-            self.task.kill()
+        if self._cancel_scope and not self._cancel_scope.cancelled_caught:
+            self._cancel_scope.cancel()
 
     def reset(self):
         self.kill_process()
@@ -131,21 +133,20 @@ class AgentContext:
         self.streaming_agent = None
         self.paused = False
 
-    def nudge(self):
+    async def nudge(self):
         self.kill_process()
         self.paused = False
-        self.task = self.run_task(self.get_agent().monologue)
-        return self.task
+        await self.run_task(self.get_agent().monologue)
 
     def get_agent(self):
         return self.streaming_agent or self.agent0
 
-    def communicate(self, msg: UserMessage, broadcast_level: int = 1):
+    async def communicate(self, msg: UserMessage, broadcast_level: int = 1):
         self.paused = False  # unpause if paused
 
         current_agent = self.get_agent()
 
-        if self.task and self.task.is_alive():
+        if self._task_group:
             # set intervention messages to agent(s):
             intervention_agent = current_agent
             while intervention_agent and broadcast_level != 0:
@@ -158,19 +159,33 @@ class AgentContext:
                     Agent.DATA_NAME_SUPERIOR, None
                 )
         else:
-            self.task = self.run_task(self._process_chain, current_agent, msg)
+            await self.run_task(self._process_chain, current_agent, msg)
 
-        return self.task
-
-    def run_task(
+    async def run_task(
         self, func: Callable[..., Coroutine[Any, Any, Any]], *args: Any, **kwargs: Any
     ):
-        if not self.task:
-            self.task = DeferredTask(
-                thread_name=self.__class__.__name__,
-            )
-        self.task.start_task(func, *args, **kwargs)
-        return self.task
+        async def task_wrapper():
+            try:
+                async with anyio.create_task_group() as tg:
+                    self._task_group = tg
+                    await func(*args, **kwargs)
+            finally:
+                self._task_group = None
+
+        if not self._cancel_scope or self._cancel_scope.cancelled_caught:
+             # Create a new cancel scope for the entire context's lifecycle
+            with anyio.CancelScope() as scope:
+                self._cancel_scope = scope
+                async with anyio.create_task_group() as tg:
+                    tg.start_soon(task_wrapper)
+        else:
+            # We are already inside a running task group, just start the new task
+            if self._task_group:
+                self._task_group.start_soon(task_wrapper)
+            else:
+                 # This case should ideally not be reached if logic is correct
+                async with anyio.create_task_group() as tg:
+                    tg.start_soon(task_wrapper)
 
     # this wrapper ensures that superior agents are called back if the chat was loaded from file and original callstack is gone
     async def _process_chain(self, agent: "Agent", msg: "UserMessage|str", user=True):  # type: ignore

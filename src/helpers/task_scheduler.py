@@ -29,13 +29,27 @@ from src.core.models import UserMessage
 from src.config.initialization import initialize_agent
 from src.helpers.persist_chat import save_tmp_chat
 from src.helpers.print_style import PrintStyle
-from src.helpers.defer import DeferredTask
 from src.helpers.files import get_abs_path, make_dirs, read_file, write_file
 from src.helpers.localization import Localization
 import pytz
 from typing import Annotated
+from anyio.from_thread import start_blocking_portal
 
 SCHEDULER_FOLDER = "tmp/scheduler"
+
+# Module-level portal for task scheduler background tasks
+_scheduler_portal_cm = None
+_scheduler_portal = None
+
+
+def _get_scheduler_portal():
+    """Get or create the scheduler portal"""
+    global _scheduler_portal_cm, _scheduler_portal
+    if _scheduler_portal is None:
+        _scheduler_portal_cm = start_blocking_portal(backend="asyncio")
+        _scheduler_portal = _scheduler_portal_cm.__enter__()
+    return _scheduler_portal
+
 
 # ----------------------
 # Task Models
@@ -501,11 +515,15 @@ class SchedulerTaskList(BaseModel):
         if cls.__instance is None:
             if not exists(path):
                 make_dirs(path)
-                cls.__instance = anyio.run(cls(tasks=[]).save)
+                # Use the portal instead of anyio.run
+                portal = _get_scheduler_portal()
+                cls.__instance = portal.call(cls(tasks=[]).save)
             else:
                 cls.__instance = cls.model_validate_json(read_file(path))
         else:
-            anyio.run(cls.__instance.reload)
+            # Use the portal instead of anyio.run
+            portal = _get_scheduler_portal()
+            portal.call(cls.__instance.reload)
         return cls.__instance
 
     def __init__(self, *args, **kwargs):
@@ -1001,21 +1019,9 @@ class TaskScheduler:
                 # Make one final save to ensure all states are persisted
                 await self._tasks.save()
 
-        deferred_task = DeferredTask(thread_name=self.__class__.__name__)
-        deferred_task.start_task(_run_task_wrapper, task.uuid, task_context)
-
-        # Ensure background execution doesn't exit immediately on async await, especially in script contexts
-        # This helps prevent premature exits when running from non-event-loop contexts
-        # With anyio, we use a task group to manage background tasks
-        async def background_sleep():
-            await anyio.sleep(0.1)
-        
-        # Start the background task
-        try:
-            anyio.run(background_sleep)
-        except RuntimeError:
-            # If we're already in an async context, just pass
-            pass
+        # Use AnyIO portal for background task execution
+        portal = _get_scheduler_portal()
+        portal.start_task_soon(_run_task_wrapper, task.uuid, task_context)
 
     def serialize_all_tasks(self) -> list[Dict[str, Any]]:
         """

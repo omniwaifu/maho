@@ -38,9 +38,7 @@ class ToolResponse(BaseModel):
     status: Literal["success"] = Field(
         description="The status of the response", default="success"
     )
-    response: str = Field(
-        description="The response from the remote Maho Instance"
-    )
+    response: str = Field(description="The response from the remote Maho Instance")
     chat_id: str = Field(description="The id of the chat this message belongs to.")
 
 
@@ -48,9 +46,7 @@ class ToolError(BaseModel):
     status: Literal["error"] = Field(
         description="The status of the response", default="error"
     )
-    error: str = Field(
-        description="The error message from the remote Maho Instance"
-    )
+    error: str = Field(description="The error message from the remote Maho Instance")
     chat_id: str = Field(description="The id of the chat this message belongs to.")
 
 
@@ -125,9 +121,7 @@ async def send_message(
     ) = None,
 ) -> Annotated[
     Union[ToolResponse, ToolError],
-    Field(
-        description="The response from the remote Maho Instance", title="response"
-    ),
+    Field(description="The response from the remote Maho Instance", title="response"),
 ]:
     context: AgentContext | None = None
     if chat_id:
@@ -203,9 +197,7 @@ async def finish_chat(
     ],
 ) -> Annotated[
     Union[ToolResponse, ToolError],
-    Field(
-        description="The response from the remote Maho Instance", title="response"
-    ),
+    Field(description="The response from the remote Maho Instance", title="response"),
 ]:
     if not chat_id:
         return ToolError(error="Chat ID is required", chat_id="")

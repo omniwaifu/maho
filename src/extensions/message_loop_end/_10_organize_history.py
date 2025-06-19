@@ -15,6 +15,6 @@ class OrganizeHistory(Extension):
         # Use anyio task group for structured concurrency
         async with anyio.create_task_group() as tg:
             tg.start_soon(self.agent.history.compress)
-        
+
         # Mark that compression has been handled
         self.agent.set_data(DATA_NAME_TASK, None)

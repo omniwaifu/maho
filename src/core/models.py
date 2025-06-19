@@ -48,7 +48,7 @@ class AgentConfig:
             files.get_abs_path("work_dir"): {"bind": "/root", "mode": "rw"},
         }
     )
-    code_exec_ssh_enabled: bool = True
+    code_exec_ssh_enabled: bool = False
     code_exec_ssh_addr: str = "localhost"
     code_exec_ssh_port: int = 55022
     code_exec_ssh_user: str = "root"

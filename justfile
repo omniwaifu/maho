@@ -68,7 +68,7 @@ docker-build-complex:
 # Run Docker container (production mode - mounts data to ~/.config/maho)
 docker-run:
     mkdir -p ~/.config/maho/{memory,logs,tmp,knowledge,work_dir}
-    docker run -p 50080:80 \
+    docker run -p 50080:80 -p 55022:22 \
         --env-file .env \
         -v ~/.config/maho/memory:/maho/memory \
         -v ~/.config/maho/logs:/maho/logs \
@@ -80,7 +80,7 @@ docker-run:
 # Run Docker container for testing (ephemeral - auto-removes on exit)
 docker-test:
     mkdir -p ~/.config/maho/{memory,logs,tmp,knowledge,work_dir}
-    docker run --rm -it --init -p 50080:80 \
+    docker run --rm -it --init -p 50080:80 -p 55022:22 \
         --env-file .env \
         -v ~/.config/maho/memory:/maho/memory \
         -v ~/.config/maho/logs:/maho/logs \
@@ -91,7 +91,11 @@ docker-test:
 
 # Run Docker container in development mode (mounts entire codebase)
 docker-dev:
-    docker run -p 50080:80 -v $(pwd):/maho maho:latest
+    docker run --name maho-dev --rm -p 50080:80 -p 55022:22 -v $(pwd):/maho maho:latest
+
+# Run Docker container in development mode (detached)
+docker-dev-bg: 
+    docker run -d --name maho-dev -p 50080:80 -p 55022:22 -v $(pwd):/maho maho:latest
 
 # Docker compose up
 docker-up:
@@ -100,6 +104,11 @@ docker-up:
 # Docker compose down
 docker-down:
     cd docker/run && docker-compose down
+
+# Stop running maho container
+docker-stop:
+    docker stop maho-dev || true
+    docker rm maho-dev || true
 
 # Update dependencies to latest versions
 update:

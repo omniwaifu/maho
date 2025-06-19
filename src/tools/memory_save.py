@@ -14,5 +14,7 @@ class MemorySave(Tool):
         db = await Memory.get(self.agent)
         id = await db.insert_text(text, metadata)
 
-        result = self.agent.read_prompt("fw.memory_saved.md", memory_id=id)
+        from src.helpers.prompt_engine import get_prompt_engine
+        engine = get_prompt_engine()
+        result = engine.render("components/frameworks/memory_saved.j2", memory_id=id)
         return Response(message=result, break_loop=False)

@@ -30,7 +30,8 @@ class MemorizeSolutions(Extension):
 
     async def memorize(self, loop_data: LoopData, log_item: LogItem, **kwargs):
         # get system message and chat history for util llm
-        system = self.agent.read_prompt("memory.solutions_sum.sys.md")
+        from src.helpers.prompt_engine import get_prompt_engine
+        system = get_prompt_engine().render("components/memory/solutions_summary_system.j2")
         msgs_text = self.agent.concat_messages(self.agent.history)
 
         # log query streamed by LLM

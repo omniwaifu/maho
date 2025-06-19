@@ -19,6 +19,7 @@ from pydantic import BaseModel
 import uuid
 from src.helpers.dirty_json import DirtyJson
 from src.helpers.tool import Tool, Response
+from src.helpers.prompt_engine import get_prompt_engine
 
 # Module-level portal for browser agent background tasks
 _browser_portal_cm = None
@@ -148,9 +149,7 @@ class State:
             browser_session=self.browser_session,
             llm=model,
             use_vision=self.agent.config.browser_model.vision,
-            extend_system_message=self.agent.read_prompt(
-                "prompts/browser_agent.system.md"
-            ),
+            extend_system_message=get_prompt_engine().render("components/tools/browser_agent_system.j2"),
             controller=controller,
             enable_memory=False,  # Disable memory to avoid state conflicts
             # available_file_paths=[],

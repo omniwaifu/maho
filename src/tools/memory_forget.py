@@ -11,7 +11,8 @@ class MemoryForget(Tool):
             query=query, threshold=threshold, filter=filter
         )
 
-        result = self.agent.read_prompt(
-            "fw.memories_deleted.md", memory_count=len(dels)
+        from src.helpers.prompt_engine import get_prompt_engine
+        result = get_prompt_engine().render(
+            "components/frameworks/memories_deleted.j2", memory_count=len(dels)
         )
         return Response(message=result, break_loop=False)

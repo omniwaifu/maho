@@ -1,6 +1,7 @@
 from src.helpers import persist_chat, tokens
 from src.helpers.extension import Extension
 from src.core.agent import LoopData
+from src.helpers.prompt_engine import get_prompt_engine
 import anyio
 
 
@@ -19,10 +20,11 @@ class RenameChat(Extension):
             ctx_length = int(self.agent.config.utility_model.ctx_length * 0.3)
             history_text = tokens.trim_to_tokens(history_text, ctx_length, "start")
             # prepare system and user prompt
-            system = self.agent.read_prompt("fw.rename_chat.sys.md")
+            engine = get_prompt_engine()
+            system = engine.render("components/frameworks/rename_chat_system.j2")
             current_name = self.agent.context.name
-            message = self.agent.read_prompt(
-                "fw.rename_chat.msg.md", current_name=current_name, history=history_text
+            message = engine.render(
+                "components/frameworks/rename_chat_message.j2", current_name=current_name, history=history_text
             )
             # call utility model
             new_name = await self.agent.call_utility_model(

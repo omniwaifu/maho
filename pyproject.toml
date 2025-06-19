@@ -26,34 +26,27 @@ dependencies = [
     "a2wsgi==1.10.8",
     "flask[async]==3.0.3",
     "flask-basicauth==0.2.0",
-    
     # AI/ML frameworks (CPU-only, no CUDA)
     "langchain-anthropic==0.3.3",
     "langchain-community==0.3.19",
     "langchain-google-genai==2.1.2",
     "langchain-groq==0.2.2",
-
     "langchain-huggingface==0.1.2",
     "langchain-mistralai==0.2.4",
     "langchain-ollama==0.3.0",
     "langchain-openai==0.3.11",
-
     "tiktoken==0.8.0",
     "sentence-transformers==3.0.1",
-    
     # Speech-to-text
     "openai-whisper==20240930",
-    
     # Vector database and search
     "faiss-cpu==1.11.0",
     "duckduckgo-search==6.1.12",
-    
     # Browser automation and web scraping
     "browser-use==0.2.5",
     "playwright==1.52.0",
     "newspaper3k==0.2.8",
     "lxml_html_clean==0.3.1",
-    
     # Document processing
     "pypdf==4.3.1",
     "unstructured[all-docs]==0.16.23",
@@ -64,29 +57,28 @@ dependencies = [
     "pymupdf==1.25.3",
     "pytesseract==0.3.13",
     "pdf2image==1.17.0",
-    
     # Infrastructure and DevOps
     "docker==7.1.0",
     "paramiko==3.5.0",
     "GitPython==3.1.43",
-    
     # MCP (Model Context Protocol)
     "mcp==1.9.0",
     "fastmcp==2.3.4",
     "flaredantic==0.1.4",
-    
     # Async framework
     "anyio[trio]>=4.0.0",
     "trio>=0.23.0",
-    
     # Utilities
     "python-dotenv==1.1.0",
     "pytz==2024.2",
     "webcolors==24.6.0",
-    "nest-asyncio==1.6.0",  # Keep for compatibility during migration
+    "nest-asyncio==1.6.0", # Keep for compatibility during migration
     "crontab==1.0.1",
     "ansio==0.0.1",
     "inputimeout==1.0.4",
+    "jinja2>=3.1.6",
+    "pyyaml>=6.0.2",
+    "jsonschema>=4.24.0",
 ]
 
 [project.optional-dependencies]

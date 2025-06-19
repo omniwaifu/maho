@@ -2,6 +2,7 @@ from src.helpers import files, memory
 from src.helpers.tool import Tool, Response
 from src.core.agent import Agent
 from src.helpers.log import LogItem
+from src.helpers.prompt_engine import get_prompt_engine
 
 
 class UpdateBehaviour(Tool):
@@ -14,7 +15,7 @@ class UpdateBehaviour(Tool):
 
         await update_behaviour(self.agent, self.log, adjustments)
         return Response(
-            message=self.agent.read_prompt("behaviour.updated.md"), break_loop=False
+            message=get_prompt_engine().render("components/behaviors/behavior_updated.j2"), break_loop=False
         )
 
     # async def before_execution(self, **kwargs):
@@ -27,15 +28,16 @@ class UpdateBehaviour(Tool):
 async def update_behaviour(agent: Agent, log_item: LogItem, adjustments: str):
 
     # get system message and current ruleset
-    system = agent.read_prompt("behaviour.merge.sys.md")
+    system = get_prompt_engine().render("components/behaviors/behavior_merge_system.j2")
     current_rules = read_rules(agent)
 
     # log query streamed by LLM
     async def log_callback(content):
         log_item.stream(ruleset=content)
 
-    msg = agent.read_prompt(
-        "behaviour.merge.msg.md", current_rules=current_rules, adjustments=adjustments
+    engine = get_prompt_engine()
+    msg = engine.render(
+        "components/behaviors/behavior_merge_message.j2", current_rules=current_rules, adjustments=adjustments
     )
 
     # call util llm to find solutions in history
@@ -59,7 +61,8 @@ def read_rules(agent: Agent):
     rules_file = get_custom_rules_file(agent)
     if files.exists(rules_file):
         rules = files.read_file(rules_file)
-        return agent.read_prompt("agent.system.behaviour.md", rules=rules)
+        return get_prompt_engine().render("components/behaviors/behavior_system.j2", rules=rules)
     else:
-        rules = agent.read_prompt("agent.system.behaviour_default.md")
-        return agent.read_prompt("agent.system.behaviour.md", rules=rules)
+        engine = get_prompt_engine()
+        rules = engine.render("components/behaviors/behavior_default.j2")
+        return engine.render("components/behaviors/behavior_system.j2", rules=rules)

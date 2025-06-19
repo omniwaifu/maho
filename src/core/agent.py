@@ -22,6 +22,7 @@ from src.helpers import dirty_json
 from src.helpers.print_style import PrintStyle
 from src.helpers.dirty_json import DirtyJson
 import src.helpers.log as Log
+from src.helpers.prompt_engine import get_prompt_engine
 
 
 class Agent:
@@ -108,7 +109,8 @@ class Agent:
                             # Append the assistant's response to the history
                             self.hist_add_ai_response(agent_response)
                             # Append warning message to the history
-                            warning_msg = self.read_prompt("fw.msg_repeat.md")
+                            engine = get_prompt_engine()
+                            warning_msg = engine.render("components/frameworks/message_repeat.j2")
                             self.hist_add_warning(message=warning_msg)
                             PrintStyle(font_color="orange", padding=True).print(
                                 warning_msg
@@ -168,8 +170,8 @@ class Agent:
         # extras (memory etc.)
         extras = history.Message(
             False,
-            content=self.read_prompt(
-                "agent.context.extras.md",
+            content=get_prompt_engine().render(
+                "components/behaviors/context_extras.j2",
                 extras=dirty_json.stringify(
                     {**loop_data.extras_persistent, **loop_data.extras_temporary}
                 ),
@@ -235,33 +237,6 @@ class Agent:
         )
         return system_prompt
 
-    def parse_prompt(self, file: str, **kwargs):
-        prompt_dir = files.get_abs_path("prompts/default")
-        backup_dir = []
-        if (
-            self.config.prompts_subdir
-        ):  # if agent has custom folder, use it and use default as backup
-            prompt_dir = files.get_abs_path("prompts", self.config.prompts_subdir)
-            backup_dir.append(files.get_abs_path("prompts/default"))
-        prompt = files.parse_file(
-            files.get_abs_path(prompt_dir, file), _backup_dirs=backup_dir, **kwargs
-        )
-        return prompt
-
-    def read_prompt(self, file: str, **kwargs) -> str:
-        prompt_dir = files.get_abs_path("prompts/default")
-        backup_dir = []
-        if (
-            self.config.prompts_subdir
-        ):  # if agent has custom folder, use it and use default as backup
-            prompt_dir = files.get_abs_path("prompts", self.config.prompts_subdir)
-            backup_dir.append(files.get_abs_path("prompts/default"))
-        prompt = files.read_file(
-            files.get_abs_path(prompt_dir, file), _backup_dirs=backup_dir, **kwargs
-        )
-        prompt = files.remove_code_fences(prompt)
-        return prompt
-
     def get_data(self, field: str):
         return self.data.get(field, None)
 
@@ -278,20 +253,28 @@ class Agent:
         self.history.new_topic()  # user message starts a new topic in history
 
         # load message template based on intervention
+        engine = get_prompt_engine()
         if intervention:
-            content = self.parse_prompt(
-                "fw.intervention.md",
+            result = engine.render(
+                "components/frameworks/intervention.j2",
                 message=message.message,
                 attachments=message.attachments,
                 system_message=message.system_message,
             )
         else:
-            content = self.parse_prompt(
-                "fw.user_message.md",
+            result = engine.render(
+                "components/frameworks/user_message.j2",
                 message=message.message,
                 attachments=message.attachments,
                 system_message=message.system_message,
             )
+        
+        # Parse as JSON
+        try:
+            import json
+            content = json.loads(result)
+        except (json.JSONDecodeError, ValueError):
+            content = result
 
         # remove empty parts from template
         if isinstance(content, dict):
@@ -304,16 +287,19 @@ class Agent:
 
     def hist_add_ai_response(self, message: str):
         self.loop_data.last_response = message
-        content = self.parse_prompt("fw.ai_response.md", message=message)
+        engine = get_prompt_engine()
+        content = engine.render("components/frameworks/ai_response.j2", message=message)
         return self.hist_add_message(True, content=content)
 
     def hist_add_warning(self, message: history.MessageContent):
-        content = self.parse_prompt("fw.warning.md", message=message)
+        engine = get_prompt_engine()
+        content = engine.render("components/frameworks/warning.j2", message=message)
         return self.hist_add_message(False, content=content)
 
     def hist_add_tool_result(self, tool_name: str, tool_result: str):
-        content = self.parse_prompt(
-            "fw.tool_result.md", tool_name=tool_name, tool_result=tool_result
+        engine = get_prompt_engine()
+        content = engine.render(
+            "components/frameworks/tool_result.j2", tool_name=tool_name, tool_result=tool_result
         )
         return self.hist_add_message(False, content=content)
 
@@ -535,7 +521,8 @@ class Agent:
                     type="error", content=f"{self.agent_name}: {error_detail}"
                 )
         else:
-            warning_msg_misformat = self.read_prompt("fw.msg_misformat.md")
+            engine = get_prompt_engine()
+            warning_msg_misformat = engine.render("components/frameworks/message_misformat.j2")
             self.hist_add_warning(warning_msg_misformat)
             PrintStyle(font_color="red", padding=True).print(warning_msg_misformat)
             self.context.log.log(

@@ -1,0 +1,27 @@
+---
+version: "1.0"
+category: "framework"
+description: "Tool error message template"
+required_vars: ["tool_name", "error_message"]
+optional_vars: ["retry_count", "max_retries", "suggestions"]
+---
+🚨 **Tool Error: {{ tool_name }}**
+
+Error: {{ error_message }}
+
+{%- if retry_count and max_retries %}
+Attempt {{ retry_count }} of {{ max_retries }}
+{%- endif %}
+
+{%- if suggestions %}
+
+**Suggestions:**
+{%- for suggestion in suggestions %}
+- {{ suggestion }}
+{%- endfor %}
+{%- endif %}
+
+{%- if retry_count and retry_count >= max_retries %}
+
+**Max retries reached.** Please try a different approach or tool.
+{%- endif %} 

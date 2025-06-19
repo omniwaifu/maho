@@ -12,7 +12,7 @@ exec python /maho/scripts/start_ui.py \
     --port=80 \
     --host="0.0.0.0" \
     --code_exec_docker_enabled=false \
-    --code_exec_ssh_enabled=true \
+    --code_exec_ssh_enabled=false \
     # --code_exec_ssh_addr="localhost" \
     # --code_exec_ssh_port=22 \
     # --code_exec_ssh_user="root" \

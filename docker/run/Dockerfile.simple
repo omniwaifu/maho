@@ -91,8 +91,8 @@ FROM heavy-assets as runtime
 # Copy remaining Docker filesystem
 COPY ./docker/run/fs/ /
 
-# Create a simplified supervisor config without problematic services
-RUN sed -i '/\[program:sshd\]/,/^$/d; /\[program:cron\]/,/^$/d' /etc/supervisor/conf.d/supervisord.conf
+# Keep SSH daemon in supervisor config for code execution
+# RUN sed -i '/\[program:sshd\]/,/^$/d; /\[program:cron\]/,/^$/d' /etc/supervisor/conf.d/supervisord.conf
 
 # Copy all Maho code (this layer will rebuild when code changes)
 COPY . .

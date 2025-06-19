@@ -1,4 +1,0 @@
-b- favor linux commands for simple file operations where possible
-- use python for complex logic computation and data processing
-- use nodejs for web scraping and API interactions
-- if task requires specific tool use that tool regardless of preference

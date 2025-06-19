@@ -6,6 +6,7 @@ import json
 import math
 from typing import Coroutine, Literal, TypedDict, cast, Union, Dict, List, Any
 from src.helpers import messages, tokens, settings, call_llm
+from src.helpers.prompt_engine import get_prompt_engine
 from enum import Enum
 from langchain_core.messages import BaseMessage, HumanMessage, SystemMessage, AIMessage
 
@@ -206,9 +207,14 @@ class Topic(Record):
             cnt_to_sum = math.ceil((len(self.messages) - 2) * TOPIC_COMPRESS_RATIO)
             msg_to_sum = self.messages[1 : cnt_to_sum + 1]
             summary = await self.summarize_messages(msg_to_sum)
-            sum_msg_content = self.history.agent.parse_prompt(
-                "fw.msg_summary.md", summary=summary
-            )
+            engine = get_prompt_engine()
+            result = engine.render("components/frameworks/message_summary.j2", summary=summary)
+            # Parse as JSON if needed for compatibility
+            try:
+                import json
+                sum_msg_content = json.loads(result)
+            except (json.JSONDecodeError, ValueError):
+                sum_msg_content = result
             sum_msg = Message(False, sum_msg_content)
             self.messages[1 : cnt_to_sum + 1] = [sum_msg]
             return True
@@ -217,10 +223,11 @@ class Topic(Record):
     async def summarize_messages(self, messages: list[Message]):
         # FIXME: vision bytes are sent to utility LLM, send summary instead
         msg_txt = [m.output_text() for m in messages]
+        engine = get_prompt_engine()
         summary = await self.history.agent.call_utility_model(
-            system=self.history.agent.read_prompt("fw.topic_summary.sys.md"),
-            message=self.history.agent.read_prompt(
-                "fw.topic_summary.msg.md", content=msg_txt
+            system=engine.render("components/frameworks/topic_summary_system.j2"),
+            message=engine.render(
+                "components/frameworks/topic_summary_message.j2", content=msg_txt
             ),
         )
         return summary
@@ -267,10 +274,11 @@ class Bulk(Record):
         return False
 
     async def summarize(self):
+        engine = get_prompt_engine()
         self.summary = await self.history.agent.call_utility_model(
-            system=self.history.agent.read_prompt("fw.topic_summary.sys.md"),
-            message=self.history.agent.read_prompt(
-                "fw.topic_summary.msg.md", content=self.output_text()
+            system=engine.render("components/frameworks/topic_summary_system.j2"),
+            message=engine.render(
+                "components/frameworks/topic_summary_message.j2", content=self.output_text()
             ),
         )
         return self.summary

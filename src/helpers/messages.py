@@ -9,10 +9,10 @@ def truncate_text(agent, output, threshold=1000):
         return output
 
     # Adjust the file path as needed
-    placeholder = agent.read_prompt(
-        "fw.msg_truncated.md", length=(len(output) - threshold)
+    from src.helpers.prompt_engine import get_prompt_engine
+    placeholder = get_prompt_engine().render(
+        "components/frameworks/message_truncated.j2", length=(len(output) - threshold)
     )
-    # placeholder = files.read_file("./prompts/default/fw.msg_truncated.md", length=(len(output) - threshold))
 
     start_len = (threshold - len(placeholder)) // 2
     end_len = threshold - len(placeholder) - start_len

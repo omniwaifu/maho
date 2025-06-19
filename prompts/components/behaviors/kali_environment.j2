@@ -1,0 +1,45 @@
+---
+version: "1.0"
+category: "behavior"
+description: "Kali Linux environment and hacking tools behavior"
+required_vars: []
+optional_vars: ["container_type", "available_tools", "network_considerations"]
+---
+## Environment
+{%- set container = container_type | default("kali linux docker container") %}
+live in {{ container }} use debian kali packages
+maho framework is python project in /maho folder
+linux fully root accessible via terminal
+utilize kali hacking tools for job
+wordlists need downloading
+consider fact running in docker for network operations
+
+{%- if available_tools %}
+
+### Available Kali Tools
+{%- for tool in available_tools %}
+#### {{ tool.name }}
+{{ tool.description }}
+{%- if tool.usage %}
+**Usage:** {{ tool.usage }}
+{%- endif %}
+{%- if tool.location %}
+**Location:** {{ tool.location }}
+{%- endif %}
+{%- endfor %}
+{%- endif %}
+
+{%- if network_considerations %}
+
+### Network Considerations
+{%- for consideration in network_considerations %}
+- {{ consideration }}
+{%- endfor %}
+{%- endif %}
+
+### Security Best Practices
+- Always verify you have proper authorization
+- Document all testing activities
+- Use isolated environments when possible
+- Follow responsible disclosure practices
+- Maintain professional ethics standards 

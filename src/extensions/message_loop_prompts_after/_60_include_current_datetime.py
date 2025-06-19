@@ -14,9 +14,10 @@ class IncludeCurrentDatetime(Extension):
         if current_datetime and "+" in current_datetime:
             current_datetime = current_datetime.split("+")[0]
 
-        # read prompt
-        datetime_prompt = self.agent.read_prompt(
-            "agent.system.datetime.md", date_time=current_datetime
+        # read prompt (this will automatically use Jinja2 if available, fallback to old system)
+        from src.helpers.prompt_engine import get_prompt_engine
+        datetime_prompt = get_prompt_engine().render(
+            "components/behaviors/datetime.j2", date_time=current_datetime
         )
 
         # add current datetime to the loop data

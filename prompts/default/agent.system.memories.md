@@ -1,5 +1,0 @@
-# Memories on the topic
-- following are memories about current topic
-- do not overly rely on these memories as they might not be relevant
-
-{{memories}}

@@ -21,7 +21,9 @@ class MemoryLoad(Tool):
         )
 
         if len(docs) == 0:
-            result = self.agent.read_prompt("fw.memories_not_found.md", query=query)
+            from src.helpers.prompt_engine import get_prompt_engine
+            engine = get_prompt_engine()
+            result = engine.render("components/frameworks/memories_not_found.j2", query=query)
         else:
             text = "\n\n".join(Memory.format_docs_plain(docs))
             result = str(text)

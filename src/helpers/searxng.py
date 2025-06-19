@@ -72,7 +72,7 @@ async def _search(query: str):
                     async with session.post(url, data={"q": query, "format": "json"}) as response:
                         return await response.json()
                         
-    except (aiohttp.ClientError, asyncio.TimeoutError):
+    except (aiohttp.ClientError, anyio.BrokenResourceError):
         # Connection failed, invalidate cache and retry once
         _invalidate_cache()
         url = await _get_searxng_url()

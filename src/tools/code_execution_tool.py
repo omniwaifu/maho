@@ -1,15 +1,22 @@
-import anyio
-from dataclasses import dataclass
+import asyncio
+import os
+import re
 import shlex
 import time
-from src.helpers.tool import Tool, Response
+import uuid
+from dataclasses import dataclass, field
+from typing import Any
+
+import anyio
+
 from src.helpers import files, rfc_exchange
+from src.helpers.docker import DockerContainerManager
 from src.helpers.print_style import PrintStyle
 from src.helpers.shell_local import LocalInteractiveSession
 from src.helpers.shell_ssh import SSHInteractiveSession
-from src.helpers.docker import DockerContainerManager
+from src.helpers.tool import Tool, Response
+from src.helpers.prompt_engine import get_prompt_engine
 from src.helpers.messages import truncate_text
-import re
 
 
 @dataclass
@@ -50,13 +57,15 @@ class CodeExecution(Tool):
         elif runtime == "reset":
             response = await self.reset_terminal(session=session)
         else:
-            response = self.agent.read_prompt(
-                "fw.code.runtime_wrong.md", runtime=runtime
+            engine = get_prompt_engine()
+            response = engine.render(
+                "components/frameworks/code_runtime_wrong.j2", runtime=runtime
             )
 
         if not response:
-            response = self.agent.read_prompt(
-                "fw.code.info.md", info=self.agent.read_prompt("fw.code.no_output.md")
+            engine = get_prompt_engine()
+            response = engine.render(
+                "components/frameworks/code_info.j2", info=engine.render("components/frameworks/code_no_output.j2")
             )
         return Response(message=response, break_loop=False)
 
@@ -250,10 +259,11 @@ class CodeExecution(Tool):
 
             # Check for max execution time
             if now - start_time > max_exec_timeout:
-                sysinfo = self.agent.read_prompt(
-                    "fw.code.max_time.md", timeout=max_exec_timeout
+                engine = get_prompt_engine()
+                sysinfo = engine.render(
+                    "components/frameworks/code_max_time.j2", timeout=max_exec_timeout
                 )
-                response = self.agent.read_prompt("fw.code.info.md", info=sysinfo)
+                response = engine.render("components/frameworks/code_info.j2", info=sysinfo)
                 if truncated_output:
                     response = truncated_output + "\n\n" + response
                 PrintStyle.warning(sysinfo)
@@ -263,20 +273,22 @@ class CodeExecution(Tool):
             # Waiting for first output
             if not got_output:
                 if now - start_time > first_output_timeout:
-                    sysinfo = self.agent.read_prompt(
-                        "fw.code.no_out_time.md", timeout=first_output_timeout
+                    engine = get_prompt_engine()
+                    sysinfo = engine.render(
+                        "components/frameworks/code_no_output_time.j2", timeout=first_output_timeout
                     )
-                    response = self.agent.read_prompt("fw.code.info.md", info=sysinfo)
+                    response = engine.render("components/frameworks/code_info.j2", info=sysinfo)
                     PrintStyle.warning(sysinfo)
                     self.log.update(content=response)
                     return response
             else:
                 # Waiting for more output after first output
                 if now - last_output_time > between_output_timeout:
-                    sysinfo = self.agent.read_prompt(
-                        "fw.code.pause_time.md", timeout=between_output_timeout
+                    engine = get_prompt_engine()
+                    sysinfo = engine.render(
+                        "components/frameworks/code_pause_time.j2", timeout=between_output_timeout
                     )
-                    response = self.agent.read_prompt("fw.code.info.md", info=sysinfo)
+                    response = engine.render("components/frameworks/code_info.j2", info=sysinfo)
                     if truncated_output:
                         response = truncated_output + "\n\n" + response
                     PrintStyle.warning(sysinfo)
@@ -296,11 +308,12 @@ class CodeExecution(Tool):
                                     "Detected dialog prompt, returning output early."
                                 )
 
-                                sysinfo = self.agent.read_prompt(
-                                    "fw.code.pause_dialog.md", timeout=dialog_timeout
+                                engine = get_prompt_engine()
+                                sysinfo = engine.render(
+                                    "components/frameworks/code_pause_dialog.j2", timeout=dialog_timeout
                                 )
-                                response = self.agent.read_prompt(
-                                    "fw.code.info.md", info=sysinfo
+                                response = engine.render(
+                                    "components/frameworks/code_info.j2", info=sysinfo
                                 )
                                 if truncated_output:
                                     response = truncated_output + "\n\n" + response
@@ -321,8 +334,9 @@ class CodeExecution(Tool):
 
         # Only reset the specified session while preserving others
         await self.prepare_state(reset=True, session=session)
-        response = self.agent.read_prompt(
-            "fw.code.info.md", info=self.agent.read_prompt("fw.code.reset.md")
+        engine = get_prompt_engine()
+        response = engine.render(
+            "components/frameworks/code_info.j2", info=engine.render("components/frameworks/code_reset.j2")
         )
         self.log.update(content=response)
         return response

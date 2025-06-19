@@ -73,7 +73,8 @@ class DocumentQueryHelper:
             # For now, use simple Q&A without vector search
             questions_str = "\n".join([f" * {question}" for question in questions])
             
-            system_prompt = self.agent.read_prompt("fw.document_query.system_prompt.md")
+            from src.helpers.prompt_engine import get_prompt_engine
+            system_prompt = get_prompt_engine().render("components/frameworks/document_query_system.j2")
             user_message = f"# Document:\n{content}\n\n# Queries:\n{questions_str}"
 
             self._log_progress("Generating answers...")

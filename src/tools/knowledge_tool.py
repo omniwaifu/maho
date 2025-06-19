@@ -33,8 +33,9 @@ class Knowledge(Tool):
         memory_result = await self.mem_search(question)
         memory_result = self.format_result(memory_result, "Memory")
 
-        msg = self.agent.read_prompt(
-            "tool.knowledge.response.md",
+        from src.helpers.prompt_engine import get_prompt_engine
+        msg = get_prompt_engine().render(
+            "components/tools/knowledge_tool_response.j2",
             online_sources=online_result,
             memory=memory_result,
         )

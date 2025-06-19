@@ -51,8 +51,9 @@ class RecallSolutions(Extension):
         # msgs_text = self.agent.history.current.output_text()
         msgs_text = self.agent.history.output_text()[-RecallSolutions.HISTORY :]
 
-        system = self.agent.read_prompt(
-            "memory.solutions_query.sys.md", history=msgs_text
+        from src.helpers.prompt_engine import get_prompt_engine
+        system = get_prompt_engine().render(
+            "components/memory/solutions_query_system.j2", history=msgs_text
         )
 
         # log query streamed by LLM
@@ -94,8 +95,9 @@ class RecallSolutions(Extension):
                 instruments_text += instrument.page_content + "\n\n"
             instruments_text = instruments_text.strip()
             log_item.update(instruments=instruments_text)
-            instruments_prompt = self.agent.read_prompt(
-                "agent.system.instruments.md", instruments=instruments_text
+            engine = get_prompt_engine()
+            instruments_prompt = engine.render(
+                "components/memory/instruments_system.j2", instruments=instruments_text
             )
             loop_data.system.append(instruments_prompt)
 
@@ -105,9 +107,14 @@ class RecallSolutions(Extension):
                 solutions_text += solution.page_content + "\n\n"
             solutions_text = solutions_text.strip()
             log_item.update(solutions=solutions_text)
-            solutions_prompt = self.agent.parse_prompt(
-                "agent.system.solutions.md", solutions=solutions_text
-            )
+            engine = get_prompt_engine()
+            result = engine.render("components/memory/solutions_system.j2", solutions=solutions_text)
+            # Parse as JSON if needed for compatibility
+            try:
+                import json
+                solutions_prompt = json.loads(result)
+            except (json.JSONDecodeError, ValueError):
+                solutions_prompt = result
 
             # append to prompt
             extras["solutions"] = solutions_prompt

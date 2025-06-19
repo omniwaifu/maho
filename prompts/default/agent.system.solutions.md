@@ -1,5 +1,0 @@
-# Solutions from the past
-- following are memories about successful solutions of related problems
-- do not overly rely on these solutions as they might not be relevant
-
-{{solutions}}

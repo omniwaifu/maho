@@ -48,8 +48,9 @@ class RecallMemories(Extension):
         #     self.agent.history[-RecallMemories.HISTORY :]
         # )  # only last X messages
         msgs_text = self.agent.history.output_text()[-RecallMemories.HISTORY :]
-        system = self.agent.read_prompt(
-            "memory.memories_query.sys.md", history=msgs_text
+        from src.helpers.prompt_engine import get_prompt_engine
+        system = get_prompt_engine().render(
+            "components/memory/memories_query_system.j2", history=msgs_text
         )
 
         # log query streamed by LLM
@@ -96,9 +97,14 @@ class RecallMemories(Extension):
         log_item.update(memories=memories_text)
 
         # place to prompt
-        memories_prompt = self.agent.parse_prompt(
-            "agent.system.memories.md", memories=memories_text
-        )
+        engine = get_prompt_engine()
+        result = engine.render("components/memory/memories_system.j2", memories=memories_text)
+        # Parse as JSON if needed for compatibility
+        try:
+            import json
+            memories_prompt = json.loads(result)
+        except (json.JSONDecodeError, ValueError):
+            memories_prompt = result
 
         # append to prompt
         extras["memories"] = memories_prompt

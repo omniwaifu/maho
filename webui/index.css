@@ -20,18 +20,18 @@
   --color-input-dark: #0f1f0f;
   --color-input-focus-dark: #0a1a0a;
 
-  /* Light mode */
-  --color-background-light: #f0f5f0;
-  --color-text-light: #333333;
-  --color-primary-light: #2d4a2d;
-  --color-secondary-light: #e8f0e8;
-  --color-accent-light: #b00020;
+  /* Light mode - improved colors */
+  --color-background-light: #fefefe;
+  --color-text-light: #1a1a1a;
+  --color-primary-light: #2563eb;
+  --color-secondary-light: #f1f5f9;
+  --color-accent-light: #dc2626;
   --color-message-bg-light: #ffffff;
-  --color-message-text-light: #333333;
-  --color-panel-light: #f8fbf8;
-  --color-border-light: #d0e0d0c7;
-  --color-input-light: #f0f5f0;
-  --color-input-focus-light: #e8f0e8;
+  --color-message-text-light: #374151;
+  --color-panel-light: #ffffff;
+  --color-border-light: #e2e8f0;
+  --color-input-light: #ffffff;
+  --color-input-focus-light: #f8fafc;
 
   /* Default to dark mode */
   --color-background: var(--color-background-dark);
@@ -160,6 +160,11 @@ body,
 #status-section,
 .config-section:not(#chats-section) {
   flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 8px;
+  padding: 16px;
 }
 
 .left-panel-bottom {
@@ -961,18 +966,21 @@ pre {
   border: 0.1rem solid var(--color-border);
   border-radius: var(--spacing-xs);
   cursor: pointer;
-  display: inline-block;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: var(--font-size-small);
   opacity: 0.8;
   text-wrap: nowrap;
-  width: calc(50% - var(--spacing-xs));
-  margin: 0 var(--spacing-xs) var(--spacing-xs) 0;
-  padding: var(--spacing-sm) 0.75rem;
+  flex: 1 1 calc(33.333% - 6px);
+  min-width: 0;
+  padding: var(--spacing-sm) 0.55rem;
   max-height: 2.3rem;
   box-sizing: border-box;
   -webkit-transition: all var(--transition-speed), transform 0.1s ease-in-out;
   transition: all var(--transition-speed), transform 0.1s ease-in-out;
+  font-size: small;
 }
 
 .config-button:hover {
@@ -1772,7 +1780,7 @@ input:checked + .slider:before {
   }
 
   #left-panel.hidden {
-    margin-left: -250px;
+    margin-left: -350px;
   }
 
   .toggle-sidebar-button {
@@ -1927,134 +1935,138 @@ a:active {
 }
 
 .light-mode .msg-kvps tr {
-  border-bottom: 1px solid rgb(192 192 192 / 50%)
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .light-mode .message-default {
-  background-color: #f3f3f3;
-  color: #1a242f;
+  background-color: #ffffff;
+  color: #374151;
 }
 
 .light-mode .message-agent {
-  background-color: #f3f3f3;
-  color: #356ca3;
+  background-color: #eff6ff;
+  color: #1d4ed8;
 }
 
 .light-mode .message-agent-response {
-  background-color: #f3f3f3;
-  color: #188216;
+  background-color: #f0fdf4;
+  color: #166534;
 }
 
 .light-mode .message-agent-delegation {
-  background-color: #f3f3f3;
-  color: #2d5a2d;
+  background-color: #f0fdfa;
+  color: #0f766e;
 }
 
 .light-mode .message-tool {
-  background-color: #f3f3f3;
-  color: #1f4f1f;
+  background-color: #f8fafc;
+  color: #64748b;
 }
 
 .light-mode .message-code-exe {
-  background-color: #f3f3f3;
-  color: #2e4a2e;
+  background-color: #fafafa;
+  color: #525252;
 }
 
 .light-mode .message-browser {
   background-color: #ffffff;
-  color: #2e4a2e;
+  color: #525252;
 }
 
 .light-mode .message-info {
-  background-color: #f3f3f3;
-  color: #3f3f3f;
+  background-color: #dbeafe;
+  color: #1e40af;
 }
 
 .light-mode .message-util {
-  background-color: #f3f3f3;
-  color: #5b5540;
+  background-color: #f8fafc;
+  color: #64748b;
 }
 
 .light-mode .message-warning {
-  background-color: #f3f3f3;
-  color: #8f4800;
+  background-color: #fef3c7;
+  color: #92400e;
 }
 
 .light-mode .message-error {
-  background-color: #f3f3f3;
-  color: #8f1010;
+  background-color: #fee2e2;
+  color: #991b1b;
 }
 
 .light-mode .message-user {
-  background-color: #f3f3f3;
-  color: #4e4e4e;
+  background-color: #f1f5f9;
+  color: #475569;
+}
+
+.light-mode .msg-content,
+.light-mode .msg-output,
+.light-mode .msg-content span,
+.light-mode .msg-content p,
+.light-mode .msg-content div,
+.light-mode .msg-content pre {
+  color: #2c3e50 !important;
 }
 
 .light-mode .connected {
-  color: #4caf50;
+  color: #059669;
 }
 
 .light-mode .disconnected {
-  color: #f44336;
+  color: #dc2626;
 }
 
 .light-mode #left-panel {
-  box-shadow: 1px 0 25px rgba(0, 0, 0, 0.05);
+  box-shadow: 1px 0 3px rgba(0, 0, 0, 0.1);
 }
 
 .light-mode .config-button {
   background-color: var(--color-background);
-  color: #333333;
+  color: #374151;
 }
 
 .light-mode .config-button:hover {
-  background-color: #d6dae8;
+  background-color: #f1f5f9;
 }
 
 .light-mode .config-button:active {
-  background-color: #bdc0cb;
+  background-color: #e2e8f0;
 }
 
 .light-mode .edit-button {
-  border-color: var(--color-primary-light);
-  color: var(--color-primary-light);
+  border-color: #2563eb;
+  color: #2563eb;
 }
 
 .light-mode .edit-button:hover {
-  background-color: #e4e7f0;
+  background-color: #eff6ff;
 }
 
 .light-mode .edit-button:active {
-  background-color: #979fb9;
-  color: rgba(0, 0, 0, 0.35);
+  background-color: #dbeafe;
 }
 
 .light-mode #progress-bar-i {
-  color: var(--color-border-dark);
-  opacity: 0.5;
+  color: #94a3b8;
+  opacity: 0.7;
 }
 
 .light-mode .slider {
-  background-color: #f1f1f1;
-  border: 1px solid #dddddd;
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
 }
 
 .light-mode .slider:before {
-  background-color: #838383;
+  background-color: #64748b;
 }
 
 .light-mode input:checked + .slider {
-  background-color: #e6e6e6;
-}
-
-.light-mode #logo-container img {
-  /* Removed inversion filter - Maho logo works in both light and dark modes */
+  background-color: #2563eb;
 }
 
 .light-mode .extension {
-  background: var(--color-primary);
-  color: var(--color-background);
-  opacity: 0.7;
+  background: #2563eb;
+  color: #ffffff;
+  opacity: 0.9;
 }
 
 /* Animations */

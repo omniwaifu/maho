@@ -32,7 +32,7 @@ class PromptEngine:
         self.prompts_dir = get_abs_path(prompts_dir)
         self.env = Environment(
             loader=FileSystemLoader(self.prompts_dir),
-            autoescape=select_autoescape(['html', 'xml']),
+            autoescape=False,  # Disable HTML escaping - we're generating LLM prompts, not HTML
             trim_blocks=True,
             lstrip_blocks=True,
             keep_trailing_newline=True

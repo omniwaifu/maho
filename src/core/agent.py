@@ -366,7 +366,8 @@ class Agent:
         )
 
         async for chunk in (prompt | model).astream({}):
-            await self.handle_intervention()  # wait for intervention and handle it, if paused
+            if not background:
+                await self.handle_intervention()  # wait for intervention and handle it, if paused
 
             # Import here to avoid circular dependency
             from src.providers.factory import parse_chunk

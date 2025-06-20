@@ -16,6 +16,9 @@ _init_portal = None
 _job_loop_portal_cm = None
 _job_loop_portal = None
 
+# Flag to prevent spam messages
+_ssh_message_shown = False
+
 
 def _get_init_portal():
     """Get or create the initialization portal"""
@@ -36,67 +39,80 @@ def _get_job_loop_portal():
 
 
 def initialize_agent():
-    """Initialize agent configuration from user settings"""
-    current_settings = settings.get_settings()
-
-    # chat model from user settings
+    """Initialize agent configuration using the existing settings system"""
+    global _ssh_message_shown
+    
+    # Use the existing settings system that user's configuration is in
+    set = settings.get_settings()
+    runtime_config = settings.get_runtime_config(set)
+    
+    # Convert to AgentConfig format
     chat_llm = ModelConfig(
-        provider=ModelProvider[current_settings["chat_model_provider"]],
-        name=current_settings["chat_model_name"],
-        ctx_length=current_settings["chat_model_ctx_length"],
-        vision=current_settings["chat_model_vision"],
-        limit_requests=current_settings["chat_model_rl_requests"],
-        limit_input=current_settings["chat_model_rl_input"],
-        limit_output=current_settings["chat_model_rl_output"],
-        kwargs=current_settings["chat_model_kwargs"],
+        provider=ModelProvider[set["chat_model_provider"]],
+        name=set["chat_model_name"],
+        ctx_length=set["chat_model_ctx_length"],
+        vision=set["chat_model_vision"],
+        limit_requests=set["chat_model_rl_requests"],
+        limit_input=set["chat_model_rl_input"],
+        limit_output=set["chat_model_rl_output"],
+        kwargs=set["chat_model_kwargs"],
     )
 
-    # utility model from user settings
     utility_llm = ModelConfig(
-        provider=ModelProvider[current_settings["util_model_provider"]],
-        name=current_settings["util_model_name"],
-        ctx_length=current_settings["util_model_ctx_length"],
-        limit_requests=current_settings["util_model_rl_requests"],
-        limit_input=current_settings["util_model_rl_input"],
-        limit_output=current_settings["util_model_rl_output"],
-        kwargs=current_settings["util_model_kwargs"],
+        provider=ModelProvider[set["util_model_provider"]],
+        name=set["util_model_name"],
+        ctx_length=set["util_model_ctx_length"],
+        limit_requests=set["util_model_rl_requests"],
+        limit_input=set["util_model_rl_input"],
+        limit_output=set["util_model_rl_output"],
+        kwargs=set["util_model_kwargs"],
     )
 
-    # embedding model from user settings
     embedding_llm = ModelConfig(
-        provider=ModelProvider[current_settings["embed_model_provider"]],
-        name=current_settings["embed_model_name"],
-        limit_requests=current_settings["embed_model_rl_requests"],
-        kwargs=current_settings["embed_model_kwargs"],
+        provider=ModelProvider[set["embed_model_provider"]],
+        name=set["embed_model_name"],
+        limit_requests=set["embed_model_rl_requests"],
+        limit_input=set["embed_model_rl_input"],
+        kwargs=set["embed_model_kwargs"],
     )
 
-    # browser model from user settings
     browser_llm = ModelConfig(
-        provider=ModelProvider[current_settings["browser_model_provider"]],
-        name=current_settings["browser_model_name"],
-        vision=current_settings["browser_model_vision"],
-        kwargs=current_settings["browser_model_kwargs"],
+        provider=ModelProvider[set["browser_model_provider"]],
+        name=set["browser_model_name"],
+        vision=set["browser_model_vision"],
+        kwargs=set["browser_model_kwargs"],
     )
 
-    # agent configuration
+    # Determine SSH settings - force local execution when in Docker
+    if runtime.is_dockerized():
+        ssh_enabled = False
+        if not _ssh_message_shown:
+            PrintStyle.standard("Docker runtime detected: forcing local code execution")
+            _ssh_message_shown = True
+    else:
+        ssh_enabled = True
+
     config = AgentConfig(
         chat_model=chat_llm,
         utility_model=utility_llm,
         embeddings_model=embedding_llm,
         browser_model=browser_llm,
-        prompts_subdir=current_settings["agent_prompts_subdir"],
-        memory_subdir=current_settings["agent_memory_subdir"],
-        knowledge_subdirs=["default", current_settings["agent_knowledge_subdir"]],
-        mcp_servers=current_settings["mcp_servers"],
-        code_exec_docker_enabled=False,
+        prompts_subdir=set["agent_prompts_subdir"],
+        memory_subdir=set["agent_memory_subdir"],
+        knowledge_subdirs=[set["agent_knowledge_subdir"]],
+        mcp_servers=set["mcp_servers"],
+        code_exec_docker_enabled=False,  # Simplified for now
+        code_exec_ssh_enabled=ssh_enabled,
+        code_exec_ssh_addr=runtime_config["code_exec_ssh_addr"],
+        code_exec_ssh_port=runtime_config["code_exec_ssh_port"],
+        code_exec_ssh_user=runtime_config["code_exec_ssh_user"],
+        code_exec_ssh_pass=set["root_password"],
     )
 
-    # update SSH and docker settings
-    _set_runtime_config(config, current_settings)
-
-    # update config with runtime args
-    _args_override(config)
-
+    if not _ssh_message_shown:
+        PrintStyle.standard(f"🔧 Code execution: {'SSH' if config.code_exec_ssh_enabled else 'Local'}")
+        _ssh_message_shown = True
+    
     return config
 
 
@@ -133,32 +149,3 @@ def initialize_job_loop():
     # JobLoop gets its own dedicated portal since it runs indefinitely
     portal = _get_job_loop_portal()
     return portal.start_task_soon(run_loop)
-
-
-def _args_override(config):
-    """Update config with runtime arguments"""
-    for key, value in runtime.args.items():
-        if hasattr(config, key):
-            # conversion based on type of config[key]
-            if isinstance(getattr(config, key), bool):
-                value = value.lower().strip() == "true"
-            elif isinstance(getattr(config, key), int):
-                value = int(value)
-            elif isinstance(getattr(config, key), float):
-                value = float(value)
-            elif isinstance(getattr(config, key), str):
-                value = str(value)
-            else:
-                raise Exception(
-                    f"Unsupported argument type of '{key}': {type(getattr(config, key))}"
-                )
-
-            setattr(config, key, value)
-
-
-def _set_runtime_config(config: AgentConfig, set: settings.Settings):
-    """Set runtime configuration from settings"""
-    ssh_conf = settings.get_runtime_config(set)
-    for key, value in ssh_conf.items():
-        if hasattr(config, key):
-            setattr(config, key, value)

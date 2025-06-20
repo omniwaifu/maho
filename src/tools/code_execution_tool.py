@@ -136,7 +136,7 @@ class CodeExecution(Tool):
 
     async def execute_python_code(self, session: int, code: str, reset: bool = False):
         escaped_code = shlex.quote(code)
-        command = f"ipython -c {escaped_code}"
+        command = f"python -c {escaped_code}"
         return await self.terminal_session(session, command, reset)
 
     async def execute_nodejs_code(self, session: int, code: str, reset: bool = False):

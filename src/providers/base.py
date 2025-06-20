@@ -53,4 +53,6 @@ def parse_chunk(chunk: Any) -> str:
         content = str(chunk.content)
     else:
         content = str(chunk)
+    
+    # Removed debug logging - HTML entity issue traced and handled in extract_tools.py
     return content

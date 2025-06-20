@@ -1,5 +1,6 @@
 import anyio
 import json
+import os
 import time
 from typing import Optional
 from src.core.agent import Agent, InterventionException
@@ -9,7 +10,7 @@ import threading
 from concurrent.futures import Future
 
 
-from src import models
+# Removed models import - using new provider factory system instead
 from src.helpers import files, persist_chat, strings
 from src.helpers.browser_use import browser_use
 from src.helpers.print_style import PrintStyle
@@ -83,7 +84,31 @@ class State:
         # Add init script to the browser session
         if self.browser_session.browser_context:
             js_override = files.get_abs_path("lib/browser/init_override.js")
-            await self.browser_session.browser_context.add_init_script(path=js_override)
+            print(f"DEBUG: Base dir: {files.get_base_dir()}")
+            print(f"DEBUG: Trying to load init script from: {js_override}")
+            print(f"DEBUG: File exists: {os.path.exists(js_override)}")
+            
+            # Try alternative paths if the calculated path doesn't work
+            alt_paths = [
+                "/maho/lib/browser/init_override.js",
+                os.path.join(os.getcwd(), "lib/browser/init_override.js"),
+            ]
+            
+            found_path = None
+            if os.path.exists(js_override):
+                found_path = js_override
+            else:
+                for alt_path in alt_paths:
+                    print(f"DEBUG: Trying alternative path: {alt_path}")
+                    if os.path.exists(alt_path):
+                        found_path = alt_path
+                        print(f"DEBUG: Found at alternative path: {alt_path}")
+                        break
+            
+            if found_path:
+                await self.browser_session.browser_context.add_init_script(path=found_path)
+            else:
+                print(f"DEBUG: init_override.js not found in any location, skipping...")
 
     def start_task(self, task: str):
         if self.task and not self.task.done():
@@ -137,8 +162,12 @@ class State:
             )
             return result
 
-        model = models.get_model(
-            type=models.ModelType.CHAT,
+        # Use the new provider factory system instead of the old models.py
+        from src.providers.factory import get_model
+        from src.providers.base import ModelType
+        
+        model = get_model(
+            type=ModelType.CHAT,
             provider=self.agent.config.browser_model.provider,
             name=self.agent.config.browser_model.name,
             **self.agent.config.browser_model.kwargs,

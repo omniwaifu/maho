@@ -68,7 +68,20 @@ class ApiHandler:
         if isinstance(output, Response):
             return output
         else:
-            response_json = json.dumps(output)
+            # Handle Pydantic models in JSON serialization
+            try:
+                if hasattr(output, 'model_dump'):
+                    response_json = json.dumps(output.model_dump())  # type: ignore
+                elif hasattr(output, 'dict'):
+                    response_json = json.dumps(output.dict())  # type: ignore
+                else:
+                    response_json = json.dumps(output)
+            except TypeError:
+                # If all else fails, try model_dump anyway
+                try:
+                    response_json = json.dumps(output.model_dump())  # type: ignore
+                except:
+                    response_json = json.dumps(str(output))
             return Response(
                 response=response_json, status=200, mimetype="application/json"
             )

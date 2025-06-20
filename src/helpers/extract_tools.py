@@ -16,6 +16,10 @@ def json_parse_dirty(json: str) -> dict[str, Any] | None:
     ext_json = extract_json_object_string(json.strip())
     if ext_json:
         try:
+            # Decode HTML entities that might break JSON parsing (safety net)
+            import html
+            ext_json = html.unescape(ext_json)
+            
             data = DirtyJson.parse_string(ext_json)
             if isinstance(data, dict):
                 return data

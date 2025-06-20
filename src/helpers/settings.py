@@ -4,7 +4,8 @@ import json
 import os
 import re
 import subprocess
-from typing import Any, Literal, TypedDict
+from typing import Any, Literal, Optional, Dict, List
+from pydantic import BaseModel, Field, ConfigDict
 
 from src import models
 from src.helpers import runtime, whisper
@@ -13,100 +14,133 @@ from src.helpers.print_style import PrintStyle
 from anyio.from_thread import start_blocking_portal
 
 
-class Settings(TypedDict):
-    chat_model_provider: str
-    chat_model_name: str
-    chat_model_kwargs: dict[str, str]
-    chat_model_ctx_length: int
-    chat_model_ctx_history: float
-    chat_model_vision: bool
-    chat_model_rl_requests: int
-    chat_model_rl_input: int
-    chat_model_rl_output: int
+class Settings(BaseModel):
+    """Main settings configuration using Pydantic for validation and type safety"""
+    model_config = ConfigDict(extra='forbid')
+    
+    # Chat model settings
+    chat_model_provider: str = "OPENAI"
+    chat_model_name: str = "gpt-4"
+    chat_model_kwargs: Dict[str, str] = Field(default_factory=dict)
+    chat_model_ctx_length: int = 100000
+    chat_model_ctx_history: float = 0.7
+    chat_model_vision: bool = True
+    chat_model_rl_requests: int = 0
+    chat_model_rl_input: int = 0
+    chat_model_rl_output: int = 0
 
-    util_model_provider: str
-    util_model_name: str
-    util_model_kwargs: dict[str, str]
-    util_model_ctx_length: int
-    util_model_ctx_input: float
-    util_model_rl_requests: int
-    util_model_rl_input: int
-    util_model_rl_output: int
+    # Utility model settings
+    util_model_provider: str = "OPENAI"
+    util_model_name: str = "gpt-4-mini"
+    util_model_kwargs: Dict[str, str] = Field(default_factory=dict)
+    util_model_ctx_length: int = 100000
+    util_model_ctx_input: float = 0.7
+    util_model_rl_requests: int = 0
+    util_model_rl_input: int = 0
+    util_model_rl_output: int = 0
 
-    embed_model_provider: str
-    embed_model_name: str
-    embed_model_kwargs: dict[str, str]
-    embed_model_rl_requests: int
-    embed_model_rl_input: int
+    # Embedding model settings
+    embed_model_provider: str = "HUGGINGFACE"
+    embed_model_name: str = "sentence-transformers/all-MiniLM-L6-v2"
+    embed_model_kwargs: Dict[str, str] = Field(default_factory=dict)
+    embed_model_rl_requests: int = 0
+    embed_model_rl_input: int = 0
 
-    browser_model_provider: str
-    browser_model_name: str
-    browser_model_vision: bool
-    browser_model_kwargs: dict[str, str]
+    # Browser model settings
+    browser_model_provider: str = "OPENAI"
+    browser_model_name: str = "gpt-4"
+    browser_model_vision: bool = True
+    browser_model_kwargs: Dict[str, str] = Field(default_factory=dict)
 
-    agent_prompts_subdir: str
-    agent_memory_subdir: str
-    agent_knowledge_subdir: str
+    # Agent settings
+    agent_prompts_subdir: str = "default"
+    agent_memory_subdir: str = "default"
+    agent_knowledge_subdir: str = "custom"
 
-    api_keys: dict[str, str]
+    # API keys
+    api_keys: Dict[str, str] = Field(default_factory=dict)
 
-    auth_login: str
-    auth_password: str
-    root_password: str
+    # Authentication
+    auth_login: str = ""
+    auth_password: str = ""
+    root_password: str = ""
 
-    rfc_auto_docker: bool
-    rfc_url: str
-    rfc_password: str
-    rfc_port_http: int
-    rfc_port_ssh: int
+    # RFC settings
+    rfc_auto_docker: bool = True
+    rfc_url: str = "localhost"
+    rfc_password: str = ""
+    rfc_port_http: int = 55080
+    rfc_port_ssh: int = 55022
 
-    stt_model_size: str
-    stt_language: str
-    stt_silence_threshold: float
-    stt_silence_duration: int
-    stt_waiting_timeout: int
+    # Speech-to-text settings
+    stt_model_size: str = "base"
+    stt_language: str = "en"
+    stt_silence_threshold: float = 0.3
+    stt_silence_duration: int = 1000
+    stt_waiting_timeout: int = 2000
 
-    mcp_servers: str
-    mcp_client_init_timeout: int
-    mcp_client_tool_timeout: int
-    mcp_server_enabled: bool
-    mcp_server_token: str
+    # MCP settings
+    mcp_servers: str = '{\n    "mcpServers": {}\n}'
+    mcp_client_init_timeout: int = 5
+    mcp_client_tool_timeout: int = 120
+    mcp_server_enabled: bool = False
+    mcp_server_token: str = ""
+
+    def __getitem__(self, key: str) -> Any:
+        """Allow dict-style access for backwards compatibility"""
+        return getattr(self, key)
+    
+    def __setitem__(self, key: str, value: Any) -> None:
+        """Allow dict-style assignment for backwards compatibility"""
+        setattr(self, key, value)
+    
+    def get(self, key: str, default: Any = None) -> Any:
+        """Allow dict-style .get() for backwards compatibility"""
+        return getattr(self, key, default)
+    
+    def copy(self) -> "Settings":
+        """Return a copy of the settings"""
+        return self.model_copy()
 
 
-class PartialSettings(Settings, total=False):
-    pass
-
-
-class FieldOption(TypedDict):
+class FieldOption(BaseModel):
+    """Field option for select fields"""
     value: str
     label: str
 
 
-class SettingsField(TypedDict, total=False):
+class SettingsField(BaseModel):
+    """Settings field definition"""
+    model_config = ConfigDict(extra='forbid')
+    
     id: str
     title: str
-    description: str
+    description: str = ""
     type: Literal[
         "text", "number", "select", "range", "textarea", "password", "switch", "button"
     ]
     value: Any
-    min: float
-    max: float
-    step: float
-    hidden: bool
-    options: list[FieldOption]
+    min: Optional[float] = None
+    max: Optional[float] = None
+    step: Optional[float] = None
+    hidden: bool = False
+    options: List[FieldOption] = Field(default_factory=list)
 
 
-class SettingsSection(TypedDict, total=False):
+class SettingsSection(BaseModel):
+    """Settings section definition"""
+    model_config = ConfigDict(extra='forbid')
+    
     id: str
     title: str
-    description: str
-    fields: list[SettingsField]
-    tab: str  # Indicates which tab this section belongs to
+    description: str = ""
+    fields: List[SettingsField]
+    tab: str = "agent"
 
 
-class SettingsOutput(TypedDict):
-    sections: list[SettingsSection]
+class SettingsOutput(BaseModel):
+    """Settings output structure"""
+    sections: List[SettingsSection]
 
 
 PASSWORD_PLACEHOLDER = "****PSWD****"
@@ -118,6 +152,9 @@ _settings: Settings | None = None
 _settings_portal_cm = None
 _settings_portal = None
 
+# Flag to prevent Docker message spam
+_docker_message_shown = False
+
 
 def _get_settings_portal():
     """Get or create the settings portal"""
@@ -128,290 +165,305 @@ def _get_settings_portal():
     return _settings_portal
 
 
+def _create_field(**kwargs) -> SettingsField:
+    """Helper to create SettingsField with proper types"""
+    if 'options' in kwargs and isinstance(kwargs['options'], list):
+        kwargs['options'] = [
+            FieldOption(value=opt['value'], label=opt['label']) 
+            if isinstance(opt, dict) else opt 
+            for opt in kwargs['options']
+        ]
+    return SettingsField(**kwargs)
+
+def _create_section(**kwargs) -> SettingsSection:
+    """Helper to create SettingsSection with proper types"""
+    return SettingsSection(**kwargs)
+
 def convert_out(settings: Settings) -> SettingsOutput:
     from src.models import ModelProvider
 
     # main model section
     chat_model_fields: list[SettingsField] = []
     chat_model_fields.append(
-        {
-            "id": "chat_model_provider",
-            "title": "Chat model provider",
-            "description": "Select provider for main chat model used by Maho",
-            "type": "select",
-            "value": settings["chat_model_provider"],
-            "options": [{"value": p.name, "label": p.value} for p in ModelProvider],
-        }
+        SettingsField(
+            id="chat_model_provider",
+            title="Chat model provider",
+            description="Select provider for main chat model used by Maho",
+            type="select",
+            value=settings["chat_model_provider"],
+            options=[FieldOption(value=p.name, label=p.value) for p in ModelProvider],
+        )
     )
     chat_model_fields.append(
-        {
-            "title": "Chat model name",
-            "description": "Exact name of model from selected provider",
-            "type": "text",
-            "value": settings["chat_model_name"],
-        }
+        _create_field(
+            id="chat_model_name",
+            title="Chat model name",
+            description="Exact name of model from selected provider",
+            type="text",
+            value=settings["chat_model_name"],
+        )
     )
 
     chat_model_fields.append(
-        {
-            "id": "chat_model_ctx_length",
-            "title": "Chat model context length",
-            "description": "Maximum number of tokens in the context window for LLM. System prompt, chat history, RAG and response all count towards this limit.",
-            "type": "number",
-            "value": settings["chat_model_ctx_length"],
-        }
+        _create_field(
+            id="chat_model_ctx_length",
+            title="Chat model context length",
+            description="Maximum number of tokens in the context window for LLM. System prompt, chat history, RAG and response all count towards this limit.",
+            type="number",
+            value=settings["chat_model_ctx_length"],
+        )
     )
 
     chat_model_fields.append(
-        {
-            "id": "chat_model_ctx_history",
-            "title": "Context window space for chat history",
-            "description": "Portion of context window dedicated to chat history visible to the agent. Chat history will automatically be optimized to fit. Smaller size will result in shorter and more summarized history. The remaining space will be used for system prompt, RAG and response.",
-            "type": "range",
-            "min": 0.01,
-            "max": 1,
-            "step": 0.01,
-            "value": settings["chat_model_ctx_history"],
-        }
+        _create_field(
+            id="chat_model_ctx_history",
+            title="Context window space for chat history",
+            description="Portion of context window dedicated to chat history visible to the agent. Chat history will automatically be optimized to fit. Smaller size will result in shorter and more summarized history. The remaining space will be used for system prompt, RAG and response.",
+            type="range",
+            min=0.01,
+            max=1,
+            step=0.01,
+            value=settings["chat_model_ctx_history"],
+        )
     )
 
     chat_model_fields.append(
-        {
-            "id": "chat_model_vision",
-            "title": "Supports Vision",
-            "description": "Models capable of Vision can for example natively see the content of image attachments.",
-            "type": "switch",
-            "value": settings["chat_model_vision"],
-        }
+        _create_field(
+            id="chat_model_vision",
+            title="Supports Vision",
+            description="Models capable of Vision can for example natively see the content of image attachments.",
+            type="switch",
+            value=settings["chat_model_vision"],
+        )
     )
 
     chat_model_fields.append(
-        {
-            "id": "chat_model_rl_requests",
-            "title": "Requests per minute limit",
-            "description": "Limits the number of requests per minute to the chat model. Waits if the limit is exceeded. Set to 0 to disable rate limiting.",
-            "type": "number",
-            "value": settings["chat_model_rl_requests"],
-        }
+        _create_field(
+            id="chat_model_rl_requests",
+            title="Requests per minute limit",
+            description="Limits the number of requests per minute to the chat model. Waits if the limit is exceeded. Set to 0 to disable rate limiting.",
+            type="number",
+            value=settings["chat_model_rl_requests"],
+        )
     )
 
     chat_model_fields.append(
-        {
-            "id": "chat_model_rl_input",
-            "title": "Input tokens per minute limit",
-            "description": "Limits the number of input tokens per minute to the chat model. Waits if the limit is exceeded. Set to 0 to disable rate limiting.",
-            "type": "number",
-            "value": settings["chat_model_rl_input"],
-        }
+        _create_field(
+            id="chat_model_rl_input",
+            title="Input tokens per minute limit",
+            description="Limits the number of input tokens per minute to the chat model. Waits if the limit is exceeded. Set to 0 to disable rate limiting.",
+            type="number",
+            value=settings["chat_model_rl_input"],
+        )
     )
 
     chat_model_fields.append(
-        {
-            "id": "chat_model_rl_output",
-            "title": "Output tokens per minute limit",
-            "description": "Limits the number of output tokens per minute to the chat model. Waits if the limit is exceeded. Set to 0 to disable rate limiting.",
-            "type": "number",
-            "value": settings["chat_model_rl_output"],
-        }
+        _create_field(
+            id="chat_model_rl_output",
+            title="Output tokens per minute limit",
+            description="Limits the number of output tokens per minute to the chat model. Waits if the limit is exceeded. Set to 0 to disable rate limiting.",
+            type="number",
+            value=settings["chat_model_rl_output"],
+        )
     )
 
     chat_model_fields.append(
-        {
-            "id": "chat_model_kwargs",
-            "title": "Chat model additional parameters",
-            "description": "Any other parameters supported by the model. Format is KEY=VALUE on individual lines, just like .env file.",
-            "type": "textarea",
-            "value": _dict_to_env(settings["chat_model_kwargs"]),
-        }
+        _create_field(
+            id="chat_model_kwargs",
+            title="Chat model additional parameters",
+            description="Any other parameters supported by the model. Format is KEY=VALUE on individual lines, just like .env file.",
+            type="textarea",
+            value=_dict_to_env(settings["chat_model_kwargs"]),
+        )
     )
 
-    chat_model_section: SettingsSection = {
-        "id": "chat_model",
-        "title": "Chat Model",
-        "description": "Selection and settings for main chat model used by Maho",
-        "fields": chat_model_fields,
-        "tab": "agent",
-    }
+    chat_model_section = _create_section(
+        id="chat_model",
+        title="Chat Model",
+        description="Selection and settings for main chat model used by Maho",
+        fields=chat_model_fields,
+        tab="agent",
+    )
 
     # main model section
     util_model_fields: list[SettingsField] = []
     util_model_fields.append(
-        {
-            "id": "util_model_provider",
-            "title": "Utility model provider",
-            "description": "Select provider for utility model used by the framework",
-            "type": "select",
-            "value": settings["util_model_provider"],
-            "options": [{"value": p.name, "label": p.value} for p in ModelProvider],
-        }
+        _create_field(
+            id="util_model_provider",
+            title="Utility model provider",
+            description="Select provider for utility model used by the framework",
+            type="select",
+            value=settings["util_model_provider"],
+            options=[{"value": p.name, "label": p.value} for p in ModelProvider],
+        )
     )
     util_model_fields.append(
-        {
-            "id": "util_model_name",
-            "title": "Utility model name",
-            "description": "Exact name of model from selected provider",
-            "type": "text",
-            "value": settings["util_model_name"],
-        }
+        _create_field(
+            id="util_model_name",
+            title="Utility model name",
+            description="Exact name of model from selected provider",
+            type="text",
+            value=settings["util_model_name"],
+        )
     )
 
     util_model_fields.append(
-        {
-            "id": "util_model_rl_requests",
-            "title": "Requests per minute limit",
-            "description": "Limits the number of requests per minute to the utility model. Waits if the limit is exceeded. Set to 0 to disable rate limiting.",
-            "type": "number",
-            "value": settings["util_model_rl_requests"],
-        }
+        _create_field(
+            id="util_model_rl_requests",
+            title="Requests per minute limit",
+            description="Limits the number of requests per minute to the utility model. Waits if the limit is exceeded. Set to 0 to disable rate limiting.",
+            type="number",
+            value=settings["util_model_rl_requests"],
+        )
     )
 
     util_model_fields.append(
-        {
-            "id": "util_model_rl_input",
-            "title": "Input tokens per minute limit",
-            "description": "Limits the number of input tokens per minute to the utility model. Waits if the limit is exceeded. Set to 0 to disable rate limiting.",
-            "type": "number",
-            "value": settings["util_model_rl_input"],
-        }
+        _create_field(
+            id="util_model_rl_input",
+            title="Input tokens per minute limit",
+            description="Limits the number of input tokens per minute to the utility model. Waits if the limit is exceeded. Set to 0 to disable rate limiting.",
+            type="number",
+            value=settings["util_model_rl_input"],
+        )
     )
 
     util_model_fields.append(
-        {
-            "id": "util_model_rl_output",
-            "title": "Output tokens per minute limit",
-            "description": "Limits the number of output tokens per minute to the utility model. Waits if the limit is exceeded. Set to 0 to disable rate limiting.",
-            "type": "number",
-            "value": settings["util_model_rl_output"],
-        }
+        _create_field(
+            id="util_model_rl_output",
+            title="Output tokens per minute limit",
+            description="Limits the number of output tokens per minute to the utility model. Waits if the limit is exceeded. Set to 0 to disable rate limiting.",
+            type="number",
+            value=settings["util_model_rl_output"],
+        )
     )
 
     util_model_fields.append(
-        {
-            "id": "util_model_kwargs",
-            "title": "Utility model additional parameters",
-            "description": "Any other parameters supported by the model. Format is KEY=VALUE on individual lines, just like .env file.",
-            "type": "textarea",
-            "value": _dict_to_env(settings["util_model_kwargs"]),
-        }
+        _create_field(
+            id="util_model_kwargs",
+            title="Utility model additional parameters",
+            description="Any other parameters supported by the model. Format is KEY=VALUE on individual lines, just like .env file.",
+            type="textarea",
+            value=_dict_to_env(settings["util_model_kwargs"]),
+        )
     )
 
-    util_model_section: SettingsSection = {
-        "id": "util_model",
-        "title": "Utility model",
-        "description": "Smaller, cheaper, faster model for handling utility tasks like organizing memory, preparing prompts, summarizing.",
-        "fields": util_model_fields,
-        "tab": "agent",
-    }
+    util_model_section = _create_section(
+        id="util_model",
+        title="Utility model",
+        description="Smaller, cheaper, faster model for handling utility tasks like organizing memory, preparing prompts, summarizing.",
+        fields=util_model_fields,
+        tab="agent",
+    )
 
     # embedding model section
     embed_model_fields: list[SettingsField] = []
     embed_model_fields.append(
-        {
-            "id": "embed_model_provider",
-            "title": "Embedding model provider",
-            "description": "Select provider for embedding model used by the framework",
-            "type": "select",
-            "value": settings["embed_model_provider"],
-            "options": [{"value": p.name, "label": p.value} for p in ModelProvider],
-        }
+        _create_field(
+            id="embed_model_provider",
+            title="Embedding model provider",
+            description="Select provider for embedding model used by the framework",
+            type="select",
+            value=settings["embed_model_provider"],
+            options=[{"value": p.name, "label": p.value} for p in ModelProvider],
+        )
     )
     embed_model_fields.append(
-        {
-            "id": "embed_model_name",
-            "title": "Embedding model name",
-            "description": "Exact name of model from selected provider",
-            "type": "text",
-            "value": settings["embed_model_name"],
-        }
-    )
-
-    embed_model_fields.append(
-        {
-            "id": "embed_model_rl_requests",
-            "title": "Requests per minute limit",
-            "description": "Limits the number of requests per minute to the embedding model. Waits if the limit is exceeded. Set to 0 to disable rate limiting.",
-            "type": "number",
-            "value": settings["embed_model_rl_requests"],
-        }
+        _create_field(
+            id="embed_model_name",
+            title="Embedding model name",
+            description="Exact name of model from selected provider",
+            type="text",
+            value=settings["embed_model_name"],
+        )
     )
 
     embed_model_fields.append(
-        {
-            "id": "embed_model_rl_input",
-            "title": "Input tokens per minute limit",
-            "description": "Limits the number of input tokens per minute to the embedding model. Waits if the limit is exceeded. Set to 0 to disable rate limiting.",
-            "type": "number",
-            "value": settings["embed_model_rl_input"],
-        }
+        _create_field(
+            id="embed_model_rl_requests",
+            title="Requests per minute limit",
+            description="Limits the number of requests per minute to the embedding model. Waits if the limit is exceeded. Set to 0 to disable rate limiting.",
+            type="number",
+            value=settings["embed_model_rl_requests"],
+        )
     )
 
     embed_model_fields.append(
-        {
-            "id": "embed_model_kwargs",
-            "title": "Embedding model additional parameters",
-            "description": "Any other parameters supported by the model. Format is KEY=VALUE on individual lines, just like .env file.",
-            "type": "textarea",
-            "value": _dict_to_env(settings["embed_model_kwargs"]),
-        }
+        _create_field(
+            id="embed_model_rl_input",
+            title="Input tokens per minute limit",
+            description="Limits the number of input tokens per minute to the embedding model. Waits if the limit is exceeded. Set to 0 to disable rate limiting.",
+            type="number",
+            value=settings["embed_model_rl_input"],
+        )
     )
 
-    embed_model_section: SettingsSection = {
-        "id": "embed_model",
-        "title": "Embedding Model",
-        "description": "Settings for the embedding model used by Maho.",
-        "fields": embed_model_fields,
-        "tab": "agent",
-    }
+    embed_model_fields.append(
+        _create_field(
+            id="embed_model_kwargs",
+            title="Embedding model additional parameters",
+            description="Any other parameters supported by the model. Format is KEY=VALUE on individual lines, just like .env file.",
+            type="textarea",
+            value=_dict_to_env(settings["embed_model_kwargs"]),
+        )
+    )
 
-    # embedding model section
+    embed_model_section = _create_section(
+        id="embed_model",
+        title="Embedding Model",
+        description="Settings for the embedding model used by Maho.",
+        fields=embed_model_fields,
+        tab="agent",
+    )
+
+    # browser model section
     browser_model_fields: list[SettingsField] = []
     browser_model_fields.append(
-        {
-            "id": "browser_model_provider",
-            "title": "Web Browser model provider",
-            "description": "Select provider for web browser model used by <a href='https://github.com/browser-use/browser-use' target='_blank'>browser-use</a> framework",
-            "type": "select",
-            "value": settings["browser_model_provider"],
-            "options": [{"value": p.name, "label": p.value} for p in ModelProvider],
-        }
+        _create_field(
+            id="browser_model_provider",
+            title="Web Browser model provider",
+            description="Select provider for web browser model used by <a href='https://github.com/browser-use/browser-use' target='_blank'>browser-use</a> framework",
+            type="select",
+            value=settings["browser_model_provider"],
+            options=[{"value": p.name, "label": p.value} for p in ModelProvider],
+        )
     )
     browser_model_fields.append(
-        {
-            "id": "browser_model_name",
-            "title": "Web Browser model name",
-            "description": "Exact name of model from selected provider",
-            "type": "text",
-            "value": settings["browser_model_name"],
-        }
+        _create_field(
+            id="browser_model_name",
+            title="Web Browser model name",
+            description="Exact name of model from selected provider",
+            type="text",
+            value=settings["browser_model_name"],
+        )
     )
 
     browser_model_fields.append(
-        {
-            "id": "browser_model_vision",
-            "title": "Use Vision",
-            "description": "Models capable of Vision can use it to analyze web pages from screenshots. Increases quality but also token usage.",
-            "type": "switch",
-            "value": settings["browser_model_vision"],
-        }
+        _create_field(
+            id="browser_model_vision",
+            title="Use Vision",
+            description="Models capable of Vision can use it to analyze web pages from screenshots. Increases quality but also token usage.",
+            type="switch",
+            value=settings["browser_model_vision"],
+        )
     )
 
     browser_model_fields.append(
-        {
-            "id": "browser_model_kwargs",
-            "title": "Web Browser model additional parameters",
-            "description": "Any other parameters supported by the model. Format is KEY=VALUE on individual lines, just like .env file.",
-            "type": "textarea",
-            "value": _dict_to_env(settings["browser_model_kwargs"]),
-        }
+        _create_field(
+            id="browser_model_kwargs",
+            title="Web Browser model additional parameters",
+            description="Any other parameters supported by the model. Format is KEY=VALUE on individual lines, just like .env file.",
+            type="textarea",
+            value=_dict_to_env(settings["browser_model_kwargs"]),
+        )
     )
 
-    browser_model_section: SettingsSection = {
-        "id": "browser_model",
-        "title": "Web Browser Model",
-        "description": "Settings for the web browser model. Maho uses <a href='https://github.com/browser-use/browser-use' target='_blank'>browser-use</a> agentic framework to handle web interactions.",
-        "fields": browser_model_fields,
-        "tab": "agent",
-    }
+    browser_model_section = _create_section(
+        id="browser_model",
+        title="Web Browser Model",
+        description="Settings for the web browser model. Maho uses <a href='https://github.com/browser-use/browser-use' target='_blank'>browser-use</a> agentic framework to handle web interactions.",
+        fields=browser_model_fields,
+        tab="agent",
+    )
 
     # # Memory settings section
     # memory_fields: list[SettingsField] = []
@@ -436,47 +488,47 @@ def convert_out(settings: Settings) -> SettingsOutput:
     auth_fields: list[SettingsField] = []
 
     auth_fields.append(
-        {
-            "id": "auth_login",
-            "title": "UI Login",
-            "description": "Set user name for web UI",
-            "type": "text",
-            "value": dotenv.get_dotenv_value(dotenv.KEY_AUTH_LOGIN) or "",
-        }
+        _create_field(
+            id="auth_login",
+            title="UI Login",
+            description="Set user name for web UI",
+            type="text",
+            value=dotenv.get_dotenv_value(dotenv.KEY_AUTH_LOGIN) or "",
+        )
     )
 
     auth_fields.append(
-        {
-            "id": "auth_password",
-            "title": "UI Password",
-            "description": "Set user password for web UI",
-            "type": "password",
-            "value": (
+        _create_field(
+            id="auth_password",
+            title="UI Password",
+            description="Set user password for web UI",
+            type="password",
+            value=(
                 PASSWORD_PLACEHOLDER
                 if dotenv.get_dotenv_value(dotenv.KEY_AUTH_PASSWORD)
                 else ""
             ),
-        }
+        )
     )
 
     if runtime.is_dockerized():
         auth_fields.append(
-            {
-                "id": "root_password",
-                "title": "root Password",
-                "description": "Change linux root password in docker container. This password can be used for SSH access. Original password was randomly generated during setup.",
-                "type": "password",
-                "value": "",
-            }
+            _create_field(
+                id="root_password",
+                title="root Password",
+                description="Change linux root password in docker container. This password can be used for SSH access. Original password was randomly generated during setup.",
+                type="password",
+                value="",
+            )
         )
 
-    auth_section: SettingsSection = {
-        "id": "auth",
-        "title": "Authentication",
-        "description": "Settings for authentication to use Maho Web UI.",
-        "fields": auth_fields,
-        "tab": "external",
-    }
+    auth_section = _create_section(
+        id="auth",
+        title="Authentication",
+        description="Settings for authentication to use Maho Web UI.",
+        fields=auth_fields,
+        tab="external",
+    )
 
     # api keys model section
     api_keys_fields: list[SettingsField] = []
@@ -502,66 +554,66 @@ def convert_out(settings: Settings) -> SettingsOutput:
         _get_api_key_field(settings, "sambanova", "Sambanova API Key")
     )
 
-    api_keys_section: SettingsSection = {
-        "id": "api_keys",
-        "title": "API Keys",
-        "description": "API keys for model providers and services used by Maho.",
-        "fields": api_keys_fields,
-        "tab": "external",
-    }
+    api_keys_section = _create_section(
+        id="api_keys",
+        title="API Keys",
+        description="API keys for model providers and services used by Maho.",
+        fields=api_keys_fields,
+        tab="external",
+    )
 
     # Agent config section
     agent_fields: list[SettingsField] = []
 
     agent_fields.append(
-        {
-            "id": "agent_prompts_subdir",
-            "title": "Prompts Subdirectory",
-            "description": "Subdirectory of /prompts folder to use for agent prompts. Used to adjust agent behaviour.",
-            "type": "select",
-            "value": settings["agent_prompts_subdir"],
-            "options": [
+        _create_field(
+            id="agent_prompts_subdir",
+            title="Prompts Subdirectory",
+            description="Subdirectory of /prompts folder to use for agent prompts. Used to adjust agent behaviour.",
+            type="select",
+            value=settings["agent_prompts_subdir"],
+            options=[
                 {"value": subdir, "label": subdir}
                 for subdir in files.get_subdirectories("prompts")
             ],
-        }
+        )
     )
 
     agent_fields.append(
-        {
-            "id": "agent_memory_subdir",
-            "title": "Memory Subdirectory",
-            "description": "Subdirectory of /memory folder to use for agent memory storage. Used to separate memory storage between different instances.",
-            "type": "text",
-            "value": settings["agent_memory_subdir"],
+        _create_field(
+            id="agent_memory_subdir",
+            title="Memory Subdirectory",
+            description="Subdirectory of /memory folder to use for agent memory storage. Used to separate memory storage between different instances.",
+            type="text",
+            value=settings["agent_memory_subdir"],
             # "options": [
             #     {"value": subdir, "label": subdir}
             #     for subdir in files.get_subdirectories("memory", exclude="embeddings")
             # ],
-        }
+        )
     )
 
     agent_fields.append(
-        {
-            "id": "agent_knowledge_subdir",
-            "title": "Knowledge subdirectory",
-            "description": "Subdirectory of /knowledge folder to use for agent knowledge import. 'default' subfolder is always imported and contains framework knowledge.",
-            "type": "select",
-            "value": settings["agent_knowledge_subdir"],
-            "options": [
+        _create_field(
+            id="agent_knowledge_subdir",
+            title="Knowledge subdirectory",
+            description="Subdirectory of /knowledge folder to use for agent knowledge import. 'default' subfolder is always imported and contains framework knowledge.",
+            type="select",
+            value=settings["agent_knowledge_subdir"],
+            options=[
                 {"value": subdir, "label": subdir}
                 for subdir in files.get_subdirectories("knowledge", exclude="default")
             ],
-        }
+        )
     )
 
-    agent_section: SettingsSection = {
-        "id": "agent",
-        "title": "Agent Config",
-        "description": "Agent parameters.",
-        "fields": agent_fields,
-        "tab": "agent",
-    }
+    agent_section = _create_section(
+        id="agent",
+        title="Agent Config",
+        description="Agent parameters.",
+        fields=agent_fields,
+        tab="agent",
+    )
 
     dev_fields: list[SettingsField] = []
 
@@ -577,69 +629,69 @@ def convert_out(settings: Settings) -> SettingsOutput:
         # )
 
         dev_fields.append(
-            {
-                "id": "rfc_url",
-                "title": "RFC Destination URL",
-                "description": "URL of dockerized Maho instance for remote function calls. Do not specify port here.",
-                "type": "text",
-                "value": settings["rfc_url"],
-            }
+            _create_field(
+                id="rfc_url",
+                title="RFC Destination URL",
+                description="URL of dockerized Maho instance for remote function calls. Do not specify port here.",
+                type="text",
+                value=settings["rfc_url"],
+            )
         )
 
     dev_fields.append(
-        {
-            "id": "rfc_password",
-            "title": "RFC Password",
-            "description": "Password for remote function calls. Passwords must match on both instances. RFCs can not be used with empty password.",
-            "type": "password",
-            "value": (
+        _create_field(
+            id="rfc_password",
+            title="RFC Password",
+            description="Password for remote function calls. Passwords must match on both instances. RFCs can not be used with empty password.",
+            type="password",
+            value=(
                 PASSWORD_PLACEHOLDER
                 if dotenv.get_dotenv_value(dotenv.KEY_RFC_PASSWORD)
                 else ""
             ),
-        }
+        )
     )
 
     if runtime.is_development():
         dev_fields.append(
-            {
-                "id": "rfc_port_http",
-                "title": "RFC HTTP port",
-                "description": "HTTP port for dockerized instance of Maho.",
-                "type": "text",
-                "value": settings["rfc_port_http"],
-            }
+            _create_field(
+                id="rfc_port_http",
+                title="RFC HTTP port",
+                description="HTTP port for dockerized instance of Maho.",
+                type="text",
+                value=settings["rfc_port_http"],
+            )
         )
 
         dev_fields.append(
-            {
-                "id": "rfc_port_ssh",
-                "title": "RFC SSH port",
-                "description": "SSH port for dockerized instance of Maho.",
-                "type": "text",
-                "value": settings["rfc_port_ssh"],
-            }
+            _create_field(
+                id="rfc_port_ssh",
+                title="RFC SSH port",
+                description="SSH port for dockerized instance of Maho.",
+                type="text",
+                value=settings["rfc_port_ssh"],
+            )
         )
 
-    dev_section: SettingsSection = {
-        "id": "dev",
-        "title": "Development",
-                    "description": "Parameters for Maho framework development. RFCs (remote function calls) are used to call functions on another Maho instance. You can develop and debug Maho natively on your local system while redirecting some functions to Maho instance in docker. This is crucial for development as Maho needs to run in standardized environment to support all features.",
-        "fields": dev_fields,
-        "tab": "developer",
-    }
+    dev_section = _create_section(
+        id="dev",
+        title="Development",
+        description="Parameters for Maho framework development. RFCs (remote function calls) are used to call functions on another Maho instance. You can develop and debug Maho natively on your local system while redirecting some functions to Maho instance in docker. This is crucial for development as Maho needs to run in standardized environment to support all features.",
+        fields=dev_fields,
+        tab="developer",
+    )
 
     # Speech to text section
     stt_fields: list[SettingsField] = []
 
     stt_fields.append(
-        {
-            "id": "stt_model_size",
-            "title": "Model Size",
-            "description": "Select the speech recognition model size",
-            "type": "select",
-            "value": settings["stt_model_size"],
-            "options": [
+        _create_field(
+            id="stt_model_size",
+            title="Model Size",
+            description="Select the speech recognition model size",
+            type="select",
+            value=settings["stt_model_size"],
+            options=[
                 {"value": "tiny", "label": "Tiny (39M, English)"},
                 {"value": "base", "label": "Base (74M, English)"},
                 {"value": "small", "label": "Small (244M, English)"},
@@ -647,146 +699,146 @@ def convert_out(settings: Settings) -> SettingsOutput:
                 {"value": "large", "label": "Large (1.5B, Multilingual)"},
                 {"value": "turbo", "label": "Turbo (Multilingual)"},
             ],
-        }
+        )
     )
 
     stt_fields.append(
-        {
-            "id": "stt_language",
-            "title": "Language Code",
-            "description": "Language code (e.g. en, fr, it)",
-            "type": "text",
-            "value": settings["stt_language"],
-        }
+        _create_field(
+            id="stt_language",
+            title="Language Code",
+            description="Language code (e.g. en, fr, it)",
+            type="text",
+            value=settings["stt_language"],
+        )
     )
 
     stt_fields.append(
-        {
-            "id": "stt_silence_threshold",
-            "title": "Silence threshold",
-            "description": "Silence detection threshold. Lower values are more sensitive.",
-            "type": "range",
-            "min": 0,
-            "max": 1,
-            "step": 0.01,
-            "value": settings["stt_silence_threshold"],
-        }
+        _create_field(
+            id="stt_silence_threshold",
+            title="Silence threshold",
+            description="Silence detection threshold. Lower values are more sensitive.",
+            type="range",
+            min=0,
+            max=1,
+            step=0.01,
+            value=settings["stt_silence_threshold"],
+        )
     )
 
     stt_fields.append(
-        {
-            "id": "stt_silence_duration",
-            "title": "Silence duration (ms)",
-            "description": "Duration of silence before the server considers speaking to have ended.",
-            "type": "text",
-            "value": settings["stt_silence_duration"],
-        }
+        _create_field(
+            id="stt_silence_duration",
+            title="Silence duration (ms)",
+            description="Duration of silence before the server considers speaking to have ended.",
+            type="text",
+            value=settings["stt_silence_duration"],
+        )
     )
 
     stt_fields.append(
-        {
-            "id": "stt_waiting_timeout",
-            "title": "Waiting timeout (ms)",
-            "description": "Duration before the server closes the microphone.",
-            "type": "text",
-            "value": settings["stt_waiting_timeout"],
-        }
+        _create_field(
+            id="stt_waiting_timeout",
+            title="Waiting timeout (ms)",
+            description="Duration before the server closes the microphone.",
+            type="text",
+            value=settings["stt_waiting_timeout"],
+        )
     )
 
-    stt_section: SettingsSection = {
-        "id": "stt",
-        "title": "Speech to Text",
-        "description": "Voice transcription preferences and server turn detection settings.",
-        "fields": stt_fields,
-        "tab": "agent",
-    }
+    stt_section = _create_section(
+        id="stt",
+        title="Speech to Text",
+        description="Voice transcription preferences and server turn detection settings.",
+        fields=stt_fields,
+        tab="agent",
+    )
 
     # MCP section
     mcp_client_fields: list[SettingsField] = []
 
     mcp_client_fields.append(
-        {
-            "id": "mcp_servers_config",
-            "title": "MCP Servers Configuration",
-            "description": "External MCP servers can be configured here.",
-            "type": "button",
-            "value": "Open",
-        }
+        _create_field(
+            id="mcp_servers_config",
+            title="MCP Servers Configuration",
+            description="External MCP servers can be configured here.",
+            type="button",
+            value="Open",
+        )
     )
 
     mcp_client_fields.append(
-        {
-            "id": "mcp_servers",
-            "title": "MCP Servers",
-            "description": "(JSON list of) >> RemoteServer <<: [name, url, headers, timeout (opt), sse_read_timeout (opt), disabled (opt)] / >> Local Server <<: [name, command, args, env, encoding (opt), encoding_error_handler (opt), disabled (opt)]",
-            "type": "textarea",
-            "value": settings["mcp_servers"],
-            "hidden": True,
-        }
+        _create_field(
+            id="mcp_servers",
+            title="MCP Servers",
+            description="(JSON list of) >> RemoteServer <<: [name, url, headers, timeout (opt), sse_read_timeout (opt), disabled (opt)] / >> Local Server <<: [name, command, args, env, encoding (opt), encoding_error_handler (opt), disabled (opt)]",
+            type="textarea",
+            value=settings["mcp_servers"],
+            hidden=True,
+        )
     )
 
     mcp_client_fields.append(
-        {
-            "id": "mcp_client_init_timeout",
-            "title": "MCP Client Init Timeout",
-            "description": "Timeout for MCP client initialization (in seconds). Higher values might be required for complex MCPs, but might also slowdown system startup.",
-            "type": "number",
-            "value": settings["mcp_client_init_timeout"],
-        }
+        _create_field(
+            id="mcp_client_init_timeout",
+            title="MCP Client Init Timeout",
+            description="Timeout for MCP client initialization (in seconds). Higher values might be required for complex MCPs, but might also slowdown system startup.",
+            type="number",
+            value=settings["mcp_client_init_timeout"],
+        )
     )
 
     mcp_client_fields.append(
-        {
-            "id": "mcp_client_tool_timeout",
-            "title": "MCP Client Tool Timeout",
-            "description": "Timeout for MCP client tool execution. Higher values might be required for complex tools, but might also result in long responses with failing tools.",
-            "type": "number",
-            "value": settings["mcp_client_tool_timeout"],
-        }
+        _create_field(
+            id="mcp_client_tool_timeout",
+            title="MCP Client Tool Timeout",
+            description="Timeout for MCP client tool execution. Higher values might be required for complex tools, but might also result in long responses with failing tools.",
+            type="number",
+            value=settings["mcp_client_tool_timeout"],
+        )
     )
 
-    mcp_client_section: SettingsSection = {
-        "id": "mcp_client",
-        "title": "External MCP Servers",
-        "description": "Maho can use external MCP servers, local or remote as tools.",
-        "fields": mcp_client_fields,
-        "tab": "mcp",
-    }
+    mcp_client_section = _create_section(
+        id="mcp_client",
+        title="External MCP Servers",
+        description="Maho can use external MCP servers, local or remote as tools.",
+        fields=mcp_client_fields,
+        tab="mcp",
+    )
 
     mcp_server_fields: list[SettingsField] = []
 
     mcp_server_fields.append(
-        {
-            "id": "mcp_server_enabled",
-            "title": "Enable Maho MCP Server",
-            "description": "Expose Maho as an SSE MCP server. This will make this Maho instance available to MCP clients.",
-            "type": "switch",
-            "value": settings["mcp_server_enabled"],
-        }
+        _create_field(
+            id="mcp_server_enabled",
+            title="Enable Maho MCP Server",
+            description="Expose Maho as an SSE MCP server. This will make this Maho instance available to MCP clients.",
+            type="switch",
+            value=settings["mcp_server_enabled"],
+        )
     )
 
     mcp_server_fields.append(
-        {
-            "id": "mcp_server_token",
-            "title": "MCP Server Token",
-            "description": "Token for MCP server authentication.",
-            "type": "text",
-            "hidden": True,
-            "value": settings["mcp_server_token"],
-        }
+        _create_field(
+            id="mcp_server_token",
+            title="MCP Server Token",
+            description="Token for MCP server authentication.",
+            type="text",
+            hidden=True,
+            value=settings["mcp_server_token"],
+        )
     )
 
-    mcp_server_section: SettingsSection = {
-        "id": "mcp_server",
-        "title": "Maho MCP Server",
-        "description": "Maho can be exposed as an SSE MCP server. See <a href=\"javascript:openModal('settings/mcp/server/example.html')\">connection example</a>.",
-        "fields": mcp_server_fields,
-        "tab": "mcp",
-    }
+    mcp_server_section = _create_section(
+        id="mcp_server",
+        title="Maho MCP Server",
+        description="Maho can be exposed as an SSE MCP server. See <a href=\"javascript:openModal('settings/mcp/server/example.html')\">connection example</a>.",
+        fields=mcp_server_fields,
+        tab="mcp",
+    )
 
     # Add the section to the result
-    result: SettingsOutput = {
-        "sections": [
+    return SettingsOutput(
+        sections=[
             agent_section,
             chat_model_section,
             util_model_section,
@@ -800,22 +852,23 @@ def convert_out(settings: Settings) -> SettingsOutput:
             mcp_server_section,
             dev_section,
         ]
-    }
-    return result
+    )
 
 
 def _get_api_key_field(settings: Settings, provider: str, title: str) -> SettingsField:
     key = settings["api_keys"].get(provider, models.get_api_key(provider))
-    return {
-        "id": f"api_key_{provider}",
-        "title": title,
-        "type": "password",
-        "value": (PASSWORD_PLACEHOLDER if key and key != "None" else ""),
-    }
+    return _create_field(
+        id=f"api_key_{provider}",
+        title=title,
+        type="password",
+        value=(PASSWORD_PLACEHOLDER if key and key != "None" else ""),
+    )
 
 
 def convert_in(settings: dict) -> Settings:
     current = get_settings()
+    current_dict = current.model_dump()  # Convert to dict for easier manipulation
+    
     for section in settings["sections"]:
         if "fields" in section:
             for field in section["fields"]:
@@ -824,12 +877,14 @@ def convert_in(settings: dict) -> Settings:
                     continue
                 if field["value"] != PASSWORD_PLACEHOLDER:
                     if field["id"].endswith("_kwargs"):
-                        current[field["id"]] = _env_to_dict(field["value"])
+                        current_dict[field["id"]] = _env_to_dict(field["value"])
                     elif field["id"].startswith("api_key_"):
-                        current["api_keys"][field["id"]] = field["value"]
+                        current_dict["api_keys"][field["id"]] = field["value"]
                     else:
-                        current[field["id"]] = field["value"]
-    return current
+                        current_dict[field["id"]] = field["value"]
+    
+    # Create new Settings instance from the modified dict
+    return Settings(**current_dict)
 
 
 def get_settings() -> Settings:
@@ -853,48 +908,64 @@ def set_settings(settings: Settings, apply: bool = True):
 
 def set_settings_delta(delta: dict, apply: bool = True):
     current = get_settings()
-    new = {**current, **delta}
-    set_settings(new, apply)  # type: ignore
+    current_dict = current.model_dump()
+    new_dict = {**current_dict, **delta}
+    new_settings = Settings(**new_dict)
+    set_settings(new_settings, apply)
 
 
-def normalize_settings(settings: Settings) -> Settings:
-    copy = settings.copy()
-    default = get_default_settings()
+def normalize_settings(settings: Settings | dict) -> Settings:
+    # Handle both Settings objects and dicts for backwards compatibility
+    if isinstance(settings, dict):
+        settings_dict = settings
+    else:
+        settings_dict = settings.model_dump()
+    
+    default_dict = get_default_settings().model_dump()
 
     # remove keys that are not in default
-    keys_to_remove = [key for key in copy if key not in default]
+    keys_to_remove = [key for key in settings_dict if key not in default_dict]
     for key in keys_to_remove:
-        del copy[key]
+        del settings_dict[key]
 
     # add missing keys and normalize types
-    for key, value in default.items():
-        if key not in copy:
-            copy[key] = value
+    for key, value in default_dict.items():
+        if key not in settings_dict:
+            settings_dict[key] = value
         else:
             try:
-                copy[key] = type(value)(copy[key])  # type: ignore
+                settings_dict[key] = type(value)(settings_dict[key])  # type: ignore
             except (ValueError, TypeError):
-                copy[key] = value  # make default instead
+                settings_dict[key] = value  # make default instead
 
     # mcp server token is set automatically
-    copy["mcp_server_token"] = create_auth_token()
+    settings_dict["mcp_server_token"] = create_auth_token()
 
-    return copy
+    return Settings(**settings_dict)
 
 
 def _read_settings_file() -> Settings | None:
     if os.path.exists(SETTINGS_FILE):
         content = files.read_file(SETTINGS_FILE)
         parsed = json.loads(content)
-        return normalize_settings(parsed)
+        # Convert dict to Settings object, then normalize
+        try:
+            settings_obj = Settings(**parsed)
+            return normalize_settings(settings_obj)
+        except Exception:
+            # If conversion fails, use defaults
+            return None
 
 
 def _write_settings_file(settings: Settings):
     _write_sensitive_settings(settings)
-    _remove_sensitive_settings(settings)
+    
+    # Create a copy for writing (so we don't modify the original)
+    settings_copy = settings.model_copy()
+    _remove_sensitive_settings(settings_copy)
 
     # write settings
-    content = json.dumps(settings, indent=4)
+    content = json.dumps(settings_copy.model_dump(), indent=4)
     files.write_file(SETTINGS_FILE, content)
 
 

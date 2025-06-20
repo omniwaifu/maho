@@ -17,6 +17,7 @@ This is primarily a fork for my own experimentation, I would recommend using the
 
 - Anyio over Asyncio
 - Jinja2 over Markdown / Prompting Structure
+- FastAPI over Flask
 - Planned: rewrite of the frontend
 
 ## A personal, organic agentic framework that grows and learns with you

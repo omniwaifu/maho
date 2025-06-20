@@ -30,9 +30,11 @@ apt-get install -y --no-install-recommends \
     python3.12 python3.12-venv python3.12-dev
 
 # ★ 3. Switch the interpreter
-# update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.13 0
-# update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
-# update-alternatives --set python3 /usr/bin/python3.12
+update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.12 1
+update-alternatives --set python3 /usr/bin/python3.12
+# Create symlinks for python and pip
+ln -sf /usr/bin/python3.12 /usr/bin/python
+ln -sf /opt/venv/bin/pip /usr/bin/pip
 
 echo "====================PYTHON VERSION: $(python3 --version) ===================="
 echo "====================PYTHON OTHERS: $(ls /usr/bin/python*) "

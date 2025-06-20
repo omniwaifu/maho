@@ -78,6 +78,8 @@ RUN uv run playwright install chromium --only-shell
 
 # Copy preload script for model downloading
 COPY scripts/preload.py scripts/preload.py
+# Force cache invalidation for src/ directory (werkzeug fix)
+RUN echo "cache-bust-$(date +%s)" > /tmp/cache-bust
 COPY src/ src/
 
 # Preload models

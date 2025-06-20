@@ -23,9 +23,9 @@ classifiers = [
 requires-python = ">=3.12"
 dependencies = [
     # Web framework and ASGI
-    "a2wsgi==1.10.8",
-    "flask[async]==3.0.3",
-    "flask-basicauth==0.2.0",
+    "fastapi==0.115.13",
+    "uvicorn[standard]==0.32.1",
+    "python-multipart==0.0.20",
     # AI/ML frameworks (CPU-only, no CUDA)
     "langchain-anthropic==0.3.3",
     "langchain-community==0.3.19",

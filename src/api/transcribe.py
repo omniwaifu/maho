@@ -1,5 +1,5 @@
 from src.helpers.api import ApiHandler
-from flask import Request, Response
+from fastapi import Request, Response
 
 from src.helpers import runtime, settings, whisper
 

@@ -2,13 +2,14 @@ import os
 import re
 from src.helpers.api import ApiHandler
 from src.helpers import files
-from flask import Request, Response, send_file
+from fastapi import Request, Response
+from fastapi.responses import FileResponse
 
 
 class ImageGet(ApiHandler):
     async def process(self, input: dict, request: Request) -> dict | Response:
         # input data
-        path = input.get("path", request.args.get("path", ""))
+        path = input.get("path", request.query_params.get("path", ""))
         if not path:
             raise ValueError("No path provided")
 
@@ -31,4 +32,4 @@ class ImageGet(ApiHandler):
             raise ValueError("File not found")
 
         # send file
-        return send_file(path)
+        return FileResponse(path=path)

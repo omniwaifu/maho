@@ -1,7 +1,7 @@
 import base64
-from werkzeug.datastructures import FileStorage
 from src.helpers.api import ApiHandler
-from flask import Request, Response, send_file
+from fastapi import Request, Response, UploadFile, File, Form
+from typing import List, Optional
 
 from src.helpers.file_browser import FileBrowser
 from src.helpers import files, runtime
@@ -11,43 +11,50 @@ import os
 
 class UploadWorkDirFiles(ApiHandler):
     async def process(self, input: dict, request: Request) -> dict | Response:
-        if "files[]" not in request.files:
-            raise Exception("No files uploaded")
-
-        current_path = request.form.get("path", "")
-        uploaded_files = request.files.getlist("files[]")
-
-        # browser = FileBrowser()
-        # successful, failed = browser.save_files(uploaded_files, current_path)
-
-        successful, failed = await upload_files(uploaded_files, current_path)
-
-        if not successful and failed:
-            raise Exception("All uploads failed")
-
-        # result = browser.get_files(current_path)
-        result = await runtime.call_development_function(
-            get_work_dir_files.get_files, current_path
-        )
-
-        return {
-            "message": (
-                "Files uploaded successfully"
-                if not failed
-                else "Some files failed to upload"
-            ),
-            "data": result,
-            "successful": successful,
-            "failed": failed,
-        }
+        # This endpoint should be called directly with FastAPI's file upload handling
+        # The input dict won't contain files - they come through FastAPI's dependency injection
+        raise Exception("This endpoint should be called with proper file upload parameters")
 
 
-async def upload_files(uploaded_files: list[FileStorage], current_path: str):
+# Create proper FastAPI endpoint function that will be registered
+async def upload_files_endpoint(
+    files: List[UploadFile] = File(...),
+    path: str = Form("")
+) -> dict:
+    """Proper FastAPI file upload endpoint"""
+    
+    if not files:
+        raise Exception("No files uploaded")
+
+    current_path = path
+    
+    successful, failed = await upload_files(files, current_path)
+
+    if not successful and failed:
+        raise Exception("All uploads failed")
+
+    result = await runtime.call_development_function(
+        get_work_dir_files.get_files, current_path
+    )
+
+    return {
+        "message": (
+            "Files uploaded successfully"
+            if not failed
+            else "Some files failed to upload"
+        ),
+        "data": result,
+        "successful": successful,
+        "failed": failed,
+    }
+
+
+async def upload_files(uploaded_files: List[UploadFile], current_path: str):
     if runtime.is_development():
         successful = []
         failed = []
         for file in uploaded_files:
-            file_content = file.stream.read()
+            file_content = await file.read()
             base64_content = base64.b64encode(file_content).decode("utf-8")
             if await runtime.call_development_function(
                 upload_file, current_path, file.filename, base64_content

@@ -12,10 +12,14 @@ import struct
 from functools import wraps
 import threading
 import signal
-from flask import Flask, request, Response
-from flask_basicauth import BasicAuth
+from fastapi import FastAPI, Request, Response, HTTPException, Depends
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.security import HTTPBasic, HTTPBasicCredentials
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+import uvicorn
 import anyio
-import anyio.to_thread
 
 # Add the project root to Python path so we can import from src
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -34,14 +38,56 @@ os.environ["TZ"] = "UTC"
 # Apply the timezone change
 time.tzset()
 
-# initialize the internal Flask server
-webapp = Flask("app", static_folder=get_abs_path("./webui"), static_url_path="/")
-webapp.config["JSON_SORT_KEYS"] = False  # Disable key sorting in jsonify
+# Initialize FastAPI app
+app = FastAPI(
+    title="Maho Agent API",
+    description="AI Agent with tools, memory, and scheduling",
+    version="1.0.0"
+)
 
-lock = threading.Lock()
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# Set up basic authentication for UI and API but not MCP
-basic_auth = BasicAuth(webapp)
+# Mount static files properly - individual directories first
+app.mount("/css", StaticFiles(directory=get_abs_path("./webui/css")), name="css")
+app.mount("/js", StaticFiles(directory=get_abs_path("./webui/js")), name="js") 
+app.mount("/public", StaticFiles(directory=get_abs_path("./webui/public")), name="public")
+app.mount("/components", StaticFiles(directory=get_abs_path("./webui/components")), name="components")
+
+# Add specific favicon routes to ensure they work properly
+@app.get("/favicon.ico")
+async def get_favicon_ico():
+    from fastapi.responses import FileResponse
+    return FileResponse(get_abs_path("./webui/public/favicon.ico"))
+
+@app.get("/favicon.png")
+async def get_favicon_png():
+    from fastapi.responses import FileResponse
+    return FileResponse(get_abs_path("./webui/public/favicon.png"))
+
+@app.get("/favicon-16x16.png")
+async def get_favicon_16():
+    from fastapi.responses import FileResponse
+    return FileResponse(get_abs_path("./webui/public/favicon-16x16.png"))
+
+@app.get("/favicon-32x32.png")
+async def get_favicon_32():
+    from fastapi.responses import FileResponse
+    return FileResponse(get_abs_path("./webui/public/favicon-32x32.png"))
+
+@app.get("/favicon-48x48.png")
+async def get_favicon_48():
+    from fastapi.responses import FileResponse
+    return FileResponse(get_abs_path("./webui/public/favicon-48x48.png"))
+
+# Security
+security = HTTPBasic()
 
 
 def is_loopback_address(address):
@@ -78,63 +124,48 @@ def is_loopback_address(address):
         return True
 
 
-def requires_api_key(f):
-    @wraps(f)
-    async def decorated(*args, **kwargs):
-        valid_api_key = dotenv.get_dotenv_value("API_KEY")
-        if api_key := request.headers.get("X-API-KEY"):
-            if api_key != valid_api_key:
-                return Response("API key required", 401)
-        elif request.json and request.json.get("api_key"):
-            api_key = request.json.get("api_key")
-            if api_key != valid_api_key:
-                return Response("API key required", 401)
-        else:
-            return Response("API key required", 401)
-        return await f(*args, **kwargs)
-
-    return decorated
+async def verify_api_key(request: Request):
+    """Verify API key from headers only (don't consume request body)"""
+    valid_api_key = dotenv.get_dotenv_value("API_KEY")
+    if not valid_api_key:
+        return True  # No API key configured
+        
+    # Check headers only - don't consume request body
+    api_key = request.headers.get("X-API-KEY")
+    
+    if api_key != valid_api_key:
+        raise HTTPException(status_code=401, detail="API key required")
+    return True
 
 
-# allow only loopback addresses
-def requires_loopback(f):
-    @wraps(f)
-    async def decorated(*args, **kwargs):
-        if not is_loopback_address(request.remote_addr):
-            return Response(
-                "Access denied.",
-                403,
-                {},
-            )
-        return await f(*args, **kwargs)
-
-    return decorated
+async def verify_loopback(request: Request):
+    """Verify request comes from loopback address"""
+    client_host = request.client.host if request.client else "127.0.0.1"
+    if not is_loopback_address(client_host):
+        raise HTTPException(status_code=403, detail="Access denied")
+    return True
 
 
-# require authentication for handlers
-def requires_auth(f):
-    @wraps(f)
-    async def decorated(*args, **kwargs):
-        user = dotenv.get_dotenv_value("AUTH_LOGIN")
-        password = dotenv.get_dotenv_value("AUTH_PASSWORD")
-        if user and password:
-            auth = request.authorization
-            if not auth or not (auth.username == user and auth.password == password):
-                return Response(
-                    "Could not verify your access level for that URL.\n"
-                    "You have to login with proper credentials",
-                    401,
-                    {"WWW-Authenticate": 'Basic realm="Login Required"'},
-                )
-        return await f(*args, **kwargs)
-
-    return decorated
+async def verify_auth(credentials: HTTPBasicCredentials = Depends(security)):
+    """Verify basic authentication"""
+    user = dotenv.get_dotenv_value("AUTH_LOGIN")
+    password = dotenv.get_dotenv_value("AUTH_PASSWORD")
+    
+    if not user or not password:
+        return True  # No auth configured
+        
+    if credentials.username != user or credentials.password != password:
+        raise HTTPException(
+            status_code=401,
+            detail="Could not verify your access level",
+            headers={"WWW-Authenticate": "Basic"},
+        )
+    return True
 
 
-# handle default address, load index
-@webapp.route("/", methods=["GET"])
-@requires_auth
-async def serve_index():
+# Handle default address, load index
+@app.get("/", response_class=HTMLResponse)
+async def serve_index(auth: bool = Depends(verify_auth)):
     gitinfo = None
     try:
         gitinfo = git.get_git_info()
@@ -168,6 +199,73 @@ def init_maho():
     initialize_job_loop()
 
 
+def register_api_handler(app: FastAPI, handler: type[ApiHandler]):
+    """Register an API handler with appropriate security"""
+    name = handler.__module__.split(".")[-1]
+    
+    async def create_endpoint(request: Request):
+        instance = handler(app, None)  # No thread lock needed in async
+        return await instance.handle_request_async(request)
+    
+    # Determine dependencies based on handler requirements
+    dependencies = []
+    if handler.requires_loopback():
+        dependencies.append(Depends(verify_loopback))
+    elif handler.requires_api_key():
+        dependencies.append(Depends(verify_api_key))
+    elif handler.requires_auth():
+        dependencies.append(Depends(verify_auth))
+    else:
+        # Fallback to auth
+        dependencies.append(Depends(verify_auth))
+    
+    # Register GET and POST separately with unique operation IDs
+    app.add_api_route(
+        f"/{name}",
+        create_endpoint,
+        methods=["GET"],
+        dependencies=dependencies,
+        operation_id=f"{name}_get"
+    )
+    
+    app.add_api_route(
+        f"/{name}",
+        create_endpoint,
+        methods=["POST"],
+        dependencies=dependencies,
+        operation_id=f"{name}_post"
+    )
+
+
+def register_file_upload_endpoints(app: FastAPI):
+    """Register proper FastAPI file upload endpoints"""
+    from src.api.upload_work_dir_files import upload_files_endpoint
+    from src.api.upload import upload_endpoint
+    from src.api.import_knowledge import import_knowledge_endpoint
+    
+    # Register file upload endpoints with proper FastAPI patterns
+    app.add_api_route(
+        "/upload_work_dir_files",
+        upload_files_endpoint,
+        methods=["POST"],
+        dependencies=[Depends(verify_auth)]
+    )
+    
+    app.add_api_route(
+        "/upload",
+        upload_endpoint,
+        methods=["POST"],
+        dependencies=[Depends(verify_auth)]
+    )
+    
+    app.add_api_route(
+        "/import_knowledge",
+        import_knowledge_endpoint,
+        methods=["POST"],
+        dependencies=[Depends(verify_auth)]
+    )
+
+
 async def run():
     # Initialize runtime to parse command line arguments
     runtime.initialize()
@@ -176,97 +274,56 @@ async def run():
     runtime.suppress_httpx_cleanup_warnings()
     
     PrintStyle().print("Initializing framework...")
-
-    # Suppress only request logs but keep the startup messages
-    from werkzeug.serving import WSGIRequestHandler
-    from werkzeug.serving import make_server
-    from werkzeug.middleware.dispatcher import DispatcherMiddleware
-    from a2wsgi import ASGIMiddleware, WSGIMiddleware
-
-    PrintStyle().print("Starting server...")
-
-    class NoRequestLoggingWSGIRequestHandler(WSGIRequestHandler):
-        def log_request(self, code="-", size="-"):
-            pass  # Override to suppress request logging
+    PrintStyle().print("Starting FastAPI server...")
 
     # Get configuration from environment
     port = runtime.get_web_ui_port()
     host = (
         runtime.get_arg("host") or dotenv.get_dotenv_value("WEB_UI_HOST") or "0.0.0.0"
     )
-    server = None
 
-    def register_api_handler(app, handler: type[ApiHandler]):
-        name = handler.__module__.split(".")[-1]
-        instance = handler(app, lock)
-
-        if handler.requires_loopback():
-
-            @requires_loopback
-            async def handle_request():
-                return instance.handle_request(request=request)
-
-        elif handler.requires_auth():
-
-            @requires_auth
-            async def handle_request():
-                return instance.handle_request(request=request)
-
-        elif handler.requires_api_key():
-
-            @requires_api_key
-            async def handle_request():
-                return instance.handle_request(request=request)
-
-        else:
-            # Fallback to requires_auth
-            @requires_auth
-            async def handle_request():
-                return instance.handle_request(request=request)
-
-        app.add_url_rule(
-            f"/{name}",
-            f"/{name}",
-            handle_request,
-            methods=["POST", "GET"],
-        )
-
-    # initialize and register API handlers
+    # Initialize and register API handlers
     handlers = load_classes_from_folder("src/api", "*.py", ApiHandler)
     for handler in handlers:
-        register_api_handler(webapp, handler)
+        register_api_handler(app, handler)
+
+    # Register file upload endpoints
+    register_file_upload_endpoints(app)
+    
+    # Add individual file routes for main CSS/JS files
+    from fastapi.responses import FileResponse
+    
+    @app.get("/index.css")
+    async def serve_index_css():
+        return FileResponse(get_abs_path("./webui/index.css"))
+    
+    @app.get("/index.js")
+    async def serve_index_js():
+        return FileResponse(get_abs_path("./webui/index.js"))
 
     # MCP server
     # TODO: Implement MCP server registration
-    # mcp_server.register_server(webapp)
+    # mcp_server.register_server(app)
 
     try:
-
-        def signal_handler(sig, frame):
-            PrintStyle().print("Received interrupt signal. Shutting down gracefully...")
-            if server:
-                server.shutdown()
-            sys.exit(0)
-
-        signal.signal(signal.SIGINT, signal_handler)
-        signal.signal(signal.SIGTERM, signal_handler)
-
-        # Create the server
-        server = make_server(
-            host,
-            port,
-            webapp,
-            request_handler=NoRequestLoggingWSGIRequestHandler,
-            threaded=True,
-        )
-
         PrintStyle().print(f"Maho Web UI running at http://{host}:{port}")
+        PrintStyle().print(f"API documentation available at http://{host}:{port}/docs")
 
-        # initialize Maho in background
+        # Initialize Maho in background
         threading.Thread(target=init_maho, daemon=True).start()
 
-        # Serve forever with anyio
-        await anyio.to_thread.run_sync(server.serve_forever)
+        # Configure uvicorn
+        config = uvicorn.Config(
+            app,
+            host=host,
+            port=port,
+            log_level="info",
+            access_log=False,  # Disable access logs for cleaner output
+        )
+        server = uvicorn.Server(config)
+        
+        # Run with anyio
+        await server.serve()
 
     except Exception as e:
         PrintStyle().error(f"Failed to start server: {e}")

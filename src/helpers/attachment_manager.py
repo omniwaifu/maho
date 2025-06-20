@@ -3,9 +3,24 @@ import io
 import base64
 from PIL import Image
 from typing import Dict, List, Optional, Tuple
-from werkzeug.utils import secure_filename
+from pydantic import BaseModel, validator
+from pathlib import Path
 
 from src.helpers.print_style import PrintStyle
+
+
+class SecureFilename(BaseModel):
+    name: str
+    
+    @validator('name')
+    def validate_filename(cls, v):
+        if not v:
+            return "unnamed_file"
+        # Use pathlib to get just the filename part, removing any path components
+        safe_name = Path(v).name
+        # Remove any remaining dangerous characters
+        safe_name = "".join(c for c in safe_name if c.isalnum() or c in "._-")
+        return safe_name[:255] if safe_name else "unnamed_file"
 
 
 class AttachmentManager:
@@ -45,17 +60,17 @@ class AttachmentManager:
     def save_file(self, file, filename: str) -> Tuple[str, Dict]:
         """Save file and return path and metadata"""
         try:
-            filename = secure_filename(filename)
-            if not filename:
-                raise ValueError("Invalid filename")
+            # Use Pydantic to sanitize filename
+            secure_file = SecureFilename(name=filename)
+            safe_name = secure_file.name
 
-            file_path = os.path.join(self.work_dir, filename)
+            file_path = os.path.join(self.work_dir, safe_name)
 
-            file_type = self.get_file_type(filename)
+            file_type = self.get_file_type(safe_name)
             metadata = {
-                "filename": filename,
+                "filename": safe_name,
                 "type": file_type,
-                "extension": self.get_file_extension(filename),
+                "extension": self.get_file_extension(safe_name),
                 "preview": None,
             }
 

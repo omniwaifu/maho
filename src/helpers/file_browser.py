@@ -5,11 +5,25 @@ import tempfile
 import base64
 from typing import Dict, List, Tuple, Optional, Any
 import zipfile
-from werkzeug.utils import secure_filename
+from pydantic import BaseModel, validator
 from datetime import datetime
 
 from src.helpers import files, runtime
 from src.helpers.print_style import PrintStyle
+
+
+class SecureFilename(BaseModel):
+    name: str
+    
+    @validator('name')
+    def validate_filename(cls, v):
+        if not v:
+            return "unnamed_file"
+        # Use pathlib to get just the filename part, removing any path components
+        safe_name = Path(v).name
+        # Remove any remaining dangerous characters
+        safe_name = "".join(c for c in safe_name if c.isalnum() or c in "._-")
+        return safe_name[:255] if safe_name else "unnamed_file"
 
 
 class FileBrowser:
@@ -72,7 +86,8 @@ class FileBrowser:
             for file in files:
                 try:
                     if file and self._is_allowed_file(file.filename, file):
-                        filename = secure_filename(file.filename)
+                        secure_file = SecureFilename(name=file.filename)
+                        filename = secure_file.name
                         file_path = target_dir / filename
 
                         file.save(str(file_path))

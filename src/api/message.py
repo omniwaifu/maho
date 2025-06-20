@@ -1,11 +1,10 @@
 from src.core.context import AgentContext
 from src.core.models import UserMessage
 from src.helpers.api import ApiHandler
-from flask import Request, Response
+from fastapi import Request, Response
 
 from src.helpers import files
 import os
-from werkzeug.utils import secure_filename
 from src.helpers.print_style import PrintStyle
 
 

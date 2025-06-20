@@ -6,11 +6,9 @@ This replaces the old run_tunnel.py file.
 
 import os
 import sys
-from flask import Flask, request, Response
-from werkzeug.serving import make_server
-import threading
+from fastapi import FastAPI, Request
+import uvicorn
 import anyio
-import anyio.to_thread
 
 # Add the project root to Python path so we can import from src
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -24,26 +22,27 @@ async def main():
     """Initializes and runs the tunnel server."""
     PrintStyle().print("Starting tunnel server...")
 
-    app = Flask(__name__)
-    lock = threading.Lock()
-    tunnel = Tunnel(app, lock)
+    app = FastAPI()
+    tunnel = Tunnel(app)
 
     # handle api request
-    @app.route("/", methods=["POST"])
-    async def handle_request():
-        return tunnel.handle_request(request=request)
+    @app.post("/")
+    async def handle_request(request: Request):
+        return await tunnel.handle_request_async(request=request)
 
     try:
         host = "127.0.0.1"
         port = runtime.get_tunnel_api_port()
-        server = make_server(
+        print(f"Tunnel API server running at http://{host}:{port}")
+        
+        config = uvicorn.Config(
+            app=app,
             host=host,
             port=port,
-            app=app,
-            threaded=False,
+            log_level="info"
         )
-        print(f"Tunnel API server running at http://{host}:{port}")
-        await anyio.to_thread.run_sync(server.serve_forever)
+        server = uvicorn.Server(config)
+        await server.serve()
     except KeyboardInterrupt:
         print("Server stopped.")
     except Exception as e:

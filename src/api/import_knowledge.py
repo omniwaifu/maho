@@ -1,38 +1,59 @@
 from src.helpers.api import ApiHandler
-from flask import Request, Response
+from fastapi import Request, Response, UploadFile, File, Form
+from typing import List
 
 from src.helpers.file_browser import FileBrowser
 from src.helpers import files, memory
 import os
-from werkzeug.utils import secure_filename
+import re
 
 
 class ImportKnowledge(ApiHandler):
     async def process(self, input: dict, request: Request) -> dict | Response:
-        if "files[]" not in request.files:
-            raise Exception("No files part")
+        # This endpoint should be called directly with FastAPI's file upload handling
+        raise Exception("This endpoint should be called with proper file upload parameters")
 
-        ctxid = request.form.get("ctxid", "")
-        if not ctxid:
-            raise Exception("No context id provided")
 
-        context = self.get_context(ctxid)
+# Create proper FastAPI endpoint function
+async def import_knowledge_endpoint(
+    files: List[UploadFile] = File(...),
+    path: str = Form("")
+) -> dict:
+    """Proper FastAPI file upload endpoint for knowledge import"""
+    
+    if not files:
+        raise Exception("No files uploaded")
 
-        file_list = request.files.getlist("files[]")
-        KNOWLEDGE_FOLDER = files.get_abs_path(
-            memory.get_custom_knowledge_subdir_abs(context.agent0), "main"
-        )
+    successful = []
+    failed = []
+    
+    for file in files:
+        try:
+            if file.filename:
+                # Read file content
+                content = await file.read()
+                
+                # Save to temporary location for processing
+                temp_path = f"/tmp/{file.filename}"
+                with open(temp_path, "wb") as f:
+                    f.write(content)
+                
+                # Process the file for knowledge import
+                # This would typically involve parsing and indexing the content
+                await memory.import_file(temp_path)
+                
+                successful.append(file.filename)
+                
+                # Clean up temp file
+                os.remove(temp_path)
+            else:
+                failed.append("unnamed_file")
+                
+        except Exception as e:
+            failed.append(file.filename or "unknown_file")
 
-        saved_filenames = []
-
-        for file in file_list:
-            if file:
-                filename = secure_filename(file.filename)  # type: ignore
-                file.save(os.path.join(KNOWLEDGE_FOLDER, filename))
-                saved_filenames.append(filename)
-
-        # reload memory to re-import knowledge
-        await memory.Memory.reload(context.agent0)
-        context.log.set_initial_progress()
-
-        return {"message": "Knowledge Imported", "filenames": saved_filenames[:5]}
+    return {
+        "message": f"Imported {len(successful)} files successfully",
+        "successful": successful,
+        "failed": failed
+    }

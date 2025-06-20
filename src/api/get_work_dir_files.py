@@ -1,5 +1,5 @@
 from src.helpers.api import ApiHandler
-from flask import Request, Response
+from fastapi import Request, Response
 
 from src.helpers.file_browser import FileBrowser
 from src.helpers import files, runtime
@@ -7,7 +7,7 @@ from src.helpers import files, runtime
 
 class GetWorkDirFiles(ApiHandler):
     async def process(self, input: dict, request: Request) -> dict | Response:
-        current_path = request.args.get("path", "")
+        current_path = request.query_params.get("path", "")
         if current_path == "$WORK_DIR":
             # if runtime.is_development():
             #     current_path = "work_dir"

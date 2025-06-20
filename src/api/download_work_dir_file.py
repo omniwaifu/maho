@@ -2,7 +2,7 @@ import base64
 from io import BytesIO
 
 from src.helpers.api import ApiHandler, Input, Output, Request, Response
-from flask import send_file
+from fastapi.responses import FileResponse
 
 from src.helpers import files, runtime
 from src.api import file_info
@@ -11,7 +11,7 @@ import os
 
 class DownloadFile(ApiHandler):
     async def process(self, input: Input, request: Request) -> Output:
-        file_path = request.args.get("path", input.get("path", ""))
+        file_path = request.query_params.get("path", input.get("path", ""))
         if not file_path:
             raise ValueError("No file path provided")
         if not file_path.startswith("/"):
@@ -31,16 +31,16 @@ class DownloadFile(ApiHandler):
             if runtime.is_development():
                 b64 = await runtime.call_development_function(fetch_file, zip_file)
                 file_data = BytesIO(base64.b64decode(b64))
-                return send_file(
-                    file_data,
-                    as_attachment=True,
-                    download_name=os.path.basename(zip_file),
+                return Response(
+                    content=file_data.getvalue(),
+                    media_type="application/zip",
+                    headers={"Content-Disposition": f"attachment; filename={os.path.basename(zip_file)}"}
                 )
             else:
-                return send_file(
-                    zip_file,
-                    as_attachment=True,
-                    download_name=f"{os.path.basename(file_path)}.zip",
+                return FileResponse(
+                    path=zip_file,
+                    media_type="application/zip",
+                    filename=f"{os.path.basename(file_path)}.zip"
                 )
         elif file["is_file"]:
             if runtime.is_development():
@@ -48,16 +48,16 @@ class DownloadFile(ApiHandler):
                     fetch_file, file["abs_path"]
                 )
                 file_data = BytesIO(base64.b64decode(b64))
-                return send_file(
-                    file_data,
-                    as_attachment=True,
-                    download_name=os.path.basename(file_path),
+                return Response(
+                    content=file_data.getvalue(),
+                    media_type="application/octet-stream",
+                    headers={"Content-Disposition": f"attachment; filename={os.path.basename(file_path)}"}
                 )
             else:
-                return send_file(
-                    file["abs_path"],
-                    as_attachment=True,
-                    download_name=os.path.basename(file["file_name"]),
+                return FileResponse(
+                    path=file["abs_path"],
+                    media_type="application/octet-stream", 
+                    filename=os.path.basename(file["file_name"])
                 )
         raise Exception(f"File {file_path} not found")
 

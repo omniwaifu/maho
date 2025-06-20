@@ -8,30 +8,30 @@
 
 :root {
   /* Dark mode */
-  --color-background-dark: #131313;
+  --color-background-dark: #0f1f0f;
   --color-text-dark: #d4d4d4;
-  --color-primary-dark: #737a81;
-  --color-secondary-dark: #656565;
+  --color-primary-dark: #6b8c6b;
+  --color-secondary-dark: #4a5f4a;
   --color-accent-dark: #cf6679;
-  --color-message-bg-dark: #2d2d2d;
+  --color-message-bg-dark: #1a2d1a;
   --color-message-text-dark: #e0e0e0;
-  --color-panel-dark: #171717;
-  --color-border-dark: #444444a8;
-  --color-input-dark: #131313;
-  --color-input-focus-dark: #101010;
+  --color-panel-dark: #162016;
+  --color-border-dark: #3a4a3a;
+  --color-input-dark: #0f1f0f;
+  --color-input-focus-dark: #0a1a0a;
 
   /* Light mode */
-  --color-background-light: #dbdbdb;
+  --color-background-light: #f0f5f0;
   --color-text-light: #333333;
-  --color-primary-light: #384653;
-  --color-secondary-light: #e8eaf6;
+  --color-primary-light: #2d4a2d;
+  --color-secondary-light: #e8f0e8;
   --color-accent-light: #b00020;
   --color-message-bg-light: #ffffff;
   --color-message-text-light: #333333;
-  --color-panel-light: #f0f0f0;
-  --color-border-light: #e0e0e0c7;
-  --color-input-light: #e4e4e4;
-  --color-input-focus-light: #dadada;
+  --color-panel-light: #f8fbf8;
+  --color-border-light: #d0e0d0c7;
+  --color-input-light: #f0f5f0;
+  --color-input-focus-light: #e8f0e8;
 
   /* Default to dark mode */
   --color-background: var(--color-background-dark);
@@ -657,7 +657,7 @@ pre {
 }
 
 .message-agent {
-  background-color: #34506b;
+  background-color: #2d5a2d;
 }
 
 .message-agent-response {
@@ -666,19 +666,19 @@ pre {
 }
 
 .message-agent-delegation {
-  background-color: #12685e;
+  background-color: #1e5a1e;
 }
 
 .message-tool {
-  background-color: #2a4170;
+  background-color: #1f4f1f;
 }
 
 .message-code-exe {
-  background-color: #4b3a69;
+  background-color: #2e4a2e;
 }
 
 .message-browser {
-  background-color: #4b3a69;
+  background-color: #2e4a2e;
 }
 
 .message-info {
@@ -1947,22 +1947,22 @@ a:active {
 
 .light-mode .message-agent-delegation {
   background-color: #f3f3f3;
-  color: #12685e;
+  color: #2d5a2d;
 }
 
 .light-mode .message-tool {
   background-color: #f3f3f3;
-  color: #1c3c88;
+  color: #1f4f1f;
 }
 
 .light-mode .message-code-exe {
   background-color: #f3f3f3;
-  color: #6c43b0;
+  color: #2e4a2e;
 }
 
 .light-mode .message-browser {
   background-color: #ffffff;
-  color: #6c43b0;
+  color: #2e4a2e;
 }
 
 .light-mode .message-info {
@@ -2048,8 +2048,7 @@ a:active {
 }
 
 .light-mode #logo-container img {
-  -webkit-filter: invert(100%) grayscale(100%);
-          filter: invert(100%) grayscale(100%);
+  /* Removed inversion filter - Maho logo works in both light and dark modes */
 }
 
 .light-mode .extension {

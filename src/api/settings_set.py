@@ -11,5 +11,7 @@ class SetSettings(ApiHandler):
         self, input: dict[Any, Any], request: Request
     ) -> dict[Any, Any] | Response:
         set = settings.convert_in(input)
-        set = settings.set_settings(set)
-        return {"settings": set}
+        settings.set_settings(set)
+        # Return the updated settings via convert_out
+        updated_settings = settings.convert_out(settings.get_settings())
+        return {"settings": updated_settings.model_dump()}

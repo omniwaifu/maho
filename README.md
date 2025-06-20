@@ -1,6 +1,9 @@
 <div align="center">
 
-# $\color{forestgreen}{\textbf{Maho}}$ 
+<h1>
+  <img src="maho.png" alt="Maho Logo" width="48" height="48" style="vertical-align: middle; margin-right: 12px;">
+  <span style="color: forestgreen; font-weight: bold;">Maho</span>
+</h1>
 
 [Introduction](#a-personal-organic-agentic-framework-that-grows-and-learns-with-you) •
 [Installation](./docs/installation.md) •

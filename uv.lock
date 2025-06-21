@@ -1892,17 +1892,15 @@ dependencies = [
 dev = [
     { name = "black" },
     { name = "mypy" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
     { name = "ruff" },
 ]
 
 [package.dev-dependencies]
 dev = [
     { name = "black" },
+    { name = "httpx" },
     { name = "mypy" },
     { name = "pytest" },
-    { name = "pytest-asyncio" },
     { name = "ruff" },
 ]
 
@@ -1946,8 +1944,6 @@ requires-dist = [
     { name = "pymupdf", specifier = "==1.25.3" },
     { name = "pypdf", specifier = "==4.3.1" },
     { name = "pytesseract", specifier = "==0.3.13" },
-    { name = "pytest", marker = "extra == 'dev'", specifier = ">=7.0.0" },
-    { name = "pytest-asyncio", marker = "extra == 'dev'", specifier = ">=0.21.0" },
     { name = "python-dotenv", specifier = "==1.1.0" },
     { name = "python-multipart", specifier = "==0.0.20" },
     { name = "pytz", specifier = "==2024.2" },
@@ -1966,9 +1962,9 @@ provides-extras = ["dev"]
 [package.metadata.requires-dev]
 dev = [
     { name = "black", specifier = ">=23.0.0" },
+    { name = "httpx", specifier = ">=0.24.0" },
     { name = "mypy", specifier = ">=1.0.0" },
     { name = "pytest", specifier = ">=7.0.0" },
-    { name = "pytest-asyncio", specifier = ">=0.21.0" },
     { name = "ruff", specifier = ">=0.1.0" },
 ]
 
@@ -6030,18 +6026,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/fb/aa/405082ce2749be5398045152251ac69c0f3578c7077efc53431303af97ce/pytest-8.4.0.tar.gz", hash = "sha256:14d920b48472ea0dbf68e45b96cd1ffda4705f33307dcc86c676c1b5104838a6", size = 1515232, upload-time = "2025-06-02T17:36:30.03Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/2f/de/afa024cbe022b1b318a3d224125aa24939e99b4ff6f22e0ba639a2eaee47/pytest-8.4.0-py3-none-any.whl", hash = "sha256:f40f825768ad76c0977cbacdf1fd37c6f7a468e460ea6a0636078f8972d4517e", size = 363797, upload-time = "2025-06-02T17:36:27.859Z" },
-]
-
-[[package]]
-name = "pytest-asyncio"
-version = "1.0.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "pytest" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/d0/d4/14f53324cb1a6381bef29d698987625d80052bb33932d8e7cbf9b337b17c/pytest_asyncio-1.0.0.tar.gz", hash = "sha256:d15463d13f4456e1ead2594520216b225a16f781e144f8fdf6c5bb4667c48b3f", size = 46960, upload-time = "2025-05-26T04:54:40.484Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/30/05/ce271016e351fddc8399e546f6e23761967ee09c8c568bbfbecb0c150171/pytest_asyncio-1.0.0-py3-none-any.whl", hash = "sha256:4f024da9f1ef945e680dc68610b52550e36590a67fd31bb3b4943979a1f90ef3", size = 15976, upload-time = "2025-05-26T04:54:39.035Z" },
 ]
 
 [[package]]

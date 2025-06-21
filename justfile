@@ -140,7 +140,7 @@ setup-hooks:
 
 # Run tests (when we add them)
 test:
-    uv run pytest
+    uv run pytest tests/
 
 # Generate requirements.txt for legacy compatibility (if needed)
 export-reqs:

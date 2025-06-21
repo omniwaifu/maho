@@ -3080,3 +3080,65 @@ nav ul li a img {
   border: 1px solid rgba(142, 142, 142, 0.1);
   border-radius: 0.3em;
 }
+
+/* Blank State Component */
+.blank-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 2rem;
+  text-align: center;
+  user-select: none;
+}
+
+.blank-state-content {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.blank-state-title {
+  font-size: 2.5rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 1rem 0;
+  line-height: 1.2;
+}
+
+.blank-state-subtitle {
+  font-size: 1.2rem;
+  color: var(--color-text);
+  opacity: 0.7;
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .blank-state-title {
+    font-size: 2rem;
+  }
+  
+  .blank-state-subtitle {
+    font-size: 1.1rem;
+  }
+  
+  .blank-state {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .blank-state-title {
+    font-size: 1.8rem;
+  }
+  
+  .blank-state-subtitle {
+    font-size: 1rem;
+  }
+  
+  .blank-state {
+    padding: 1rem;
+  }
+}

@@ -95,7 +95,14 @@ export async function sendMessage() {
             inputAD.hasAttachments = false;
             adjustTextareaHeight();
             
-            const context = getContext();
+            let context = getContext();
+            
+            // If no context, create a new one
+            if (!context) {
+                context = generateGUID();
+                setContext(context);
+            }
+            
             let response;
             const messageId = generateGUID();
 
@@ -163,7 +170,10 @@ export async function sendMessage() {
             //     }
             // }
             else {
-                setContext(jsonResponse.context);
+                // Only set context if it's different to avoid clearing chat history
+                if (jsonResponse.context !== getContext()) {
+                    setContext(jsonResponse.context);
+                }
             }
         }
     } catch (e) {
@@ -352,7 +362,7 @@ async function poll() {
             "/api/v1/poll",
             {
                 log_from: lastLogVersion,
-                context: context || null,
+                context: context,
                 timezone: timezone
             }
         );
@@ -363,21 +373,44 @@ async function poll() {
             return false;
         }
 
-        if (!context) setContext(response.context)
-        if (response.context != context) return //skip late polls after context change
-
-        if (lastLogGuid != response.log_guid) {
-            chatHistory.innerHTML = ""
-            lastLogVersion = 0
+        // Handle context setting - only set context if we don't have one or it matches backend
+        if (!context) {
+            // Only auto-set context if user hasn't made any selection yet
+            // Check if there's an actual UI selection first
+            const chatsAD = Alpine.$data(chatsSection);
+            const hasUserSelection = chatsAD && chatsAD.selected;
+            
+            if (!hasUserSelection) {
+                // No user selection - keep showing blank state, don't auto-select
+                context = null;
+            } else {
+                // User has made a selection, use backend context
+                setContext(response.context);
+            }
+        } else if (response.context != context) {
+            // Context mismatch - skip this poll to avoid conflicts
+            return
         }
 
-        if (lastLogVersion != response.log_version) {
-            updated = true
-            for (const log of response.logs) {
-                const messageId = log.id || log.no; // Use log.id if available
-                setMessage(messageId, log.type, log.heading, log.content, log.temp, log.kvps);
+        // Only process logs if we have a real context
+        if (context) {
+            if (lastLogGuid != response.log_guid) {
+                // Only clear history if we have an existing log GUID (not on first load)
+                // This prevents clearing user messages when starting a new chat
+                if (lastLogGuid) {
+                    chatHistory.innerHTML = ""
+                }
+                lastLogVersion = 0
             }
-            afterMessagesUpdate(response.logs)
+
+            if (lastLogVersion != response.log_version) {
+                updated = true
+                for (const log of response.logs) {
+                    const messageId = log.id || log.no; // Use log.id if available
+                    setMessage(messageId, log.type, log.heading, log.content, log.temp, log.kvps);
+                }
+                afterMessagesUpdate(response.logs)
+            }
         }
 
         lastLogVersion = response.log_version;
@@ -432,19 +465,9 @@ async function poll() {
                 // Check if this context exists in the chats list
                 const contextExists = contexts.some(ctx => ctx.id === context);
 
-                // If it doesn't exist in the chats list but we're in chats tab, try to select the first chat
-                if (!contextExists && contexts.length > 0) {
-                    // Check if the current context is empty before creating a new one
-                    // If there's already a current context and we're just updating UI, don't automatically
-                    // create a new context by calling setContext
-                    const firstChatId = contexts[0].id;
-
-                    // Only create a new context if we're not currently in an existing context
-                    // This helps prevent duplicate contexts when switching tabs
-                    setContext(firstChatId);
-                    chatsAD.selected = firstChatId;
-                    localStorage.setItem('lastSelectedChat', firstChatId);
-                }
+                // REMOVED: Auto-selection of first chat when current context doesn't exist
+                // This was causing blank state to be overridden on page load
+                // Users should explicitly select a chat instead of auto-loading
             } else if (activeTab === 'tasks' && tasksSection) {
                 const tasksAD = Alpine.$data(tasksSection);
                 tasksAD.selected = context;
@@ -470,17 +493,9 @@ async function poll() {
                 tasksAD.selected = firstTaskId;
                 localStorage.setItem('lastSelectedTask', firstTaskId);
             }
-        } else if (contexts.length > 0 && localStorage.getItem('activeTab') === 'chats') {
-            // If we're in chats tab with no selection but have chats, select the first one
-            const firstChatId = contexts[0].id;
-
-            // Only set context if we don't already have one to avoid duplicates
-            if (!context) {
-                setContext(firstChatId);
-                chatsAD.selected = firstChatId;
-                localStorage.setItem('lastSelectedChat', firstChatId);
-            }
         }
+        // REMOVED: Auto-selection of first chat to enable blank state UX like ChatGPT
+        // Users will start with a clean slate instead of automatically loading the first chat
 
         lastLogVersion = response.log_version;
         lastLogGuid = response.log_guid;
@@ -546,12 +561,30 @@ window.resetChat = async function (ctxid=null) {
 
 window.newChat = async function () {
     try {
-        setContext(generateGUID());
-        updateAfterScroll()
+        // Clear context to show blank state
+        setContext(null);
+        
+        // Clear selection in both lists
+        const chatsAD = Alpine.$data(chatsSection);
+        const tasksSection = document.getElementById('tasks-section');
+        if (tasksSection) {
+            const tasksAD = Alpine.$data(tasksSection);
+            tasksAD.selected = null;
+        }
+        chatsAD.selected = null;
+        
+        // Clear localStorage selections
+        localStorage.removeItem('lastSelectedChat');
+        localStorage.removeItem('lastSelectedTask');
+        
+        // Update scroll
+        updateAfterScroll();
     } catch (e) {
-        window.toastFetchError("Error creating new chat", e)
+        window.toastFetchError("Error creating new chat", e);
     }
 }
+
+
 
 window.killChat = async function (id) {
     if (!id) {
@@ -605,8 +638,8 @@ export function switchFromContext(id){
         if (alternateChat) {
             setContext(alternateChat.id);
         } else {
-            // If no other chats, create a new empty context
-            setContext(generateGUID());
+            // If no other chats, show blank state
+            setContext(null);
         }
     }
 }
@@ -683,15 +716,31 @@ window.selectChat = async function (id) {
 
 export const setContext = function (id) {
     if (id == context) return;
+    
+    const previousContext = context;
     context = id;
+    
     // Always reset the log tracking variables when switching contexts
     // This ensures we get fresh data from the backend
     lastLogGuid = "";
     lastLogVersion = 0;
     lastSpokenNo = 0;
 
-    // Clear the chat history immediately to avoid showing stale content
-    chatHistory.innerHTML = "";
+    // Only clear chat history when switching to a different existing context
+    // Don't clear when setting a new context for the first time or when going to blank state
+    if (previousContext && id && previousContext !== id) {
+        chatHistory.innerHTML = "";
+    } else if (!id) {
+        // Clear history when going to blank state
+        chatHistory.innerHTML = "";
+    }
+
+    // Handle blank state visibility
+    const blankState = document.getElementById('blank-state');
+    if (blankState) {
+        // Show blank state when no real context is set
+        blankState.style.display = !id ? 'flex' : 'none';
+    }
 
     // Update both selected states
     const chatsAD = Alpine.$data(chatsSection);
@@ -1080,7 +1129,15 @@ async function startPolling() {
     _doPoll();
 }
 
-document.addEventListener("DOMContentLoaded", startPolling);
+// Start polling and initialize blank state
+document.addEventListener('DOMContentLoaded', function() {
+    // Show blank state initially
+    const blankState = document.getElementById('blank-state');
+    if (blankState) {
+        blankState.style.display = 'flex';
+    }
+    startPolling();
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     const dragDropOverlay = document.getElementById('dragdrop-overlay');
@@ -1238,20 +1295,8 @@ function activateTab(tabName) {
         // Use safe Alpine data access
         const chatsAD = safeAlpineData(chatsSection);
         if (chatsAD) {
-            const availableContexts = chatsAD.contexts || [];
-
-            // Restore previous chat selection
-            const lastSelectedChat = localStorage.getItem('lastSelectedChat');
-
-            // Only switch if:
-            // 1. lastSelectedChat exists AND
-            // 2. It's different from current context AND
-            // 3. The context actually exists in our contexts list OR there are no contexts yet
-            if (lastSelectedChat &&
-                lastSelectedChat !== currentContext &&
-                (availableContexts.some(ctx => ctx.id === lastSelectedChat) || availableContexts.length === 0)) {
-                setContext(lastSelectedChat);
-            }
+            // Don't auto-restore chat selection for blank state UX
+            // Users will start with a clean slate instead
         }
     } else if (tabName === 'tasks') {
         tasksTab.classList.add('active');

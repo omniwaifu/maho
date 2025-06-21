@@ -1,4 +1,4 @@
-import { getContext } from "../index.js";
+import { getContext } from "./chat-core.js";
 
 export async function openHistoryModal() {
     try {

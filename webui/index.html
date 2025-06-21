@@ -111,6 +111,7 @@
     <script type="module" src="js/scheduler.js"></script>
     <script type="module" src="js/speech.js"></script>
     <script type="module" src="js/history.js"></script>
+    <!-- NEW MODULAR SYSTEM -->
     <script type="module" src="index.js"></script>
 
     <!-- Then load Alpine.js -->
@@ -370,10 +371,10 @@
                 <button class="toast__copy" style="display: none;">Copy</button>
                 <button class="toast__close">Close</button>
             </div>
-            <div id="progress-bar-box" x-data="{ isSpeaking: false }" x-init="
+                        <div id="progress-bar-box" x-data="{ isSpeaking: false }" x-init="
             // Watch the speech synthesis status to update isSpeaking
-            setInterval(() => isSpeaking = window.speech.isSpeaking(), 100)
-        ">
+            setInterval(() => isSpeaking = window.speech?.isSpeaking() || false, 100)
+            ">
                 <h4 id="progress-bar-h">
                     <span id="progress-bar-i">|></span><span id="progress-bar"></span>
                 </h4>

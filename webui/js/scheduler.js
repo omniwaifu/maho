@@ -4,7 +4,7 @@
  */
 
 import { formatDateTime, getUserTimezone } from './time-utils.js';
-import { switchFromContext } from '../index.js';
+import { switchFromContext } from './chat-core.js';
 
 // Ensure the showToast function is available
 // if (typeof window.showToast !== 'function') {

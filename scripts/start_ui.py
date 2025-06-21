@@ -41,7 +41,49 @@ time.tzset()
 app = FastAPI(
     title="Maho Agent API",
     description="AI Agent with tools, memory, and scheduling",
-    version="1.0.0"
+    version="1.0.0",
+    openapi_tags=[
+        {
+            "name": "health",
+            "description": "Health check and status endpoints"
+        },
+        {
+            "name": "chat",
+            "description": "Chat and messaging operations"
+        },
+        {
+            "name": "files",
+            "description": "File management and operations"
+        },
+        {
+            "name": "settings",
+            "description": "Configuration and settings management"
+        },
+        {
+            "name": "mcp",
+            "description": "Model Context Protocol server operations"
+        },
+        {
+            "name": "scheduler",
+            "description": "Task scheduling and automation"
+        },
+        {
+            "name": "tunnel",
+            "description": "Tunnel management for remote access"
+        },
+        {
+            "name": "system",
+            "description": "System control and management"
+        },
+        {
+            "name": "audio",
+            "description": "Audio processing and transcription"
+        },
+        {
+            "name": "control",
+            "description": "Agent control and intervention"
+        }
+    ]
 )
 
 # Add CORS middleware
@@ -61,36 +103,60 @@ app.mount("/components", StaticFiles(directory=get_abs_path("./webui/components"
 app.mount("/dist", StaticFiles(directory=get_abs_path("./webui/dist")), name="dist")
 
 # Add specific favicon routes to ensure they work properly
-@app.get("/favicon.ico")
+@app.get("/favicon.ico", response_class=FileResponse, responses={
+    200: {"description": "Favicon icon file"},
+    404: {"description": "Favicon not found"}
+})
 async def get_favicon_ico():
-    return FileResponse(get_abs_path("./webui/public/favicon.ico"))
+    return FileResponse(get_abs_path("./webui/public/favicon.ico"), media_type="image/x-icon")
 
-@app.get("/favicon.png")
+@app.get("/favicon.png", response_class=FileResponse, responses={
+    200: {"description": "Favicon PNG file"},
+    404: {"description": "Favicon not found"}
+})
 async def get_favicon_png():
-    return FileResponse(get_abs_path("./webui/public/favicon.png"))
+    return FileResponse(get_abs_path("./webui/public/favicon.png"), media_type="image/png")
 
-@app.get("/favicon-16x16.png")
+@app.get("/favicon-16x16.png", response_class=FileResponse, responses={
+    200: {"description": "16x16 favicon PNG file"},
+    404: {"description": "Favicon not found"}
+})
 async def get_favicon_16():
-    return FileResponse(get_abs_path("./webui/public/favicon-16x16.png"))
+    return FileResponse(get_abs_path("./webui/public/favicon-16x16.png"), media_type="image/png")
 
-@app.get("/favicon-32x32.png")
+@app.get("/favicon-32x32.png", response_class=FileResponse, responses={
+    200: {"description": "32x32 favicon PNG file"},
+    404: {"description": "Favicon not found"}
+})
 async def get_favicon_32():
-    return FileResponse(get_abs_path("./webui/public/favicon-32x32.png"))
+    return FileResponse(get_abs_path("./webui/public/favicon-32x32.png"), media_type="image/png")
 
-@app.get("/favicon-48x48.png")
+@app.get("/favicon-48x48.png", response_class=FileResponse, responses={
+    200: {"description": "48x48 favicon PNG file"},
+    404: {"description": "Favicon not found"}
+})
 async def get_favicon_48():
-    return FileResponse(get_abs_path("./webui/public/favicon-48x48.png"))
+    return FileResponse(get_abs_path("./webui/public/favicon-48x48.png"), media_type="image/png")
 
 # Add specific routes for root-level files
-@app.get("/index.css")
+@app.get("/index.css", response_class=FileResponse, responses={
+    200: {"description": "Main CSS stylesheet"},
+    404: {"description": "CSS file not found"}
+})
 async def serve_index_css():
-    return FileResponse(get_abs_path("./webui/index.css"))
+    return FileResponse(get_abs_path("./webui/index.css"), media_type="text/css")
 
-@app.get("/index.js")
+@app.get("/index.js", response_class=FileResponse, responses={
+    200: {"description": "Main JavaScript file"},
+    404: {"description": "JavaScript file not found"}
+})
 async def serve_index_js():
-    return FileResponse(get_abs_path("./webui/index.js"))
+    return FileResponse(get_abs_path("./webui/index.js"), media_type="text/javascript")
 
-@app.get("/ascii-art.txt")
+@app.get("/ascii-art.txt", response_class=FileResponse, responses={
+    200: {"description": "ASCII art text file"},
+    404: {"description": "ASCII art file not found"}
+})
 async def serve_ascii_art():
     return FileResponse(get_abs_path("./webui/ascii-art.txt"), media_type="text/plain")
 
@@ -172,7 +238,11 @@ async def verify_auth(credentials: HTTPBasicCredentials = Depends(security)):
 
 
 # Handle default address, load index
-@app.get("/", response_class=HTMLResponse)
+@app.get("/", response_class=HTMLResponse, responses={
+    200: {"description": "Web UI index page"},
+    401: {"description": "Authentication required"},
+    403: {"description": "Access forbidden"}
+})
 async def serve_index(auth: bool = Depends(verify_auth)):
     gitinfo = None
     try:

@@ -16,7 +16,7 @@ from src.api import (
 )
 
 # Create main API router
-api_router = APIRouter(prefix="/api/v1", tags=["api"])
+api_router = APIRouter(prefix="/api/v1")
 
 # Include all individual routers
 api_router.include_router(health.router)

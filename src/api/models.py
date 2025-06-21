@@ -385,4 +385,47 @@ class GenericResponse(BaseResponse):
 class ErrorResponse(BaseModel):
     success: bool = False
     error: str
-    detail: Optional[str] = None 
+    detail: Optional[str] = None
+
+
+# Common error responses for OpenAPI documentation
+class BadRequestError(ErrorResponse):
+    """400 Bad Request error response"""
+    pass
+
+class UnauthorizedError(ErrorResponse):
+    """401 Unauthorized error response"""  
+    pass
+
+class ForbiddenError(ErrorResponse):
+    """403 Forbidden error response"""
+    pass
+
+class NotFoundError(ErrorResponse):
+    """404 Not Found error response"""
+    pass
+
+class InternalServerError(ErrorResponse):
+    """500 Internal Server Error response"""
+    pass
+
+# Standard error responses for endpoints
+COMMON_ERROR_RESPONSES = {
+    400: {"model": BadRequestError, "description": "Bad Request"},
+    401: {"model": UnauthorizedError, "description": "Unauthorized"}, 
+    403: {"model": ForbiddenError, "description": "Forbidden"},
+    404: {"model": NotFoundError, "description": "Not Found"},
+    500: {"model": InternalServerError, "description": "Internal Server Error"}
+}
+
+# File upload models
+class FileUploadBody(BaseModel):
+    """Request body for file uploads"""
+    uploaded_files: List[Any] = Field(..., description="Files to upload")
+    path: str = Field(default="", description="Target directory path")
+
+
+class KnowledgeUploadBody(BaseModel):
+    """Request body for knowledge import uploads"""
+    upload_files: List[Any] = Field(..., description="Files to import as knowledge")
+    path: str = Field(default="", description="Knowledge base path") 

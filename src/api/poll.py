@@ -5,7 +5,7 @@ from src.helpers.task_scheduler import TaskScheduler
 from src.helpers.localization import Localization
 from src.helpers.dotenv import get_dotenv_value
 
-router = APIRouter(prefix="/poll", tags=["poll"])
+router = APIRouter(prefix="/poll", tags=["system"])
 
 @router.post("", response_model=PollResponse)
 async def poll_status(request: PollRequest) -> PollResponse:

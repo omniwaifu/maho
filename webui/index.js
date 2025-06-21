@@ -128,7 +128,7 @@ export async function sendMessage() {
                     formData.append('attachments', attachments[i].file);
                 }
 
-                response = await fetch('/message_async', {
+                response = await fetch('/api/v1/message_async', {
                     method: 'POST',
                     body: formData
                 });
@@ -141,7 +141,7 @@ export async function sendMessage() {
                     context,
                     message_id: messageId
                 };
-                response = await fetch('/message_async', {
+                response = await fetch('/api/v1/message_async', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -277,7 +277,7 @@ window.loadKnowledge = async function () {
 
         formData.append('ctxid', getContext());
 
-        const response = await fetch('/import_knowledge', {
+        const response = await fetch('/api/v1/import_knowledge', {
             method: 'POST',
             body: formData,
         });
@@ -349,7 +349,7 @@ async function poll() {
         const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
 
         const response = await sendJsonData(
-            "/poll",
+            "/api/v1/poll",
             {
                 log_from: lastLogVersion,
                 context: context || null,
@@ -529,7 +529,7 @@ function updateProgress(progress, active) {
 
 window.pauseAgent = async function (paused) {
     try {
-        const resp = await sendJsonData("/pause", { paused: paused, context });
+        const resp = await sendJsonData("/api/v1/pause", { paused: paused, context });
     } catch (e) {
         window.toastFetchError("Error pausing agent", e)
     }
@@ -537,7 +537,7 @@ window.pauseAgent = async function (paused) {
 
 window.resetChat = async function (ctxid=null) {
     try {
-        const resp = await sendJsonData("/chat_reset", { "context": ctxid === null ? context : ctxid });
+        const resp = await sendJsonData("/api/v1/chat_reset", { "context": ctxid === null ? context : ctxid });
         if (ctxid === null) updateAfterScroll();
     } catch (e) {
         window.toastFetchError("Error resetting chat", e);
@@ -569,7 +569,7 @@ window.killChat = async function (id) {
         switchFromContext(id);
 
         // Delete the chat on the server
-        await sendJsonData("/chat_remove", { context: id });
+        await sendJsonData("/api/v1/chat_remove", { context: id });
 
         // Update the UI manually to ensure the correct chat is removed
         // Deep clone the contexts array to prevent reference issues
@@ -746,7 +746,7 @@ window.toggleSpeech = function (isOn) {
 
 window.nudge = async function () {
     try {
-        const resp = await sendJsonData("/nudge", { ctxid: getContext() });
+        const resp = await sendJsonData("/api/v1/nudge", { ctxid: getContext() });
     } catch (e) {
         toastFetchError("Error nudging agent", e)
     }
@@ -759,7 +759,7 @@ window.restart = async function () {
             return
         }
         // First try to initiate restart
-        const resp = await sendJsonData("/restart", {});
+        const resp = await sendJsonData("/api/v1/restart", {});
     } catch (e) {
         // Show restarting message
         toast("Restarting...", "info", 0);
@@ -769,7 +769,7 @@ window.restart = async function () {
 
         while (retries < maxRetries) {
             try {
-                const resp = await sendJsonData("/health", {});
+                const resp = await sendJsonData("/api/v1/health", {});
                 // Server is back up, show success message
                 await new Promise(resolve => setTimeout(resolve, 250));
                 hideToast();
@@ -824,7 +824,7 @@ function toggleCssProperty(selector, property, value) {
 window.loadChats = async function () {
     try {
         const fileContents = await readJsonFiles();
-        const response = await sendJsonData("/chat_load", { chats: fileContents });
+        const response = await sendJsonData("/api/v1/chat_load", { chats: fileContents });
 
         if (!response) {
             toast("No response returned.", "error")
@@ -848,7 +848,7 @@ window.loadChats = async function () {
 
 window.saveChat = async function () {
     try {
-        const response = await sendJsonData("/chat_export", { ctxid: context });
+        const response = await sendJsonData("/api/v1/chat_export", { ctxid: context });
 
         if (!response) {
             toast("No response returned.", "error")
@@ -1162,11 +1162,27 @@ window.handleFileUpload = function(event) {
     handleFiles(files, inputAD);
 }
 
+// Helper function to safely access Alpine data
+function safeAlpineData(element) {
+    return window.Alpine ? Alpine.$data(element) : null;
+}
+
+// Make safeAlpineData globally available
+window.safeAlpineData = safeAlpineData;
+
 // Setup event handlers once the DOM is fully loaded
 document.addEventListener('DOMContentLoaded', function() {
     setupSidebarToggle();
     setupTabs();
-    initializeActiveTab();
+    
+    // Wait for Alpine.js to be ready before initializing tab functionality
+    if (window.Alpine) {
+        initializeActiveTab();
+    } else {
+        document.addEventListener('alpine:init', () => {
+            initializeActiveTab();
+        });
+    }
 });
 
 // Setup tabs functionality
@@ -1219,42 +1235,46 @@ function activateTab(tabName) {
         chatsTab.classList.add('active');
         chatsSection.style.display = '';
 
-        // Get the available contexts from Alpine.js data
-        const chatsAD = Alpine.$data(chatsSection);
-        const availableContexts = chatsAD.contexts || [];
+        // Use safe Alpine data access
+        const chatsAD = safeAlpineData(chatsSection);
+        if (chatsAD) {
+            const availableContexts = chatsAD.contexts || [];
 
-        // Restore previous chat selection
-        const lastSelectedChat = localStorage.getItem('lastSelectedChat');
+            // Restore previous chat selection
+            const lastSelectedChat = localStorage.getItem('lastSelectedChat');
 
-        // Only switch if:
-        // 1. lastSelectedChat exists AND
-        // 2. It's different from current context AND
-        // 3. The context actually exists in our contexts list OR there are no contexts yet
-        if (lastSelectedChat &&
-            lastSelectedChat !== currentContext &&
-            (availableContexts.some(ctx => ctx.id === lastSelectedChat) || availableContexts.length === 0)) {
-            setContext(lastSelectedChat);
+            // Only switch if:
+            // 1. lastSelectedChat exists AND
+            // 2. It's different from current context AND
+            // 3. The context actually exists in our contexts list OR there are no contexts yet
+            if (lastSelectedChat &&
+                lastSelectedChat !== currentContext &&
+                (availableContexts.some(ctx => ctx.id === lastSelectedChat) || availableContexts.length === 0)) {
+                setContext(lastSelectedChat);
+            }
         }
     } else if (tabName === 'tasks') {
         tasksTab.classList.add('active');
         tasksSection.style.display = 'flex';
         tasksSection.style.flexDirection = 'column';
 
-        // Get the available tasks from Alpine.js data
-        const tasksAD = Alpine.$data(tasksSection);
-        const availableTasks = tasksAD.tasks || [];
+        // Use safe Alpine data access
+        const tasksAD = safeAlpineData(tasksSection);
+        if (tasksAD) {
+            const availableTasks = tasksAD.tasks || [];
 
-        // Restore previous task selection
-        const lastSelectedTask = localStorage.getItem('lastSelectedTask');
+            // Restore previous task selection
+            const lastSelectedTask = localStorage.getItem('lastSelectedTask');
 
-        // Only switch if:
-        // 1. lastSelectedTask exists AND
-        // 2. It's different from current context AND
-        // 3. The task actually exists in our tasks list
-        if (lastSelectedTask &&
-            lastSelectedTask !== currentContext &&
-            availableTasks.some(task => task.id === lastSelectedTask)) {
-            setContext(lastSelectedTask);
+            // Only switch if:
+            // 1. lastSelectedTask exists AND
+            // 2. It's different from current context AND
+            // 3. The task actually exists in our tasks list
+            if (lastSelectedTask &&
+                lastSelectedTask !== currentContext &&
+                availableTasks.some(task => task.id === lastSelectedTask)) {
+                setContext(lastSelectedTask);
+            }
         }
     }
 
@@ -1335,7 +1355,8 @@ function openTaskDetail(taskId) {
             console.error('Settings button not found');
         }
     } else {
-        console.error('Alpine.js not loaded');
+        console.warn('Alpine.js not loaded yet, retrying in 100ms...');
+        setTimeout(() => openTaskDetail(taskId), 100);
     }
 }
 

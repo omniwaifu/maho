@@ -108,7 +108,7 @@ class State:
             if found_path:
                 await self.browser_session.browser_context.add_init_script(path=found_path)
             else:
-                print(f"DEBUG: init_override.js not found in any location, skipping...")
+                print("DEBUG: init_override.js not found in any location, skipping...")
 
     def start_task(self, task: str):
         if self.task and not self.task.done():

@@ -73,7 +73,7 @@ class ApiHandler:
                     # If all else fails, try model_dump anyway
                     try:
                         return JSONResponse(content=output.model_dump())  # type: ignore
-                    except:
+                    except Exception:
                         return JSONResponse(content={"result": str(output)})
                         
         except HTTPException:

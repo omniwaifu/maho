@@ -265,7 +265,7 @@ window.fileBrowserModalProxy = fileBrowserModalProxy;
 
 openFileLink = async function (path) {
   try {
-    const resp = await window.sendJsonData("/file_info", { path });
+    const resp = await window.sendJsonData("/api/v1/file_info", { path });
     if (!resp.exists) {
       window.toast("File does not exist.", "error");
       return;

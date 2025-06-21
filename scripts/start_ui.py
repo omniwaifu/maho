@@ -17,7 +17,6 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
 import uvicorn
 import anyio
 
@@ -240,20 +239,12 @@ def register_api_handler(app: FastAPI, handler: type[ApiHandler]):
 def register_file_upload_endpoints(app: FastAPI):
     """Register proper FastAPI file upload endpoints"""
     from src.api.upload_work_dir_files import upload_files_endpoint
-    from src.api.upload import upload_endpoint
     from src.api.import_knowledge import import_knowledge_endpoint
     
     # Register file upload endpoints with proper FastAPI patterns
     app.add_api_route(
         "/upload_work_dir_files",
         upload_files_endpoint,
-        methods=["POST"],
-        dependencies=[Depends(verify_auth)]
-    )
-    
-    app.add_api_route(
-        "/upload",
-        upload_endpoint,
         methods=["POST"],
         dependencies=[Depends(verify_auth)]
     )
@@ -282,10 +273,27 @@ async def run():
         runtime.get_arg("host") or dotenv.get_dotenv_value("WEB_UI_HOST") or "0.0.0.0"
     )
 
-    # Initialize and register API handlers
+    # Include the new FastAPI router system
+    from src.api.router import api_router
+    app.include_router(api_router)
+
+    # Initialize and register remaining API handlers (to be migrated)
     handlers = load_classes_from_folder("src/api", "*.py", ApiHandler)
     for handler in handlers:
-        register_api_handler(app, handler)
+        # Skip the ones we've already converted to routers
+        module_name = handler.__module__.split(".")[-1]
+        converted_modules = [
+            "health", "settings_get", "settings_set", "message", "message_async",
+            "restart", "pause", "nudge", "history_get", "chat_reset", "chat_load", 
+            "chat_remove", "chat_export", "tunnel", "rfc", "file_info", 
+            "get_work_dir_files", "delete_work_dir_file", "mcp_servers_status", 
+            "scheduler_tasks_list", "image_get", "ctx_window_get", "mcp_servers_apply",
+            "mcp_server_get_detail", "mcp_server_get_log", "transcribe", "download_work_dir_file",
+            "scheduler_tick", "tunnel_proxy", "upload", "scheduler_task_create",
+            "scheduler_task_update", "scheduler_task_run", "scheduler_task_delete", "poll"
+        ]
+        if module_name not in converted_modules:
+            register_api_handler(app, handler)
 
     # Register file upload endpoints
     register_file_upload_endpoints(app)

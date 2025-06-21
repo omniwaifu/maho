@@ -256,7 +256,7 @@ const fullComponentImplementation = function() {
 
             this.isLoading = true;
             try {
-                const response = await fetch('/scheduler_tasks_list', {
+                const response = await fetch('/api/v1/scheduler_tasks_list', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -874,7 +874,7 @@ const fullComponentImplementation = function() {
         // Run a task
         async runTask(taskId) {
             try {
-                const response = await fetch('/scheduler_task_run', {
+                const response = await fetch('/api/v1/scheduler_task_run', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -918,7 +918,7 @@ const fullComponentImplementation = function() {
                 this.showLoadingState = true;
 
                 // Call API to update the task state
-                const response = await fetch('/scheduler_task_update', {
+                const response = await fetch('/api/v1/scheduler_task_update', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -959,7 +959,7 @@ const fullComponentImplementation = function() {
                 // if we delete selected context, switch to another first
                 switchFromContext(taskId);
 
-                const response = await fetch('/scheduler_task_delete', {
+                const response = await fetch('/api/v1/scheduler_task_delete', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'

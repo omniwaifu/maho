@@ -1,22 +1,28 @@
-from src.helpers.api import ApiHandler
-from fastapi import Request, Response
-
-from typing import Any
-
+from fastapi import APIRouter, HTTPException
+from src.api.models import McpServerGetLogRequest, McpServerGetLogResponse
 from src.helpers.mcp_handler import MCPConfig
 
+router = APIRouter(prefix="/mcp_server_get_log", tags=["mcp"])
 
-class McpServerGetLog(ApiHandler):
-    async def process(
-        self, input: dict[Any, Any], request: Request
-    ) -> dict[Any, Any] | Response:
+@router.post("", response_model=McpServerGetLogResponse)
+async def get_mcp_server_log(request: McpServerGetLogRequest) -> McpServerGetLogResponse:
+    """Get log content for a specific MCP server"""
+    try:
+        if not request.server_name:
+            raise HTTPException(status_code=400, detail="Missing server_name")
+        
+        log = MCPConfig.get_instance().get_server_log(request.server_name)
+        
+        return McpServerGetLogResponse(
+            log=log,
+            message="MCP server log retrieved successfully"
+        )
 
-        # try:
-        server_name = input.get("server_name")
-        if not server_name:
-            return {"success": False, "error": "Missing server_name"}
-        log = MCPConfig.get_instance().get_server_log(server_name)
-        return {"success": True, "log": log}
-
-    # except Exception as e:
-    #     return {"success": False, "error": str(e)}
+    except HTTPException:
+        raise
+    except Exception as e:
+        return McpServerGetLogResponse(
+            success=False,
+            log="",
+            message=f"Failed to get MCP server log: {str(e)}"
+        )

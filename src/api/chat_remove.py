@@ -1,28 +1,27 @@
-from src.helpers.api import ApiHandler, Input, Output, Request, Response
+from fastapi import APIRouter
+from src.api.models import ChatRemoveRequest, BaseResponse
 from src.core.context import AgentContext
 from src.helpers import persist_chat
 from src.helpers.task_scheduler import TaskScheduler
 
+router = APIRouter(prefix="/chat_remove", tags=["chat"])
 
-class RemoveChat(ApiHandler):
-    async def process(self, input: Input, request: Request) -> Output:
-        ctxid = input.get("context", "")
+@router.post("", response_model=BaseResponse)
+async def remove_chat(request: ChatRemoveRequest) -> BaseResponse:
+    """Remove a chat context and its tasks"""
+    context = AgentContext.get(request.context)
+    if context:
+        # stop processing any tasks
+        context.reset()
 
-        context = AgentContext.get(ctxid)
-        if context:
-            # stop processing any tasks
-            context.reset()
+    AgentContext.remove(request.context)
+    persist_chat.remove_chat(request.context)
 
-        AgentContext.remove(ctxid)
-        persist_chat.remove_chat(ctxid)
+    scheduler = TaskScheduler.get()
+    await scheduler.reload()
 
-        scheduler = TaskScheduler.get()
-        await scheduler.reload()
+    tasks = scheduler.get_tasks_by_context_id(request.context)
+    for task in tasks:
+        await scheduler.remove_task_by_uuid(task.uuid)
 
-        tasks = scheduler.get_tasks_by_context_id(ctxid)
-        for task in tasks:
-            await scheduler.remove_task_by_uuid(task.uuid)
-
-        return {
-            "message": "Context removed.",
-        }
+    return BaseResponse(message="Context removed.")

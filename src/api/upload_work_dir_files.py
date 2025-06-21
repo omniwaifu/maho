@@ -18,17 +18,17 @@ class UploadWorkDirFiles(ApiHandler):
 
 # Create proper FastAPI endpoint function that will be registered
 async def upload_files_endpoint(
-    files: List[UploadFile] = File(...),
+    uploaded_files: List[UploadFile] = File(...),
     path: str = Form("")
 ) -> dict:
     """Proper FastAPI file upload endpoint"""
     
-    if not files:
+    if not uploaded_files:
         raise Exception("No files uploaded")
 
     current_path = path
     
-    successful, failed = await upload_files(files, current_path)
+    successful, failed = await upload_files(uploaded_files, current_path)
 
     if not successful and failed:
         raise Exception("All uploads failed")

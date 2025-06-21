@@ -1,4 +1,3 @@
-
 const settingsModalProxy = {
     isOpen: false,
     settings: {},
@@ -98,7 +97,7 @@ const settingsModalProxy = {
 
         //get settings from backend
         try {
-            const set = await sendJsonData("/settings_get", null);
+            const set = await sendJsonData("/api/v1/settings_get", null);
 
             // First load the settings data without setting the active tab
             const settings = {
@@ -217,7 +216,7 @@ const settingsModalProxy = {
             const modalEl = document.getElementById('settingsModal');
             const modalAD = Alpine.$data(modalEl);
             try {
-                resp = await window.sendJsonData("/settings_set", modalAD.settings);
+                resp = await window.sendJsonData("/api/v1/settings_set", modalAD.settings);
             } catch (e) {
                 window.toastFetchError("Error saving settings", e)
                 return

@@ -1,36 +1,46 @@
-import time
-from datetime import datetime
-from src.helpers.api import ApiHandler
-from fastapi import Request, Response
-
+from fastapi import APIRouter, HTTPException
+from src.api.models import PollRequest, PollResponse
 from src.core.context import AgentContext
-
-from src.helpers import persist_chat
 from src.helpers.task_scheduler import TaskScheduler
 from src.helpers.localization import Localization
 from src.helpers.dotenv import get_dotenv_value
 
+router = APIRouter(prefix="/poll", tags=["poll"])
 
-class Poll(ApiHandler):
-
-    async def process(self, input: dict, request: Request) -> dict | Response:
-        ctxid = input.get("context", None)
-        if ctxid is not None:
-            ctxid = str(ctxid)
-        from_no = input.get("log_from", 0)
+@router.post("", response_model=PollResponse)
+async def poll_status(request: PollRequest) -> PollResponse:
+    """Poll for current system status, contexts, and tasks"""
+    try:
+        ctxid = str(request.context) if request.context is not None else None
 
         # Get timezone from input (default to dotenv default or UTC if not provided)
-        timezone = input.get(
-            "timezone", get_dotenv_value("DEFAULT_USER_TIMEZONE", "UTC")
-        )
+        timezone = request.timezone or get_dotenv_value("DEFAULT_USER_TIMEZONE", "UTC")
         Localization.get().set_timezone(timezone)
 
         # context instance - get or create
-        context = self.get_context(ctxid)
+        context = None
+        if ctxid:
+            context = AgentContext.get(ctxid)
+        
+        if not context:
+            # Create a new context if none found - use default context
+            contexts = AgentContext._contexts
+            if contexts:
+                context = list(contexts.values())[0]
+            else:
+                # Import config to create a new context
+                from src.config.initialization import initialize_agent
+                initialize_agent()
+                if AgentContext._contexts:
+                    context = list(AgentContext._contexts.values())[0]
+        
+        # If we still don't have a context, create one
+        if not context:
+            from src.config.initialization import initialize_agent
+            config = initialize_agent()
+            context = AgentContext(config=config)
 
-        logs = context.log.output(start=from_no)
-
-        # loop AgentContext._contexts
+        logs = context.log.output(start=request.log_from)
 
         # Get a task scheduler instance
         scheduler = TaskScheduler.get()
@@ -39,7 +49,6 @@ class Poll(ApiHandler):
         # await scheduler.reload() # does not seem to be needed
 
         # loop AgentContext._contexts and divide into contexts and tasks
-
         ctxs = []
         tasks = []
         processed_contexts = set()  # Track processed context IDs
@@ -102,15 +111,19 @@ class Poll(ApiHandler):
         ctxs.sort(key=lambda x: x["created_at"], reverse=True)
         tasks.sort(key=lambda x: x["created_at"], reverse=True)
 
-        # data from this server
-        return {
-            "context": context.id,
-            "contexts": ctxs,
-            "tasks": tasks,
-            "logs": logs,
-            "log_guid": context.log.guid,
-            "log_version": len(context.log.updates),
-            "log_progress": context.log.progress,
-            "log_progress_active": context.log.progress_active,
-            "paused": context.paused,
-        }
+        # Return data from this server
+        return PollResponse(
+            context=context.id,
+            contexts=ctxs,
+            tasks=tasks,
+            logs=logs,
+            log_guid=context.log.guid,
+            log_version=len(context.log.updates),
+            log_progress=context.log.progress if context.log.progress else 0.0,
+            log_progress_active=bool(context.log.progress_active),
+            paused=context.paused,
+            message="Poll completed successfully"
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to poll status: {str(e)}")

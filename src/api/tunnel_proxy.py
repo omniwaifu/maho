@@ -1,41 +1,92 @@
-from fastapi import Request, Response
+from fastapi import APIRouter
+from src.api.models import TunnelRequest, TunnelResponse
 from src.helpers import dotenv, runtime
-from src.helpers.api import ApiHandler
 from src.helpers.tunnel_manager import TunnelManager
 import requests
+import time
 
+router = APIRouter(prefix="/tunnel_proxy", tags=["tunnel"])
 
-class TunnelProxy(ApiHandler):
-    async def process(self, input: dict, request: Request) -> dict | Response:
-        # Get configuration from environment
-        tunnel_api_port = (
-            runtime.get_arg("tunnel_api_port")
-            or int(dotenv.get_dotenv_value("TUNNEL_API_PORT", 0))
-            or 55520
+@router.post("", response_model=TunnelResponse)
+async def tunnel_proxy(request: TunnelRequest) -> TunnelResponse:
+    """Proxy tunnel requests to external service or handle locally"""
+    # Get configuration from environment
+    tunnel_api_port = (
+        runtime.get_arg("tunnel_api_port")
+        or int(dotenv.get_dotenv_value("TUNNEL_API_PORT", 0))
+        or 55520
+    )
+
+    # first verify the service is running:
+    service_ok = False
+    try:
+        response = requests.post(
+            f"http://localhost:{tunnel_api_port}/", json={"action": "health"}
         )
-
-        # first verify the service is running:
+        if response.status_code == 200:
+            service_ok = True
+    except Exception:
         service_ok = False
+
+    # forward this request to the tunnel service if OK
+    if service_ok:
         try:
             response = requests.post(
-                f"http://localhost:{tunnel_api_port}/", json={"action": "health"}
+                f"http://localhost:{tunnel_api_port}/", 
+                json=request.model_dump()
             )
-            if response.status_code == 200:
-                service_ok = True
+            response_data = response.json()
+            
+            # Convert response to TunnelResponse format
+            return TunnelResponse(
+                tunnel_url=response_data.get("tunnel_url"),
+                is_running=response_data.get("is_running", False),
+                message=response_data.get("message", "Tunnel operation completed")
+            )
         except Exception as e:
-            service_ok = False
+            return TunnelResponse(
+                success=False,
+                message=f"Tunnel proxy error: {str(e)}"
+            )
+    else:
+        # forward to local tunnel handler directly
+        tunnel_manager = TunnelManager.get_instance()
 
-        # forward this request to the tunnel service if OK
-        if service_ok:
-            try:
-                response = requests.post(
-                    f"http://localhost:{tunnel_api_port}/", json=input
+        if request.action == "health":
+            return TunnelResponse(message="Tunnel proxy service healthy")
+
+        elif request.action == "create":
+            port = runtime.get_web_ui_port()
+            provider = request.provider or "serveo"
+            tunnel_url = tunnel_manager.start_tunnel(port, provider)
+            if tunnel_url is None:
+                time.sleep(2)
+                tunnel_url = tunnel_manager.get_tunnel_url()
+
+            return TunnelResponse(
+                tunnel_url=tunnel_url,
+                is_running=tunnel_url is not None,
+                message=(
+                    "Tunnel creation in progress"
+                    if tunnel_url is None
+                    else "Tunnel created successfully"
                 )
-                return response.json()
-            except Exception as e:
-                return {"error": str(e)}
-        else:
-            # forward to API handler directly
-            from src.api.tunnel import Tunnel
+            )
 
-            return await Tunnel(self.app, self.thread_lock).process(input, request)
+        elif request.action == "stop":
+            tunnel_manager.stop_tunnel()
+            return TunnelResponse(message="Tunnel stopped successfully")
+
+        elif request.action == "get":
+            tunnel_url = tunnel_manager.get_tunnel_url()
+            return TunnelResponse(
+                tunnel_url=tunnel_url,
+                is_running=tunnel_manager.is_running,
+                message="Tunnel status retrieved"
+            )
+
+        else:
+            return TunnelResponse(
+                success=False,
+                message="Invalid action. Use 'create', 'stop', 'get', or 'health'."
+            )

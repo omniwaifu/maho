@@ -30,7 +30,7 @@ function densify(x) {
 
 async function loadMicSettings() {
     try {
-        const response = await fetch('/settings_get');
+        const response = await fetch('/api/v1/settings_get');
         const data = await response.json();
         const sttSettings = data.settings.sections.find(s => s.title === 'Speech to Text');
 

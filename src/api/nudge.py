@@ -1,20 +1,35 @@
-from src.helpers.api import ApiHandler
-from fastapi import Request, Response
+from fastapi import APIRouter, HTTPException
+from src.api.models import NudgeRequest, NudgeResponse
+from src.core.context import AgentContext
+from src.config.initialization import initialize_agent
 
+router = APIRouter(prefix="/nudge", tags=["control"])
 
-class Nudge(ApiHandler):
-    async def process(self, input: dict, request: Request) -> dict | Response:
-        ctxid = input.get("ctxid", "")
-        if not ctxid:
-            raise Exception("No context id provided")
+def get_context(context_id: str = "") -> AgentContext:
+    """Get or create agent context"""
+    if not context_id:
+        first = AgentContext.first()
+        if first:
+            return first
+        return AgentContext(config=initialize_agent())
+    got = AgentContext.get(context_id)
+    if got:
+        return got
+    return AgentContext(config=initialize_agent(), id=context_id)
 
-        context = self.get_context(ctxid)
-        await context.nudge()
+@router.post("", response_model=NudgeResponse)
+async def nudge_agent(request: NudgeRequest) -> NudgeResponse:
+    """Nudge an agent to reset its process"""
+    if not request.ctxid:
+        raise HTTPException(status_code=400, detail="No context id provided")
 
-        msg = "Process reset, agent nudged."
-        context.log.log(type="info", content=msg)
+    context = get_context(request.ctxid)
+    await context.nudge()
 
-        return {
-            "message": msg,
-            "ctxid": context.id,
-        }
+    msg = "Process reset, agent nudged."
+    context.log.log(type="info", content=msg)
+
+    return NudgeResponse(
+        message=msg,
+        ctxid=context.id
+    )

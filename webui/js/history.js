@@ -2,7 +2,7 @@ import { getContext } from "../index.js";
 
 export async function openHistoryModal() {
     try {
-        const hist = await window.sendJsonData("/history_get", { context: getContext() });
+        const hist = await window.sendJsonData("/api/v1/history_get", { context: getContext() });
         // const data = JSON.stringify(hist.history, null, 4);
         const data = hist.history
         const size = hist.tokens
@@ -15,7 +15,7 @@ export async function openHistoryModal() {
 
 export async function openCtxWindowModal() {
     try {
-        const win = await window.sendJsonData("/ctx_window_get", { context: getContext() });
+        const win = await window.sendJsonData("/api/v1/ctx_window_get", { context: getContext() });
         const data = win.content
         const size = win.tokens
         await showEditorModal(data, "markdown", `Context window ~${size} tokens`, "Data passed to the LLM during last interaction. Contains system message, conversation history and RAG.");

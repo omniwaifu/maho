@@ -1,4 +1,5 @@
-from src.helpers.api import ApiHandler, Input, Output, Request
+from fastapi import APIRouter, HTTPException
+from src.api.models import SchedulerTaskCreateRequest, SchedulerTaskCreateResponse
 from src.helpers.task_scheduler import (
     TaskScheduler,
     ScheduledTask,
@@ -14,56 +15,45 @@ from src.helpers.localization import Localization
 from src.helpers.print_style import PrintStyle
 import random
 
+router = APIRouter(prefix="/scheduler_task_create", tags=["scheduler"])
 
-class SchedulerTaskCreate(ApiHandler):
-    async def process(self, input: Input, request: Request) -> Output:
-        """
-        Create a new task in the scheduler
-        """
-        printer = PrintStyle(italic=True, font_color="blue", padding=False)
+@router.post("", response_model=SchedulerTaskCreateResponse)
+async def create_scheduler_task(request: SchedulerTaskCreateRequest) -> SchedulerTaskCreateResponse:
+    """Create a new task in the scheduler"""
+    printer = PrintStyle(italic=True, font_color="blue", padding=False)
 
+    try:
         # Get timezone from input (do not set if not provided, we then rely on poll() to set it)
-        if timezone := input.get("timezone", None):
-            Localization.get().set_timezone(timezone)
+        if request.timezone:
+            Localization.get().set_timezone(request.timezone)
 
         scheduler = TaskScheduler.get()
         await scheduler.reload()
 
-        # Get common fields from input
-        name = input.get("name")
-        system_prompt = input.get("system_prompt", "")
-        prompt = input.get("prompt")
-        attachments = input.get("attachments", [])
-        context_id = input.get("context_id", None)
+        # Validate required fields
+        if not request.name or not request.prompt:
+            raise HTTPException(status_code=400, detail="Missing required fields: name, prompt")
 
-        # Check if schedule is provided (for ScheduledTask)
-        schedule = input.get("schedule", {})
-        token: str = input.get("token", "")
-
+        # Handle token for ad-hoc tasks
+        token = request.token or ""
+        
         # Debug log the token value
         printer.print(
             f"Token received from frontend: '{token}' (type: {type(token)}, length: {len(token) if token else 0})"
         )
 
-        # Generate a random token if empty or not provided
-        if not token:
+        # Generate a random token if empty or not provided (for ad-hoc tasks)
+        if not token and not request.schedule and not request.plan:
             token = str(random.randint(1000000000000000000, 9999999999999999999))
             printer.print(f"Generated new token: '{token}'")
 
-        plan = input.get("plan", {})
-
-        # Validate required fields
-        if not name or not prompt:
-            # return {"error": "Missing required fields: name, system_prompt, prompt"}
-            raise ValueError("Missing required fields: name, system_prompt, prompt")
-
         task = None
-        if schedule:
+        if request.schedule:
             # Create a scheduled task
             # Handle different schedule formats (string or object)
-            if isinstance(schedule, str):
+            if isinstance(request.schedule, str):
                 # Parse the string schedule
-                parts = schedule.split(" ")
+                parts = request.schedule.split(" ")
                 task_schedule = TaskSchedule(
                     minute=parts[0] if len(parts) > 0 else "*",
                     hour=parts[1] if len(parts) > 1 else "*",
@@ -71,50 +61,56 @@ class SchedulerTaskCreate(ApiHandler):
                     month=parts[3] if len(parts) > 3 else "*",
                     weekday=parts[4] if len(parts) > 4 else "*",
                 )
-            elif isinstance(schedule, dict):
+            else:
                 # Use our standardized parsing function
                 try:
-                    task_schedule = parse_task_schedule(schedule)
+                    if hasattr(request.schedule, 'model_dump'):
+                        schedule_dict = request.schedule.model_dump()
+                    else:
+                        schedule_dict = dict(request.schedule)
+                    task_schedule = parse_task_schedule(schedule_dict)
                 except ValueError as e:
-                    raise ValueError(str(e))
-            else:
-                raise ValueError("Invalid schedule format. Must be string or object.")
+                    raise HTTPException(status_code=400, detail=str(e))
 
             task = ScheduledTask.create(
-                name=name,
-                system_prompt=system_prompt,
-                prompt=prompt,
+                name=request.name,
+                system_prompt=request.system_prompt,
+                prompt=request.prompt,
                 schedule=task_schedule,
-                attachments=attachments,
-                context_id=context_id,
-                timezone=timezone,
+                attachments=request.attachments,
+                context_id=request.context_id,
+                timezone=request.timezone,
             )
-        elif plan:
+        elif request.plan:
             # Create a planned task
             try:
                 # Use our standardized parsing function
-                task_plan = parse_task_plan(plan)
+                if hasattr(request.plan, 'model_dump'):
+                    plan_dict = request.plan.model_dump()
+                else:
+                    plan_dict = dict(request.plan)
+                task_plan = parse_task_plan(plan_dict)
             except ValueError as e:
-                return {"error": str(e)}
+                raise HTTPException(status_code=400, detail=str(e))
 
             task = PlannedTask.create(
-                name=name,
-                system_prompt=system_prompt,
-                prompt=prompt,
+                name=request.name,
+                system_prompt=request.system_prompt,
+                prompt=request.prompt,
                 plan=task_plan,
-                attachments=attachments,
-                context_id=context_id,
+                attachments=request.attachments,
+                context_id=request.context_id,
             )
         else:
             # Create an ad-hoc task
             printer.print(f"Creating AdHocTask with token: '{token}'")
             task = AdHocTask.create(
-                name=name,
-                system_prompt=system_prompt,
-                prompt=prompt,
+                name=request.name,
+                system_prompt=request.system_prompt,
+                prompt=request.prompt,
                 token=token,
-                attachments=attachments,
-                context_id=context_id,
+                attachments=request.attachments,
+                context_id=request.context_id,
             )
             # Verify token after creation
             if isinstance(task, AdHocTask):
@@ -142,4 +138,12 @@ class SchedulerTaskCreate(ApiHandler):
                 f"Serialized adhoc task, token in response: '{task_dict.get('token')}'"
             )
 
-        return {"task": task_dict}
+        return SchedulerTaskCreateResponse(
+            task=task_dict,
+            message="Task created successfully"
+        )
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to create task: {str(e)}")

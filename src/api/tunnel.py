@@ -1,11 +1,36 @@
-from fastapi import APIRouter, HTTPException
-from src.api.models import TunnelRequest, TunnelResponse
+from fastapi import APIRouter, HTTPException, FastAPI, Request
+from src.api.models import TunnelRequest, TunnelResponse, TunnelAction
 from src.helpers import runtime
 from src.helpers.tunnel_manager import TunnelManager
 from src.helpers.print_style import PrintStyle
 import time
+import json
 
 router = APIRouter(prefix="/tunnel", tags=["tunnel"])
+
+
+class Tunnel:
+    """Tunnel API handler class for managing tunnel operations"""
+    
+    def __init__(self, app: FastAPI):
+        self.app = app
+        self.tunnel_manager = TunnelManager.get_instance()
+    
+    async def handle_request_async(self, request: Request):
+        """Handle incoming tunnel API requests"""
+        try:
+            body = await request.body()
+            if body:
+                data = json.loads(body)
+                tunnel_request = TunnelRequest(**data)
+            else:
+                # Default to health check if no body
+                tunnel_request = TunnelRequest(action=TunnelAction.HEALTH, provider="serveo")
+            
+            return await tunnel_control(tunnel_request)
+        except Exception as e:
+            PrintStyle.error(f"Error handling tunnel request: {str(e)}")
+            raise HTTPException(status_code=400, detail=f"Invalid request: {str(e)}")
 
 @router.post("", response_model=TunnelResponse)
 async def tunnel_control(request: TunnelRequest) -> TunnelResponse:

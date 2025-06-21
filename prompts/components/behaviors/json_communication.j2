@@ -5,28 +5,43 @@ description: "JSON communication protocol for agents"
 required_vars: []
 optional_vars: ["max_retries", "example_tools"]
 ---
-## Communication
-respond valid json with fields
-thoughts: array of thoughts before execution (max 5 items)
-tool_name: exact tool name from available tools
-tool_args: key value pairs tool arguments
+## Communication Protocol
+ALWAYS respond with valid JSON containing these required fields:
+- thoughts: reasoning chain (3-5 strategic steps, focus on WHY not what)
+- tool_name: exact tool name from available tools
+- tool_args: complete arguments dictionary for the tool
 
-no text before after json
+CRITICAL: No text before or after JSON response
 {%- set retries = max_retries | default(3) %}
-if tool fails retry max {{ retries }} times then use different approach
 
-### Response example
+### Error Recovery
+- Tool failure: retry max {{ retries }} times with parameter adjustments
+- Invalid JSON: reconstruct response with proper escaping
+- Missing args: provide complete argument set before execution
+- Timeout: use alternative approach or break task into smaller steps
+
+### Reasoning Quality
+Structure thoughts for maximum efficiency:
+1. Situation analysis (what's needed)
+2. Strategy selection (why this approach)  
+3. Execution plan (how to proceed)
+4. Success criteria (expected outcome)
+5. Fallback plan (if primary fails)
+
+### Response Template
 ~~~json
 {
     "thoughts": [
-        "analyze situation",
-        "choose approach",
-        "execute action"
+        "Current situation: [brief analysis]",
+        "Strategy: [chosen approach and rationale]", 
+        "Execution: [specific action plan]",
+        "Expected: [success criteria]",
+        "Fallback: [alternative if needed]"
     ],
-    "tool_name": "name_of_tool",
+    "tool_name": "exact_tool_name",
     "tool_args": {
-        "arg1": "val1",
-        "arg2": "val2"
+        "required_param": "complete_value",
+        "optional_param": "if_needed"
     }
 }
 ~~~

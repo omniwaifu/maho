@@ -150,7 +150,7 @@ Note*: Offline operation requires prompt adjustments
 Maho provides a comprehensive settings interface to customize various aspects of its functionality. Access the settings by clicking the "Settings"button with a gear icon in the sidebar.
 
 ### Agent Configuration
-- **Prompts Subdirectory:** Choose the subdirectory within `/prompts` for agent behavior customization. The 'default' directory contains the standard prompts.
+- **Agent Type:** Choose the agent personality/behavior type. Each agent type has specialized prompts and capabilities.
 - **Memory Subdirectory:** Select the subdirectory for agent memory storage, allowing separation between different instances.
 - **Knowledge Subdirectory:** Specify the location of custom knowledge files to enhance the agent's understanding.
 

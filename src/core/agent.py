@@ -1,4 +1,5 @@
 import anyio
+import random
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any, Awaitable, Callable
 
@@ -31,6 +32,26 @@ class Agent:
     DATA_NAME_SUPERIOR = "_superior"
     DATA_NAME_SUBORDINATE = "_subordinate"
     DATA_NAME_CTX_WINDOW = "ctx_window"
+    
+    # Steins;Gate lab member names for subordinate agents
+    LAB_MEMBER_NAMES = [
+        "Okarin",      # Okabe Rintaro
+        "Christina",   # Makise Kurisu
+        "Mayushii",    # Shiina Mayuri
+        "Daru",        # Hashida Itaru
+        "Suzuha",      # Suzuha Amane
+        "Faris",       # Faris NyanNyan
+        "Ruka",        # Urushibara Ruka
+        "Moeka",       # Kiryu Moeka
+        "Mr. Braun",   # Tennouji Yuugo
+        "Luka",        # Alternative for Ruka
+        "Kurisu",      # Alternative for Christina
+        "Mayuri",      # Alternative for Mayushii
+        "Itaru",       # Alternative for Daru
+    ]
+    
+    # Track used names to avoid duplicates within the same context
+    _used_names_per_context = {}
 
     def __init__(
         self, number: int, config: AgentConfig, context: "AgentContext | None" = None  # type: ignore
@@ -48,12 +69,41 @@ class Agent:
 
         # non-config vars
         self.number = number
-        self.agent_name = f"Agent {self.number}"
+        self.agent_name = self._generate_steins_gate_name()
 
         self.history = history.History(self)
         self.last_user_message: history.Message | None = None
         self.intervention: UserMessage | None = None
         self.data = {}  # free data object all the tools can use
+
+    def _generate_steins_gate_name(self) -> str:
+        """Generate Steins;Gate themed agent names"""
+        # Main agent (number 0) is always Maho
+        if self.number == 0:
+            return "Maho"
+        
+        # Get context ID for tracking used names
+        context_id = self.context.id if self.context else "default"
+        
+        # Initialize used names list for this context if not exists
+        if context_id not in Agent._used_names_per_context:
+            Agent._used_names_per_context[context_id] = []
+        
+        used_names = Agent._used_names_per_context[context_id]
+        available_names = [name for name in Agent.LAB_MEMBER_NAMES if name not in used_names]
+        
+        # If all names are used, start reusing them with numbers
+        if not available_names:
+            # Reset the list and start over with numbers
+            Agent._used_names_per_context[context_id] = []
+            name = random.choice(Agent.LAB_MEMBER_NAMES)
+            return f"{name} {self.number}"
+        
+        # Pick a random available name
+        chosen_name = random.choice(available_names)
+        used_names.append(chosen_name)
+        
+        return chosen_name
 
     async def monologue(self):
         while True:

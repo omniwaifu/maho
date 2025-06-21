@@ -179,6 +179,36 @@ def _create_section(**kwargs) -> SettingsSection:
     """Helper to create SettingsSection with proper types"""
     return SettingsSection(**kwargs)
 
+def _get_available_agent_types() -> list[dict[str, str]]:
+    """Discover available agent types by scanning the prompts/agents directory"""
+    agents_dir = os.path.join("prompts", "agents")
+    if not os.path.exists(agents_dir):
+        return [{"value": "default", "label": "Default - General purpose agent"}]
+    
+    # Predefined descriptions for known agent types
+    agent_descriptions = {
+        "default": "General purpose agent",
+        "hacker": "Cybersecurity focused agent", 
+        "research": "Research and analysis focused agent",
+        "engineer": "Software development focused agent"
+    }
+    
+    options = []
+    for item in os.listdir(agents_dir):
+        agent_path = os.path.join(agents_dir, item)
+        # Check if it's a directory and has a system.j2 file
+        if os.path.isdir(agent_path) and os.path.exists(os.path.join(agent_path, "system.j2")):
+            # Use predefined description if available, otherwise generate one
+            description = agent_descriptions.get(item, f"{item.title()} agent")
+            options.append({
+                "value": item,
+                "label": f"{item.title()} - {description}"
+            })
+    
+    # Ensure default is always first if it exists
+    options.sort(key=lambda x: (x["value"] != "default", x["value"]))
+    return options
+
 def convert_out(settings: Settings) -> SettingsOutput:
     from src.models import ModelProvider
 
@@ -568,14 +598,11 @@ def convert_out(settings: Settings) -> SettingsOutput:
     agent_fields.append(
         _create_field(
             id="agent_prompts_subdir",
-            title="Prompts Subdirectory",
-            description="Subdirectory of /prompts folder to use for agent prompts. Used to adjust agent behaviour.",
+            title="Agent Type",
+            description="Choose the agent personality/behavior type. Each agent type has specialized prompts and capabilities.",
             type="select",
             value=settings["agent_prompts_subdir"],
-            options=[
-                {"value": subdir, "label": subdir}
-                for subdir in files.get_subdirectories("prompts")
-            ],
+            options=_get_available_agent_types(),
         )
     )
 

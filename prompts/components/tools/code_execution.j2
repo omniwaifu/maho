@@ -7,22 +7,32 @@ optional_vars: ["timeout", "max_retries", "available_runtimes"]
 ---
 ### code_execution_tool
 
-execute terminal commands python nodejs code for computation or software tasks
-place code in "code" arg with proper escaping and indentation
-select "runtime" arg: "terminal" "python" "nodejs" "output" "reset"
-select "session" number: 0 default, others for parallel tasks
+**Purpose**: Execute terminal commands, Python, or Node.js code for computational and software tasks
+
+**Critical Parameters**:
+- `code`: Properly escaped source code or command (required)  
+- `runtime`: Execution environment - "terminal"|"python"|"nodejs"|"output"|"reset" (required)
+- `session`: Session ID for parallel execution (default: 0)
+
+**Execution Constraints**:
 {%- set exec_timeout = timeout | default(30) %}
-execution timeout: {{ exec_timeout }} seconds before returning control
-if process runs longer use "output" runtime to check progress
-use "reset" runtime to kill hanging processes
-install packages: use "pip" "npm" "apt-get" in "terminal" runtime
-output with print() or console.log()
+- Timeout: {{ exec_timeout }} seconds automatic return
+- Long processes: Use "output" runtime to check progress
+- Hanging processes: Use "reset" runtime to terminate and clean session
+- Package installation: Use "terminal" runtime with pip/npm/apt-get
+
+**Quality Assurance**:
 {%- set retries = max_retries | default(3) %}
-if tool returns error adjust code before retry max {{ retries }} attempts
-replace placeholder values with real data before execution
-check dependencies before running code
-output may contain [SYSTEM: ...] framework messages
-use only with thoughts field wait for response before other tools
+- Error recovery: Adjust code and retry (max {{ retries }} attempts)
+- Data validation: Replace placeholders with actual values before execution
+- Dependency checking: Verify requirements exist before execution
+- Output parsing: Monitor for [SYSTEM: ...] framework messages
+
+**Efficiency Guidelines**:
+- Use print()/console.log() for explicit output
+- Plan code structure to minimize execution time
+- Leverage session isolation for parallel operations
+- Validate inputs before expensive computations
 
 {%- set runtimes = available_runtimes | default([
     {"name": "terminal", "desc": "shell commands, package installation"},
@@ -37,46 +47,55 @@ runtime selection:
 - "{{ runtime.name }}": {{ runtime.desc }}
 {%- endfor %}
 
-usage examples:
+**Strategic Usage Examples**:
 
-1 python execution
+**Pattern 1: Computational Task**
 ~~~json
 {
     "thoughts": [
-        "need to calculate result",
-        "use python for computation"
+        "Current situation: Need mathematical calculation for data analysis",
+        "Strategy: Use Python for numerical computation with validation",
+        "Execution: Import required libraries and process data",
+        "Expected: Accurate results with error handling",
+        "Fallback: Simplify calculation if imports fail"
     ],
     "tool_name": "code_execution_tool",
     "tool_args": {
         "runtime": "python",
         "session": 0,
-        "code": "import os\nprint(os.getcwd())"
+        "code": "import math\nresult = math.sqrt(144)\nprint(f'Result: {result}')\nprint('Calculation successful')"
     }
 }
 ~~~
 
-2 terminal command
+**Pattern 2: System Preparation**
 ~~~json
 {
     "thoughts": [
-        "need to install package",
-        "use apt-get in terminal"
+        "Current situation: Missing required package for task",
+        "Strategy: Install dependency before proceeding with main task", 
+        "Execution: Use package manager with confirmation",
+        "Expected: Successful installation with no errors",
+        "Fallback: Use alternative package if primary fails"
     ],
     "tool_name": "code_execution_tool",
     "tool_args": {
         "runtime": "terminal",
         "session": 0,
-        "code": "apt-get install -y zip"
+        "code": "apt-get update && apt-get install -y zip && echo 'Installation complete'"
     }
 }
 ~~~
 
-3 check output
+**Pattern 3: Progress Monitoring**
 ~~~json
 {
     "thoughts": [
-        "process still running",
-        "check for output"
+        "Current situation: Long-running process needs status check",
+        "Strategy: Monitor output without interrupting execution",
+        "Execution: Check session output buffer",
+        "Expected: Process status and any new output",
+        "Fallback: Reset if process appears hung"
     ],
     "tool_name": "code_execution_tool",
     "tool_args": {
@@ -86,12 +105,15 @@ usage examples:
 }
 ~~~
 
-4 reset session
+**Pattern 4: Recovery Operation**
 ~~~json
 {
     "thoughts": [
-        "process hanging",
-        "reset to continue"
+        "Current situation: Process unresponsive beyond timeout",
+        "Strategy: Clean reset to restore functionality",
+        "Execution: Terminate all processes and clear session",
+        "Expected: Fresh session ready for new operations",
+        "Fallback: Use different session if reset fails"
     ],
     "tool_name": "code_execution_tool",
     "tool_args": {

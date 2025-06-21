@@ -340,9 +340,9 @@ export async function poll() {
         // Only process logs if we have a real context
         if (context) {
             if (lastLogGuid != response.log_guid) {
-                // Only clear history if we have an existing log GUID (not on first load)
+                // Only clear history if we have an existing log GUID AND we're not on the first message
                 // This prevents clearing user messages when starting a new chat
-                if (lastLogGuid) {
+                if (lastLogGuid && !isFirstMessage) {
                     chatHistory.innerHTML = "";
                 }
                 lastLogVersion = 0;
@@ -355,6 +355,11 @@ export async function poll() {
                     setMessage(messageId, log.type, log.heading, log.content, log.temp, log.kvps);
                 }
                 afterMessagesUpdate(response.logs);
+                
+                // Reset first message flag after processing logs from the first exchange
+                if (isFirstMessage) {
+                    isFirstMessage = false;
+                }
             }
         }
 
@@ -523,6 +528,14 @@ export async function resetChat(ctxid = null) {
 
 export async function newChat() {
     try {
+        // Clear chat history DOM immediately to prevent lingering messages
+        chatHistory.innerHTML = "";
+        
+        // Reset polling state to start fresh
+        lastLogVersion = 0;
+        lastLogGuid = null;
+        isFirstMessage = false;
+        
         // Clear context to show blank state
         setContext(null);
         

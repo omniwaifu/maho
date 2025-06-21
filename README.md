@@ -19,10 +19,13 @@
 
 </div>
 
-## An opinionated fork of [Agent Zero](https://github.com/frdel/agent-zero).
+## An opinionated fork of [Agent Zero](https://github.com/frdel/agent-zero). A personal, organic agentic framework that grows and learns with you
 
 This is primarily a fork for my own experimentation, I would recommend using the original Agent Zero if you're looking for a general-purpose assistant with more stability.
 
+- Maho is not a predefined agentic framework. It is designed to be dynamic, organically growing, and learning as you use it.
+- Maho is fully transparent, readable, comprehensible, customizable, and interactive.
+- Maho uses the computer as a tool to accomplish its (your) tasks.
 - Anyio over Asyncio
 - Jinja2 over Markdown / Prompting Structure
 - FastAPI over Flask
@@ -33,13 +36,7 @@ This is primarily a fork for my own experimentation, I would recommend using the
 - TODO: Suggested Tasks, etc.
 - TODO: E2E Testing / CI/CD, blah blah etc.
 
-![Maho Screenshot](docs/res/maho-screenshot.jpg)
-
-## A personal, organic agentic framework that grows and learns with you
-
-- Maho is not a predefined agentic framework. It is designed to be dynamic, organically growing, and learning as you use it.
-- Maho is fully transparent, readable, comprehensible, customizable, and interactive.
-- Maho uses the computer as a tool to accomplish its (your) tasks.
+![Maho Screenshot](docs/res/maho_screenshot.jpg)
 
 # 💡 Key Features
 

@@ -12,7 +12,7 @@ from src.api import (
     mcp_servers_apply, mcp_server_get_detail, mcp_server_get_log,
     transcribe, download_work_dir_file, scheduler_tick, tunnel_proxy,
     upload, scheduler_task_create, scheduler_task_update, 
-    scheduler_task_run, scheduler_task_delete, poll
+    scheduler_task_run, scheduler_task_delete, poll, upload_work_dir_files, import_knowledge, test_connection
 )
 
 # Create main API router
@@ -54,6 +54,9 @@ api_router.include_router(scheduler_task_update.router)
 api_router.include_router(scheduler_task_run.router)
 api_router.include_router(scheduler_task_delete.router)
 api_router.include_router(poll.router)
+api_router.include_router(upload_work_dir_files.router)
+api_router.include_router(import_knowledge.router)
+api_router.include_router(test_connection.router)
 
 # Export the main router
 __all__ = ["api_router"] 

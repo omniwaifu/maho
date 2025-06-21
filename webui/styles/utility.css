@@ -1,0 +1,100 @@
+/* Utility Classes */
+.kvps-key {
+  font-weight: 600;  /* Make bolder */
+  font-size: var(--font-size-normal);  /* Use normal size instead of small */
+}
+
+.kvps-val {
+  margin: 0.65rem 0 0.65rem 0.4rem;
+  white-space: pre-wrap;
+  font-size: var(--font-size-message);  /* Use readable size */
+  font-weight: 500;  /* Slightly bold */
+  line-height: 1.5;  /* Better spacing */
+}
+
+.kvps-img {
+  width: 8em;
+  height: 8em;
+  object-fit: cover;
+  object-position: top left;
+  border-radius: 10%;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.image-viewer-img{
+  width: 100%;
+}
+
+.msg-json {
+  display: none;
+}
+
+.msg-thoughts {
+  display: auto;
+}
+
+.msg-content {
+  margin-bottom: 0;
+  font-size: var(--font-size-message);  /* Use our readable message size */
+  font-weight: 600;                     /* Make text much bolder */
+  line-height: 1.5;                     /* Better line spacing */
+  color: #e8e8e8;                       /* Slightly brighter text */
+}
+
+.status-icon {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.status-icon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.connected-circle,
+.disconnected-circle {
+  -webkit-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+
+.connected-circle {
+  animation: heartbeat 1.5s ease-in-out infinite;
+  transform-origin: center;
+}
+
+.connected {
+  color: #00c340;
+}
+
+.disconnected {
+  color: #e40138;
+}
+
+.font-bold {
+  font-weight: bold;
+}
+
+/* Math (KaTeX) */
+.katex {
+  line-height: 1.2 !important;
+  font-size: 1.1em;
+}
+
+/* Link styling */
+a {
+    color: inherit;
+    /* text-decoration: none; */
+}
+
+a:visited {
+    color: inherit;
+}
+
+a:hover {
+    color: inherit;
+}
+
+a:active {
+    color: inherit;
+} 

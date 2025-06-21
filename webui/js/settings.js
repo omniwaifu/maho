@@ -358,7 +358,7 @@ document.addEventListener('alpine:init', function () {
             async fetchSettings() {
                 try {
                     this.isLoading = true;
-                    const response = await fetch('/api/settings_get', {
+                    const response = await fetch('/api/v1/settings_get', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -423,7 +423,7 @@ document.addEventListener('alpine:init', function () {
                     }
 
                     // Send request
-                    const response = await fetch('/api/settings_save', {
+                    const response = await fetch('/api/v1/settings_set', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -480,7 +480,7 @@ document.addEventListener('alpine:init', function () {
                     }
 
                     // Send test request
-                    const response = await fetch('/api/test_connection', {
+                    const response = await fetch('/api/v1/test_connection', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'

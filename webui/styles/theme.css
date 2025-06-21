@@ -1,0 +1,282 @@
+.shiny-text {
+  background: linear-gradient(
+      to right,
+      var(--color-primary-dark) 20%,
+      var(--color-text) 40%,
+      var(--color-text) 60%,
+      var(--color-primary-dark) 60%
+  );
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: shine 1s linear infinite;
+}
+
+/* Light mode class */
+.light-mode {
+  --color-background: var(--color-background-light);
+  --color-text: var(--color-text-light);
+  --color-primary: var(--color-primary-light);
+  --color-secondary: var(--color-secondary-light);
+  --color-accent: var(--color-accent-light);
+  --color-message-bg: var(--color-message-bg-light);
+  --color-message-text: var(--color-message-text-light);
+  --color-panel: var(--color-panel-light);
+  --color-border: var(--color-border-light);
+  --color-input: var(--color-input-light);
+  --color-input-focus: var(--color-input-focus-light);
+}
+
+.light-mode .msg-kvps tr {
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.light-mode .message-default {
+  background-color: #ffffff;
+  color: #374151;
+}
+
+.light-mode .message-agent {
+  background-color: #eff6ff;
+  color: #1d4ed8;
+}
+
+.light-mode .message-agent-response {
+  background-color: #f0fdf4;
+  color: #166534;
+}
+
+.light-mode .message-agent-delegation {
+  background-color: #f0fdfa;
+  color: #0f766e;
+}
+
+.light-mode .message-tool {
+  background-color: #f8fafc;
+  color: #64748b;
+}
+
+.light-mode .message-code-exe {
+  background-color: #fafafa;
+  color: #525252;
+}
+
+.light-mode .message-browser {
+  background-color: #ffffff;
+  color: #525252;
+}
+
+.light-mode .message-info {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.light-mode .message-util {
+  background-color: #f8fafc;
+  color: #64748b;
+}
+
+.light-mode .message-warning {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.light-mode .message-error {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.light-mode .message-user {
+  background-color: #f1f5f9;
+  color: #475569;
+}
+
+.light-mode .msg-content,
+.light-mode .msg-output,
+.light-mode .msg-content span,
+.light-mode .msg-content p,
+.light-mode .msg-content div,
+.light-mode .msg-content pre {
+  color: #2c3e50 !important;
+}
+
+.light-mode .connected {
+  color: #059669;
+}
+
+.light-mode .disconnected {
+  color: #dc2626;
+}
+
+.light-mode #left-panel {
+  box-shadow: 1px 0 3px rgba(0, 0, 0, 0.1);
+}
+
+.light-mode .config-button {
+  background-color: var(--color-background);
+  color: #374151;
+}
+
+.light-mode .config-button:hover {
+  background-color: #f1f5f9;
+}
+
+.light-mode .config-button:active {
+  background-color: #e2e8f0;
+}
+
+.light-mode .edit-button {
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+.light-mode .edit-button:hover {
+  background-color: #eff6ff;
+}
+
+.light-mode .edit-button:active {
+  background-color: #dbeafe;
+}
+
+.light-mode .delete-chat-btn {
+  background-color: rgba(0, 0, 0, 0.1);
+  color: #374151;
+}
+
+.light-mode .delete-chat-btn:hover {
+  background-color: rgba(0, 0, 0, 0.2);
+}
+
+.light-mode #progress-bar-i {
+  color: #94a3b8;
+  opacity: 0.7;
+}
+
+.light-mode .slider {
+  background-color: #f1f5f9;
+  border: 1px solid #e2e8f0;
+}
+
+.light-mode .slider:before {
+  background-color: #64748b;
+}
+
+.light-mode input:checked + .slider {
+  background-color: #2563eb;
+}
+
+.light-mode .extension {
+  background: #2563eb;
+  color: #ffffff;
+  opacity: 0.9;
+}
+.light-mode .dragdrop-overlay {
+    background: rgba(255, 255, 255, 0.92);
+}
+.light-mode .dragdrop-icon {
+    filter: none;
+}
+.light-mode .tab.active {
+    color: var(--highlight-pink);
+}
+
+.light-mode .tab.active::after {
+    background-color: var(--highlight-pink);
+    /* box-shadow: 0 0 8px var(--highlight-pink); */
+}
+.light-mode .tab.active {
+  box-shadow:
+    0 -4px 8px -2px var(--color-border),
+    4px 0 8px -2px var(--color-border),
+    -4px 0 8px -2px var(--color-border);
+}
+
+.light-mode .tab:not(.active) {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+.light-mode .empty-list-message {
+  color: var(--color-secondary-light);
+}
+
+/* Scrollbar styles */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 4px;
+  border: 1px solid transparent;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-secondary);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background-color: var(--color-primary);
+}
+
+/* Selection styles */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border) transparent;
+}
+
+.light-mode ::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.light-mode ::-webkit-scrollbar-thumb {
+  background-color: #cbd5e1;
+}
+
+.light-mode ::-webkit-scrollbar-thumb:hover {
+  background-color: #94a3b8;
+}
+
+.light-mode ::-webkit-scrollbar-thumb:active {
+  background-color: #64748b;
+}
+
+.light-mode * {
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+.light-mode .chat-list-button.font-bold {
+  color: var(--color-primary-light);
+}
+
+.light-mode .chat-list-button.font-bold::before {
+  background-color: var(--color-primary-light);
+}
+
+.light-mode .scheduler-status-idle {
+  background-color: #f1f5f9;
+  color: #64748b;
+}
+
+.light-mode .scheduler-status-running {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.light-mode .scheduler-status-disabled {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.light-mode .scheduler-status-error {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.light-mode .scheduler-task-list tbody tr:hover {
+  background-color: #f8fafc;
+} 

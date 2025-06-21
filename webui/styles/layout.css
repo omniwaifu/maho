@@ -1,0 +1,219 @@
+/* Layout */
+.app-container {
+  display: -webkit-flex;
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+}
+
+.panel {
+  display: -webkit-flex;
+  display: flex;
+  height: 100%;
+  overflow: auto;
+  -webkit-scroll-behavior: smooth;
+  scroll-behavior: smooth;
+}
+
+/* Left Panel */
+#left-panel {
+  background-color: var(--color-panel);
+  border-right: 1px solid var(--color-border);
+  box-sizing: border-box;
+  display: -webkit-flex;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  -webkit-transition: all var(--transition-speed) ease-in-out;
+  transition: all var(--transition-speed) ease-in-out;
+  width: 300px;
+  min-width: 300px;
+  color: var(--color-text);
+  box-shadow: 1px 0 5px rgba(0, 0, 0, 0.3);
+  user-select: none;
+}
+
+#left-panel.hidden {
+  margin-left: -300px;
+}
+
+.left-panel-top {
+  flex: 1;
+  display: -webkit-flex;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+  margin-top: 3.5rem;
+  padding: var(--spacing-md) 0 0 0;
+}
+
+.left-panel-top::-webkit-scrollbar {
+  width: 0px;
+}
+
+.left-panel-top {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+#status-section,
+.config-section:not(#chats-section) {
+  flex-shrink: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: 8px;
+  padding: 16px;
+}
+
+.left-panel-bottom {
+  position: relative;
+  flex-shrink: 0;
+}
+
+
+/* Right Panel */
+#right-panel {
+  display: -webkit-flex;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  -webkit-transition: margin-left var(--transition-speed) ease-in-out;
+  transition: margin-left var(--transition-speed) ease-in-out;
+}
+
+#right-panel.expanded {
+  margin-left: 0;
+}
+
+#time-date-container {
+  position: fixed;
+  right: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-right: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+
+#time-date {
+  color: var(--color-text);
+  font-size: var(--font-size-normal);
+  text-align: right;
+  line-height: 1.1;
+}
+
+#user-date {
+  font-size: var(--font-size-small);
+  opacity: 0.6;
+}
+
+/* Logo Container */
+#logo-container {
+  display: -webkit-flex;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: fixed;
+  margin-left: 4.6rem;
+  margin-top: var(--spacing-md);
+  z-index: 1004;
+  -webkit-transition: margin-left var(--transition-speed) ease-in-out;
+  transition: margin-left var(--transition-speed) ease-in-out;
+}
+
+#logo-container a {
+  color: inherit;
+  text-decoration: none;
+}
+
+#logo-container img {
+  border-radius: var(--spacing-xs);
+  width: auto;
+  height: 2.6rem;
+  -webkit-transition: filter 0.3s ease;
+  transition: filter 0.3s ease;
+}
+
+#progress-bar-box {
+  background-color: var(--color-panel);
+  padding: var(--spacing-sm) var(--spacing-md);
+  padding-bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  z-index: 1001;
+}
+
+#progress-bar-h {
+  color: var(--color-primary);
+  display: flex;
+  align-items: left;
+  justify-content: flex-start;
+  height: 1.2em;
+  text-overflow: ellipsis;
+  white-space: nowrap;       /* Added for text overflow */
+  overflow: hidden;
+  font-weight: normal;
+}
+
+#progress-bar-i {
+  font-weight: bold;
+  padding-right: 0.5em;
+  color: var(--color-secondary);
+}
+
+.progress-bar h4 {
+  margin-left: 1em;
+  margin-right: 1.2em;
+}
+
+#right-panel.expanded #logo-container {
+  margin-left: 4.6rem;
+}
+
+/* Input Section */
+#input-section {
+  position: relative;
+  background-color: var(--color-panel);
+  display: -webkit-flex;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: 0.8rem var(--spacing-md) var(--spacing-sm) var(--spacing-sm);
+  align-items: start;
+  flex-shrink: 0;
+}
+
+/* Input section layout */
+#input-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md) var(--spacing-sm) 0.8rem;
+  background-color: var(--color-panel);
+  z-index: 1001;
+}
+
+/* Top row styling */
+.input-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+}
+
+/* Text input */
+.input-row {
+  width: 100%;
+  white-space: nowrap;
+}
+
+/* with text buttons */
+.text-buttons-row {
+  width: 100%;
+  display: flex;
+  padding-top: var(--spacing-xs);
+  margin-left: var(--spacing-xs);
+} 

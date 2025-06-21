@@ -1,0 +1,652 @@
+/* body,
+#left-panel,
+#chat-input,
+.message,
+.config-button,
+.switch-label {
+  -webkit-transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+  transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+  color: var(--color-text);
+} */
+
+/* Tooltip */
+.tooltip {
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(0%);
+  padding: 8px;
+  background-color: var(--color-secondary);
+  color: var(--color-text);
+  border-radius: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  z-index: 1002;
+}
+
+/* Image preview section */
+.image-preview-section {
+  display: flex;
+  gap: var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-sm) 0.37rem var(--spacing-sm);
+  overflow-x: auto;
+  background-color: var(--color-input);
+  border-radius: 8px;
+  margin-bottom: var(--spacing-xs);
+  -webkit-transition: all 0.3s ease;
+  transition: all 0.3s ease;
+}
+
+.preview-item {
+  position: relative;
+  flex-shrink: 0;
+  padding: 4px;
+  animation: fadeIn 0.3s ease;
+  min-width: min-content;
+  background-color: var(--color-background);
+}
+
+.preview-item img {
+  max-height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--color-border-light);
+}
+
+.file-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.5em;
+}
+
+.extension {
+  background: var(--color-primary);
+  color: var(--color-text);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.8em;
+  text-transform: uppercase;
+}
+
+.remove-image {
+  -webkit-transform: scale(1.1);
+          transform: scale(1.1);
+}
+
+/* Toggle Switch */
+.switch {
+  display: inline-block;
+  height: 1.15rem;
+  position: relative;
+  width: 2.2rem;
+}
+
+.switch input {
+  float: right;
+  height: 0;
+  opacity: 0;
+  width: 0;
+}
+
+.slider {
+  background-color: #272727;
+  border: 1px solid #535353;
+  border-radius: 1.15rem;
+  bottom: 0;
+  cursor: pointer;
+  left: 0;
+  position: absolute;
+  right: 0;
+  top: 0;
+  -webkit-transition: 0.4s ease-in-out;
+  transition: 0.4s ease-in-out;
+}
+
+.slider:before {
+  background-color: #b6b6b6;
+  border-radius: 50%;
+  bottom: 0.134rem;
+  content: "";
+  height: 0.8rem;
+  left: 0.15rem;
+  position: absolute;
+  -webkit-transition: 0.4s ease-in-out;
+  transition: 0.4s ease-in-out;
+  width: 0.8rem;
+}
+
+input:checked + .slider {
+  background-color: #3a3a3a;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(1.0rem);
+          transform: translateX(1.0rem);
+}
+
+/* Tooltip */
+.tooltip {
+  /* Already defined above */
+}
+
+/* Copy button styles */
+.copy-button {
+  position: absolute;
+  right: 0;
+  top: var(--spacing-sm);
+  background: none;
+  border: none;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  padding-right: 0;
+  cursor: pointer;
+  text-decoration: underline;
+  text-wrap: nowrap;
+  opacity: 0;
+  -webkit-transition: opacity var(--transition-speed) ease-in-out;
+  transition: opacity var(--transition-speed) ease-in-out;
+  color: inherit;
+  font-size: 12px;
+  font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.copy-button:hover {
+  opacity: 0.8 !important;
+}
+
+.msg-content:hover .copy-button,
+.kvps-row:hover .copy-button,
+.message-text:hover .copy-button {
+  opacity: 0.6;
+}
+
+.copy-button.copied {
+  font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
+  opacity: 1 !important;
+}
+
+.msg-thoughts .copy-button {
+  top: -12px !important;
+}
+
+.message-user .copy-button {
+  top: -15px !important;
+  left: -13px !important;
+  right: 99% !important;
+}
+
+.message-agent-response .copy-button {
+  top: -22px !important;
+  right: 0 !important;
+  padding-right: 0px !important;
+}
+
+.message-info .copy-button {
+  top: -22px !important;
+  right: 0 !important;
+  padding-right: 0px !important;
+}
+
+.message-tool .copy-button {
+  top: -12px !important;
+  right: 0 !important;
+}
+
+.msg-output .copy-button {
+  top: -6px !important;
+  right: 0 !important;
+}
+
+/* Make message containers relative for absolute positioning of copy buttons */
+.msg-content,
+.kvps-row,
+.message-text {
+  position: relative;
+}
+
+/* Settings Modal Styles */
+.settings-modal {
+    background-color: var(--color-panel);
+    color: var(--color-text);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    padding: 1rem;
+    max-width: 1200px;
+    max-height: 90vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.settings-modal-close {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: var(--color-text);
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s;
+}
+
+.settings-modal-close:hover {
+    opacity: 1;
+}
+
+.settings-modal-title {
+    margin: 0 0 1rem 0;
+    font-size: 1.5rem;
+    color: var(--color-primary);
+}
+
+.settings-modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Critical Modal Overlay Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2001;
+}
+
+/* Modal Container */
+.modal-container {
+    background-color: var(--color-panel);
+    border-radius: 12px;
+    width: 1100px;
+    max-height: 90vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 4px 23px rgba(0, 0, 0, 0.2);
+    box-sizing: border-box;
+}
+
+.light-mode .modal-container {
+    background-color: var(--color-panel-light);
+}
+
+/* Modal Header */
+.modal-header {
+    display: grid;
+    grid-template-columns: 40fr 0.5fr;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.5rem 1.5rem 0.5rem 2rem;
+    background-color: var(--color-background);
+    color: var(--color-primary);
+    border-bottom: 1px solid var(--color-border);
+}
+
+.modal-header h2 {
+    font-size: var(--font-size-large);
+    margin: 0;
+}
+
+/* Modal Close Button */
+.modal-close {
+    background: none;
+    border: none;
+    font-size: xx-large;
+    color: var(--color-text);
+    opacity: 0.7;
+    cursor: pointer;
+    padding: 0;
+    transition: opacity 0.2s;
+}
+
+.modal-close:hover {
+    opacity: 1;
+}
+
+/* Modal Content */
+.modal-content {
+    padding: 0.5rem 1.5rem 0 1.5rem;
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: calc(90vh);
+    flex-grow: 1;
+    background-clip: border-box;
+    border: 6px solid transparent;
+    margin-bottom: 0;
+    padding-bottom: 10px;
+    box-sizing: border-box;
+    background-color: var(--color-panel);
+}
+
+.modal-content::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.modal-content::-webkit-scrollbar-track {
+    background: transparent;
+    margin: 4px 0;
+    border-radius: 6px;
+}
+
+.modal-content::-webkit-scrollbar-thumb {
+    background-color: rgba(155, 155, 155, 0.5);
+    border-radius: 6px;
+    transition: background-color 0.2s ease;
+}
+
+.modal-content::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(155, 155, 155, 0.7);
+}
+
+/* Field Styles for Settings Modal */
+.field {
+    display: grid;
+    grid-template-columns: 60% 1fr;
+    align-items: center;
+    margin-block: 1rem;
+    padding: var(--spacing-xs) 0;
+}
+
+.field.field-full {
+    grid-template-columns: 1fr;
+}
+
+.field-label {
+    display: flex;
+    flex-direction: column;
+    padding-right: 0.5em;
+}
+
+.field-title {
+    font-weight: bold;
+    color: var(--color-primary);
+}
+
+.field-description {
+    color: var(--color-text);
+    font-size: 0.875rem;
+    opacity: 0.8;
+    margin: 0.25rem 0 0.5rem 0;
+}
+
+.field-control {
+    width: 100%;
+    display: flex;
+    align-items: center;
+}
+
+/* Input Styles for Dark Theme */
+input[type="text"],
+input[type="password"],
+input[type="number"],
+textarea,
+select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid var(--color-secondary);
+    border-radius: 0.25rem;
+    background-color: var(--color-background) !important;
+    color: var(--color-text) !important;
+    font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    outline: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+select option {
+    background-color: var(--color-background) !important;
+    color: var(--color-text) !important;
+}
+
+input[type="text"]:focus,
+input[type="password"]:focus {
+    opacity: 1;
+}
+
+textarea {
+    min-height: 100px;
+    font-family: 'Geist Mono', ui-monospace, SFMono-Regular, 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+    scroll-behavior: smooth;
+    resize: none;
+    background-clip: border-box;
+    border: 6px solid transparent;
+}
+
+textarea:focus {
+    background-color: #151515;
+}
+
+/* Modal Footer */
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 0.6rem 2rem 0.6rem 0;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-background);
+    gap: 1rem;
+}
+
+/* Settings Tab Styles */
+.settings-tabs-container {
+    width: 100%;
+    margin-bottom: 8px;
+    padding: 0;
+    margin-top: 20px;
+    position: relative;
+    overflow: visible;
+}
+
+.settings-tabs {
+    display: flex;
+    width: 100%;
+    position: relative;
+    gap: 5px;
+    border-bottom: 3px solid var(--color-border);
+    justify-content: flex-start;
+    padding-left: 20px;
+    padding-top: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+}
+
+.settings-tabs::-webkit-scrollbar {
+    display: none;
+}
+
+.settings-tab {
+    padding: 8px 16px;
+    cursor: pointer;
+    position: relative;
+    color: var(--color-text);
+    border: 2px solid var(--color-border);
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    transition: all 0.3s ease;
+    background-color: var(--color-panel);
+    margin-bottom: -3px;
+    z-index: 1;
+    min-width: min-content;
+    width: auto;
+    max-width: 100px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.settings-tab:not(.active) {
+    opacity: 0.8;
+    border-bottom: 3px solid var(--color-border);
+    background-color: var(--color-background);
+}
+
+.settings-tab.active {
+    border-color: var(--color-border);
+    font-weight: bold;
+    background-color: var(--color-panel);
+}
+
+/* Section Styles */
+.section {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    padding-bottom: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+}
+
+.section-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: var(--color-primary);
+    margin-bottom: 0.5rem;
+}
+
+.section-description {
+    color: var(--color-text);
+    margin-bottom: 1rem;
+}
+
+/* Button Styles */
+.btn {
+    font-weight: 500;
+    padding: 0.5rem 1.5rem;
+    border-radius: 0.25rem;
+    cursor: pointer;
+    border: none;
+    font-size: 0.875rem;
+    font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.btn-ok {
+    background: #4248f1;
+    color: white;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background 0.3s ease-in-out;
+}
+
+.btn-ok:hover {
+    background: #353bc5;
+}
+
+.btn-ok:active {
+    background: #2b309c;
+}
+
+.btn-cancel {
+    background: transparent;
+    color: var(--color-accent);
+    border: 0.15rem solid var(--color-accent);
+    transition: background 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+.btn-cancel:hover {
+    background: var(--color-accent);
+    color: var(--color-text);
+}
+
+.btn-cancel:active {
+    background: #a94658;
+    color: var(--color-text);
+}
+
+.light-mode .btn-cancel:hover {
+    background: var(--color-accent);
+    color: var(--color-background);
+}
+
+.light-mode .btn-cancel:active {
+    background: #a94658;
+    color: var(--color-background);
+}
+
+/* Mobile Viewport Behavior */
+@media (max-width: 1280px) {
+    .modal-container {
+        width: 95%;
+        min-width: unset;
+        max-width: 95%;
+    }
+}
+
+@media (max-width: 768px) {
+    .modal-header {
+        padding-left: 1.1rem;
+        text-wrap: nowrap;
+    }
+
+    .modal-content {
+        padding: 0.5rem;
+        overflow-y: auto;
+        flex-grow: 1;
+    }
+
+    .modal-footer {
+        padding: var(--spacing-sm) 0 var(--spacing-sm) 0 !important;
+    }
+
+    .section {
+        margin-bottom: 1.5rem;
+        padding: 1rem;
+        padding-bottom: 0;
+        border: 1px solid var(--color-border);
+        border-radius: 0.5rem;
+    }
+}
+
+/* Settings Sections */
+nav ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    padding: 0;
+    margin: 0 0 1rem 0;
+    list-style: none;
+}
+
+/* Add specific styling for the nav element itself to ensure spacing */
+nav {
+margin-bottom: 1rem;
+}
+
+nav ul li a {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    background-color: var(--color-bg-secondary);
+    text-decoration: none;
+    color: var(--color-text);
+    transition: background-color 0.2s ease;
+}
+
+nav ul li a:hover {
+    background-color: var(--color-bg-tertiary);
+}
+
+nav ul li a img {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 0.5rem;
+    filter: var(--svg-filter);
+}
+
+/* Alpine cloak to prevent FOUC */
+[x-cloak] {
+    display: none !important;
+} 

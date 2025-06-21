@@ -14,7 +14,7 @@ import threading
 import signal
 from fastapi import FastAPI, Request, Response, HTTPException, Depends
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, FileResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 from fastapi.middleware.cors import CORSMiddleware
 import uvicorn
@@ -54,36 +54,41 @@ app.add_middleware(
 )
 
 # Mount static files properly - individual directories first
-app.mount("/css", StaticFiles(directory=get_abs_path("./webui/css")), name="css")
-app.mount("/js", StaticFiles(directory=get_abs_path("./webui/js")), name="js") 
+app.mount("/styles", StaticFiles(directory=get_abs_path("./webui/styles")), name="styles")
+app.mount("/js", StaticFiles(directory=get_abs_path("./webui/js")), name="js")
 app.mount("/public", StaticFiles(directory=get_abs_path("./webui/public")), name="public")
 app.mount("/components", StaticFiles(directory=get_abs_path("./webui/components")), name="components")
+app.mount("/dist", StaticFiles(directory=get_abs_path("./webui/dist")), name="dist")
 
 # Add specific favicon routes to ensure they work properly
 @app.get("/favicon.ico")
 async def get_favicon_ico():
-    from fastapi.responses import FileResponse
     return FileResponse(get_abs_path("./webui/public/favicon.ico"))
 
 @app.get("/favicon.png")
 async def get_favicon_png():
-    from fastapi.responses import FileResponse
     return FileResponse(get_abs_path("./webui/public/favicon.png"))
 
 @app.get("/favicon-16x16.png")
 async def get_favicon_16():
-    from fastapi.responses import FileResponse
     return FileResponse(get_abs_path("./webui/public/favicon-16x16.png"))
 
 @app.get("/favicon-32x32.png")
 async def get_favicon_32():
-    from fastapi.responses import FileResponse
     return FileResponse(get_abs_path("./webui/public/favicon-32x32.png"))
 
 @app.get("/favicon-48x48.png")
 async def get_favicon_48():
-    from fastapi.responses import FileResponse
     return FileResponse(get_abs_path("./webui/public/favicon-48x48.png"))
+
+# Add specific routes for root-level files
+@app.get("/index.css")
+async def serve_index_css():
+    return FileResponse(get_abs_path("./webui/index.css"))
+
+@app.get("/index.js")
+async def serve_index_js():
+    return FileResponse(get_abs_path("./webui/index.js"))
 
 # Security
 security = HTTPBasic()
@@ -290,25 +295,15 @@ async def run():
             "scheduler_tasks_list", "image_get", "ctx_window_get", "mcp_servers_apply",
             "mcp_server_get_detail", "mcp_server_get_log", "transcribe", "download_work_dir_file",
             "scheduler_tick", "tunnel_proxy", "upload", "scheduler_task_create",
-            "scheduler_task_update", "scheduler_task_run", "scheduler_task_delete", "poll"
+            "scheduler_task_update", "scheduler_task_run", "scheduler_task_delete", "poll",
+            "upload_work_dir_files", "import_knowledge", "test_connection"
         ]
         if module_name not in converted_modules:
             register_api_handler(app, handler)
 
-    # Register file upload endpoints
-    register_file_upload_endpoints(app)
+    # File upload endpoints are now part of the API router
+    # register_file_upload_endpoints(app)
     
-    # Add individual file routes for main CSS/JS files
-    from fastapi.responses import FileResponse
-    
-    @app.get("/index.css")
-    async def serve_index_css():
-        return FileResponse(get_abs_path("./webui/index.css"))
-    
-    @app.get("/index.js")
-    async def serve_index_js():
-        return FileResponse(get_abs_path("./webui/index.js"))
-
     # MCP server
     # TODO: Implement MCP server registration
     # mcp_server.register_server(app)

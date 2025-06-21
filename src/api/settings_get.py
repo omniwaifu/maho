@@ -21,3 +21,5 @@ async def get_settings_post() -> SettingsResponse:
         settings={"sections": settings_output.sections},
         message="Settings retrieved successfully"
     )
+
+

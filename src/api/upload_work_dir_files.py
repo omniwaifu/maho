@@ -1,6 +1,6 @@
 import base64
 from src.helpers.api import ApiHandler
-from fastapi import Request, Response, UploadFile, File, Form
+from fastapi import Request, Response, UploadFile, File, Form, APIRouter
 from typing import List, Optional
 
 from src.helpers.file_browser import FileBrowser
@@ -8,6 +8,8 @@ from src.helpers import files, runtime
 from src.api import get_work_dir_files
 import os
 
+# Create router for this endpoint
+router = APIRouter()
 
 class UploadWorkDirFiles(ApiHandler):
     async def process(self, input: dict, request: Request) -> dict | Response:
@@ -17,6 +19,7 @@ class UploadWorkDirFiles(ApiHandler):
 
 
 # Create proper FastAPI endpoint function that will be registered
+@router.post("/upload_work_dir_files")
 async def upload_files_endpoint(
     uploaded_files: List[UploadFile] = File(...),
     path: str = Form("")

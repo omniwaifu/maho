@@ -1,5 +1,5 @@
 from src.helpers.api import ApiHandler
-from fastapi import Request, Response, UploadFile, File, Form
+from fastapi import Request, Response, UploadFile, File, Form, APIRouter
 from typing import List
 
 from src.helpers.file_browser import FileBrowser
@@ -7,6 +7,8 @@ from src.helpers import files, memory
 import os
 import re
 
+# Create router for this endpoint
+router = APIRouter()
 
 class ImportKnowledge(ApiHandler):
     async def process(self, input: dict, request: Request) -> dict | Response:
@@ -15,6 +17,7 @@ class ImportKnowledge(ApiHandler):
 
 
 # Create proper FastAPI endpoint function
+@router.post("/import_knowledge")
 async def import_knowledge_endpoint(
     upload_files: List[UploadFile] = File(...),
     path: str = Form("")

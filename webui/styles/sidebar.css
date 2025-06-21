@@ -1,0 +1,489 @@
+/* Sidebar Toggle Button */
+.toggle-sidebar-button {
+  height: 2.6rem;
+  width: 2.6rem;
+  background-color: var(--color-background);
+  border: 0.1rem solid var(--color-border);
+  border-radius: var(--spacing-xs);
+  color: var(--color-text);
+  opacity: 0.8;
+  cursor: pointer;
+  left: var(--spacing-md);
+  padding: 0.47rem 0.56rem;
+  position: absolute;
+  top: var(--spacing-md);
+  z-index: 1004;
+  -webkit-transition: all var(--transition-speed) ease-in-out;
+  transition: all var(--transition-speed) ease-in-out;
+}
+
+.toggle-sidebar-button:hover {
+  background-color: var(--color-secondary);
+  opacity: 1;
+}
+
+.toggle-sidebar-button:active {
+  opacity: 0.5;
+}
+
+#sidebar-hamburger-svg {
+  -webkit-transition: all var(--transition-speed) ease;
+  transition: all var(--transition-speed) ease;
+}
+
+.toggle-sidebar-button:active #sidebar-hamburger-svg {
+  -webkit-transform: scaleY(0.8);
+  transform: scaleY(0.8);
+}
+
+.switch-label {
+  margin-right: 0.5rem;
+}
+
+/* Chats container */
+.chat-container {
+    display: flex;
+    align-items: center;
+    position: relative;
+    width: 100%;
+    min-height: 30px;
+    gap: 0;
+}
+
+/* Update the chat-list-button padding to accommodate the vertical layout */
+.chat-list-button {
+    display: block;
+    width: 100%;
+    padding: 8px 16px;
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    border-radius: 4px;
+    transition: background-color 0.2s ease-in-out;
+}
+
+/* Add some more padding to the list items to accommodate the vertical layout */
+.chat-list-button.has-task-container {
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+/* Subtle background on hover for the entire row */
+.chat-list-button:hover {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+.light-mode .chat-list-button:hover {
+    background-color: rgba(0, 0, 0, 0.02);
+}
+
+.chat-name {
+  display: inline-block;
+  max-width: calc(100% - 80px); /* Full width minus space for action buttons */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  cursor: pointer;
+  padding: 3px 8px;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+  margin-right: 10px; /* Small space for buttons */
+  font-size: var(--font-size-small); /* Match config button font size */
+}
+
+/* Add a nice hover effect to just the chat name */
+.chat-name:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  text-decoration: none;
+}
+
+.light-mode .chat-name:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.chats-list-container {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  scroll-behavior: smooth;
+  /* Mask */
+  mask-image: linear-gradient(
+    to bottom,
+    black calc(100% - 20px),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to bottom,
+    black calc(100% - 20px),
+    transparent 100%
+  );
+  /* Fallback for browsers that do not support mask-image */
+  background: linear-gradient(to bottom, calc(100% - 20px), transparent 100%);
+  /* Add padding to account for fade */
+  padding-bottom: 20px;
+  scrollbar-width: thin;
+  -ms-overflow-style: auto;
+}
+
+.chats-list-container::-webkit-scrollbar {
+  width: 5px;
+}
+
+.chats-list-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 6px;
+}
+
+.chats-list-container::-webkit-scrollbar-thumb {
+  background-color: var(--color-border);
+  border-radius: 6px;
+}
+
+.chats-list-container::-webkit-scrollbar-thumb:hover {
+  background-color: var(--color-border);
+}
+
+/* Chats Section */
+#chats-section {
+  display: -webkit-flex;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  flex: 1;
+  margin-top: 0.5rem;
+}
+
+/* Preferences */
+.pref-header {
+  display: -webkit-flex;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+  user-select: none;
+  font-size: var(--font-size-normal);
+  margin: 0.28rem 0 0.6rem 0;
+}
+
+/* Arrow icon */
+.arrow-icon {
+  flex-shrink: 0;
+  -webkit-transition: transform var(--transition-speed) ease-in-out;
+  transition: transform var(--transition-speed) ease-in-out;
+  margin-left: 0.5rem;
+  width: 16px;
+  height: 16px;
+  transform: rotate(90deg);
+}
+
+.arrow-icon.rotated {
+  -webkit-transform: rotate(-90deg);
+  transform: rotate(-90deg);
+}
+
+.pref-section {
+  font-size: var(--font-size-small);
+  padding: 0.6rem 16px 0.05rem 16px;
+}
+
+/* Collapse transition */
+.pref-section [x-cloak] {
+  display: none;
+}
+
+/* Version */
+.version-info {
+  line-height: 0.8rem;
+  position: relative;
+  margin: 0 16px 1rem 16px;
+  padding-top: 10px;
+  border-top: 1px solid var(--color-border);
+}
+
+/* Config Section */
+.config-section > h4 {
+  margin-top: 0;
+}
+
+.config-list {
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+}
+
+.config-list li {
+  align-items: center;
+  display: -webkit-flex;
+  display: flex;
+  justify-content: space-between;
+  padding: 0.35rem 0;
+  margin: 0 8px;
+}
+
+.config-list > *:first-child {
+  border-top: 0px;
+}
+
+#pref-list li {
+  opacity: 0.8;
+}
+
+.config-button {
+  background-color: var(--color-background);
+  border: 0.1rem solid var(--color-border);
+  border-radius: var(--spacing-xs);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center; /* Center text horizontally */
+  gap: 0.5rem;
+  font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: var(--font-size-small);
+  opacity: 0.8;
+  text-wrap: nowrap;
+  flex: 1 1 calc(33.333% - 6px);
+  min-width: 0;
+  padding: var(--spacing-sm) 0.55rem;
+  max-height: 2.3rem;
+  box-sizing: border-box;
+  -webkit-transition: all var(--transition-speed), transform 0.1s ease-in-out;
+  transition: all var(--transition-speed), transform 0.1s ease-in-out;
+  font-size: small;
+}
+
+.config-button:hover {
+  background-color: var(--color-secondary);
+  opacity: 1;
+}
+
+.config-button:active {
+  opacity: 0.5;
+}
+
+#settings {
+  display: flex;
+  align-items: center;
+}
+
+.edit-button {
+  background-color: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: 0.1875rem;
+  color: var(--color-primary);
+  cursor: pointer;
+  margin-right: 5px;
+  padding: 0.125rem 0.5rem;
+  -webkit-transition: all var(--transition-speed) ease-in-out;
+  transition: all var(--transition-speed) ease-in-out;
+  width: 2rem;
+  height: 2rem;
+}
+
+.edit-button:hover {
+  border-color: var(--color-primary);
+  background-color: #32455690;
+}
+
+.edit-button:active {
+  background-color: #131a2090;
+  color: rgba(253, 253, 253, 0.35);
+}
+
+.delete-chat-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-text);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.delete-chat-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  opacity: 1;
+}
+
+/* Add to the existing .chat-actions class or create it */
+.chat-actions {
+    display: flex;
+    gap: 5px;
+    position: absolute;
+    right: 5px;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 2; /* Ensure buttons are above the edit field */
+    min-width: 70px; /* Ensure minimum width for the buttons */
+    justify-content: flex-end;
+}
+
+
+/* Tasks list container - similar to chats list */
+.tasks-list-container {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 10px;
+    padding-right: 5px;
+    border-radius: 5px;
+    position: relative;
+    scrollbar-width: thin;
+    -ms-overflow-style: auto;
+}
+
+.tasks-list-container::-webkit-scrollbar {
+    width: 5px;
+}
+
+.tasks-list-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+}
+
+.tasks-list-container::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border-radius: 6px;
+}
+
+.tasks-list-container::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-border);
+}
+
+.task-name {
+    display: block;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    padding: 3px 0;
+    margin-left: 10px;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    font-size: var(--font-size-small);
+    margin-bottom: 2px;
+}
+
+.task-info-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-top: 2px;
+    margin-left: 5px;
+}
+
+.task-name:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    text-decoration: none;
+}
+
+.light-mode .task-name:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Tabs styling */
+.tabs-container {
+  width: 100%;
+  margin-bottom: 8px; /* Reduced spacing between tabs and list */
+  padding: 0;
+  margin-top: 20px; /* Increased spacing from elements above */
+}
+
+.tabs {
+  display: flex;
+  width: 100%;
+  position: relative;
+  gap: 5px;
+  border-bottom: 3px solid var(--color-border); /* Thicker bottom line */
+  justify-content: center; /* Center the tabs */
+}
+
+.tab {
+  padding: 8px 16px;
+  cursor: pointer;
+  position: relative;
+  color: var(--color-text);
+  border: 2px solid var(--color-border);
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  transition: all 0.3s ease;
+  background-color: var(--color-panel);
+  margin-bottom: -3px; /* Match the thicker border */
+  z-index: 1;
+}
+
+.tab:not(.active) {
+  opacity: 0.8;
+  border-bottom: 3px solid var(--color-border);
+  background-color: rgba(255, 255, 255, 0.03);
+}
+
+.tab.active {
+  border-color: var(--color-border);
+  /* box-shadow:
+    0 -4px 8px -2px var(--color-border),
+    4px 0 8px -2px var(--color-border),
+    -4px 0 8px -2px var(--color-border); */
+  font-weight: bold;
+  background-color: var(--color-panel);
+}
+
+/* Remove previous tab styling that conflicts */
+.tab.active::after {
+  display: none;
+}
+
+/* Empty list message styling enhancement */
+.empty-list-message {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100px;
+  color: var(--color-secondary);
+  text-align: center;
+  opacity: 0.7;
+  font-style: italic;
+}
+
+/* Add specific styling for selected chat items */
+.chat-list-button.font-bold {
+    position: relative;
+    background-color: var(--color-border) 0.05;
+}
+
+.chat-list-button.font-bold::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 3px;
+    background-color: var(--color-border);
+    border-top-left-radius: 3px;
+    border-bottom-left-radius: 3px;
+}
+
+/* Make sure the chat container has proper spacing */
+.chat-container, .task-container {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
+}
+
+.task-container-vertical {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 6px;
+} 

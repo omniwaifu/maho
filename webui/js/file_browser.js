@@ -40,7 +40,7 @@ const fileBrowserModalProxy = {
     this.isLoading = true;
     try {
       const response = await fetch(
-        `/get_work_dir_files?path=${encodeURIComponent(path)}`
+        `/api/v1/get_work_dir_files?path=${encodeURIComponent(path)}`
       );
 
       if (response.ok) {
@@ -113,7 +113,7 @@ const fileBrowserModalProxy = {
     }
 
     try {
-      const response = await fetch("/delete_work_dir_file", {
+      const response = await fetch("/api/v1/delete_work_dir_file", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -162,7 +162,7 @@ const fileBrowserModalProxy = {
       }
 
       // Proceed with upload after validation
-      const response = await fetch("/upload_work_dir_files", {
+      const response = await fetch("/api/v1/upload_work_dir_files", {
         method: "POST",
         body: formData,
       });
@@ -195,7 +195,7 @@ const fileBrowserModalProxy = {
 
   async downloadFile(file) {
     try {
-      const downloadUrl = `/download_work_dir_file?path=${encodeURIComponent(
+      const downloadUrl = `/api/v1/download_work_dir_file?path=${encodeURIComponent(
         file.path
       )}`;
 

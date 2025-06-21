@@ -1,0 +1,89 @@
+@import url('https://cdn.jsdelivr.net/npm/@vercel/style-guide@6/fonts/geist-sans.css');
+@import url('https://cdn.jsdelivr.net/npm/@vercel/style-guide@6/fonts/geist-mono.css');
+
+/* Add box-sizing globally for better cross-browser consistency */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+:root {
+  /* Dark mode */
+  --color-background-dark: #0f1f0f;
+  --color-text-dark: #d4d4d4;
+  --color-primary-dark: #6b8c6b;
+  --color-secondary-dark: #4a5f4a;
+  --color-accent-dark: #cf6679;
+  --color-message-bg-dark: #1a2d1a;
+  --color-message-text-dark: #e0e0e0;
+  --color-panel-dark: #162016;
+  --color-border-dark: #3a4a3a;
+  --color-input-dark: #0f1f0f;
+  --color-input-focus-dark: #0a1a0a;
+
+  /* Light mode - improved colors */
+  --color-background-light: #fefefe;
+  --color-text-light: #1a1a1a;
+  --color-primary-light: #2563eb;
+  --color-secondary-light: #f1f5f9;
+  --color-accent-light: #dc2626;
+  --color-message-bg-light: #ffffff;
+  --color-message-text-light: #374151;
+  --color-panel-light: #ffffff;
+  --color-border-light: #e2e8f0;
+  --color-input-light: #ffffff;
+  --color-input-focus-light: #f8fafc;
+
+  /* Default to dark mode */
+  --color-background: var(--color-background-dark);
+  --color-text: var(--color-text-dark);
+  --color-primary: var(--color-primary-dark);
+  --color-secondary: var(--color-secondary-dark);
+  --color-accent: var(--color-accent-dark);
+  --color-message-bg: var(--color-message-bg-dark);
+  --color-message-text: var(--color-message-text-dark);
+  --color-panel: var(--color-panel-dark);
+  --color-border: var(--color-border-dark);
+  --color-input: var(--color-input-dark);
+  --color-input-focus: var(--color-input-focus-dark);
+
+  /* Spacing variables */
+  --spacing-xs: 0.3125rem;
+  --spacing-sm: 0.625rem;
+  --spacing-md: 1.25rem;
+  --spacing-lg: 2rem;
+
+  /* Font sizes - MUCH BIGGER AND MORE READABLE */
+  --font-size-small: 1rem;    /* Was 0.8rem - too damn small! */
+  --font-size-normal: 1.1rem; /* Was 1rem - bump it up */
+  --font-size-large: 1.4rem;  /* Was 1.2rem - make it actually large */
+  --font-size-message: 1.1rem; /* New dedicated message text size */
+
+  /* Other variables */
+  --border-radius: 1.125rem;
+  --transition-speed: 0.3s;
+  --svg-filter: brightness(0) saturate(100%) var(--color-primary-filter);
+  --color-primary-filter: invert(73%) sepia(17%) saturate(360%) hue-rotate(177deg) brightness(87%) contrast(85%);
+}
+
+/* Reset and Base Styles */
+body,
+html {
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  width: 100%;
+  height: 100%;
+  min-width: 320px !important;
+  min-height: 370px !important;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  position: fixed;
+  -webkit-font-smoothing: antialiased; /* Improve font rendering */
+  -moz-osx-font-smoothing: grayscale;    /* Improve font rendering */
+}
+
+body {
+  overscroll-behavior: none;
+  -webkit-overscroll-behavior: none;
+} 

@@ -47,6 +47,9 @@ export function handleResize() {
         // On mobile, sidebar should be closed by default
         if (!sidebarState.isInitialized) {
             toggleSidebar(false);
+        } else if (sidebarState.isOpen) {
+            // Auto-collapse if currently open and we're now on mobile
+            toggleSidebar(false);
         }
     } else {
         // On desktop, restore saved preference

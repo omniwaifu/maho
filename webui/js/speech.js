@@ -273,7 +273,7 @@ class MicrophoneInput {
 
         try {
 
-            const result = await sendJsonData('/transcribe', { audio: base64 })
+            const result = await sendJsonData('/api/v1/transcribe', { audio: base64 })
 
 
             const text = this.filterResult(result.text || "")

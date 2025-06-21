@@ -16,12 +16,17 @@
 
 ## An opinionated fork of [Agent Zero](https://github.com/frdel/agent-zero).
 
-This is primarily a fork for my own experimentation, I would recommend using the original Agent Zero if you're looking for a general-purpose assistant.
+This is primarily a fork for my own experimentation, I would recommend using the original Agent Zero if you're looking for a general-purpose assistant with more stability.
 
 - Anyio over Asyncio
 - Jinja2 over Markdown / Prompting Structure
 - FastAPI over Flask
-- Planned: rewrite of the frontend
+- Frontend: Pines (Alpine.js + TailwindCSS)
+- TODO: TUI/CLI
+- TODO: Tool Experimentation
+- TODO: Trio patterns in Anyio
+- TODO: Suggested Tasks, etc.
+- TODO: E2E Testing / CI/CD, blah blah etc.
 
 ## A personal, organic agentic framework that grows and learns with you
 

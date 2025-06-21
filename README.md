@@ -1,3 +1,8 @@
+![Alpine.js](https://img.shields.io/badge/alpinejs-white.svg?style=for-the-badge&logo=alpinedotjs&logoColor=%238BC0D0)
+	![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
+![TailwindCSS](https://img.shields.io/badge/tailwindcss-%2338B2AC.svg?style=for-the-badge&logo=tailwind-css&logoColor=white)
+![Python](https://img.shields.io/badge/python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+
 <div align="center">
 
 <h1>
@@ -27,6 +32,8 @@ This is primarily a fork for my own experimentation, I would recommend using the
 - TODO: Trio patterns in Anyio
 - TODO: Suggested Tasks, etc.
 - TODO: E2E Testing / CI/CD, blah blah etc.
+
+![Maho Screenshot](docs/res/maho-screenshot.jpg)
 
 ## A personal, organic agentic framework that grows and learns with you
 

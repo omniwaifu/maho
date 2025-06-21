@@ -585,10 +585,11 @@ class MCPConfig(BaseModel):
 
             try:
                 # not generic MCPServer because: "Annotated can not be instatioated"
-                if server_item.get("url", None) or server_item.get("serverUrl", None):
-                    self.servers.append(MCPServerRemote(server_item))
-                else:
-                    self.servers.append(MCPServerLocal(server_item))
+                match server_item:
+                    case _ if server_item.get("url") or server_item.get("serverUrl"):
+                        self.servers.append(MCPServerRemote(server_item))
+                    case _:
+                        self.servers.append(MCPServerLocal(server_item))
             except Exception as e:
                 # log the error
                 error_msg = str(e)
@@ -676,13 +677,12 @@ class MCPConfig(BaseModel):
     def get_tools(self) -> List[dict[str, dict[str, Any]]]:
         """Get all tools from all servers"""
         with self.__lock:
-            tools = []
-            for server in self.servers:
-                for tool in server.get_tools():
-                    tool_copy = tool.copy()
-                    tool_copy["server"] = server.name
-                    tools.append({f"{server.name}.{tool['name']}": tool_copy})
-            return tools
+            return [
+                {f"{server.name}.{tool['name']}": tool_copy}
+                for server in self.servers
+                for tool in server.get_tools()
+                for tool_copy in [tool.copy() | {"server": server.name}]
+            ]
 
     def get_tools_prompt(self, server_name: str = "") -> str:
         """Get a prompt for all tools"""
@@ -692,10 +692,11 @@ class MCPConfig(BaseModel):
             pass
 
         prompt = '## "Remote (MCP Server) Agent Tools" available:\n\n'
-        server_names = []
-        for server in self.servers:
-            if not server_name or server.name == server_name:
-                server_names.append(server.name)
+        server_names = [
+            server.name
+            for server in self.servers
+            if not server_name or server.name == server_name
+        ]
 
         if server_name and server_name not in server_names:
             raise ValueError(f"Server {server_name} not found")

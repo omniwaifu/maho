@@ -89,21 +89,26 @@ class TaskPlan(BaseModel):
     @classmethod
     def create(
         cls,
-        todo: list[datetime] = list(),
+        todo: list[datetime] | None = None,
         in_progress: datetime | None = None,
-        done: list[datetime] = list(),
+        done: list[datetime] | None = None,
     ):
-        if todo:
-            for idx, dt in enumerate(todo):
-                if dt.tzinfo is None:
-                    todo[idx] = pytz.timezone("UTC").localize(dt)
-        if in_progress:
-            if in_progress.tzinfo is None:
-                in_progress = pytz.timezone("UTC").localize(in_progress)
-        if done:
-            for idx, dt in enumerate(done):
-                if dt.tzinfo is None:
-                    done[idx] = pytz.timezone("UTC").localize(dt)
+        todo = todo or []
+        done = done or []
+
+        # Ensure all datetimes are timezone-aware using list comprehensions
+        todo = [
+            pytz.timezone("UTC").localize(dt) if dt.tzinfo is None else dt
+            for dt in todo
+        ]
+        if in_progress and in_progress.tzinfo is None:
+            in_progress = pytz.timezone("UTC").localize(in_progress)
+        
+        done = [
+            pytz.timezone("UTC").localize(dt) if dt.tzinfo is None else dt
+            for dt in done
+        ]
+        
         return cls(todo=todo, in_progress=in_progress, done=done)
 
     def add_todo(self, launch_time: datetime):
@@ -278,14 +283,14 @@ class AdHocTask(BaseTask):
         system_prompt: str,
         prompt: str,
         token: str,
-        attachments: list[str] = list(),
+        attachments: list[str] | None = None,
         context_id: str | None = None,
     ):
         return cls(
             name=name,
             system_prompt=system_prompt,
             prompt=prompt,
-            attachments=attachments,
+            attachments=attachments or [],
             token=token,
             context_id=context_id,
         )
@@ -342,7 +347,7 @@ class ScheduledTask(BaseTask):
             name=name,
             system_prompt=system_prompt,
             prompt=prompt,
-            attachments=attachments,
+            attachments=attachments or [],
             schedule=schedule,
             context_id=context_id,
         )
@@ -415,7 +420,7 @@ class PlannedTask(BaseTask):
         system_prompt: str,
         prompt: str,
         plan: TaskPlan,
-        attachments: list[str] = list(),
+        attachments: list[str] | None = None,
         context_id: str | None = None,
     ):
         return cls(
@@ -423,7 +428,7 @@ class PlannedTask(BaseTask):
             system_prompt=system_prompt,
             prompt=prompt,
             plan=plan,
-            attachments=attachments,
+            attachments=attachments or [],
             context_id=context_id,
         )
 
@@ -1200,17 +1205,16 @@ def serialize_task(
     }
 
     # Add type-specific fields
-    if isinstance(task, ScheduledTask):
-        task_dict["type"] = "scheduled"
-        task_dict["schedule"] = serialize_task_schedule(task.schedule)  # type: ignore
-    elif isinstance(task, AdHocTask):
-        task_dict["type"] = "adhoc"
-        adhoc_task = cast(AdHocTask, task)
-        task_dict["token"] = adhoc_task.token
-    else:
-        task_dict["type"] = "planned"
-        planned_task = cast(PlannedTask, task)
-        task_dict["plan"] = serialize_task_plan(planned_task.plan)  # type: ignore
+    match task:
+        case ScheduledTask():
+            task_dict["type"] = "scheduled"
+            task_dict["schedule"] = serialize_task_schedule(task.schedule)  # type: ignore
+        case AdHocTask():
+            task_dict["type"] = "adhoc"
+            task_dict["token"] = task.token
+        case PlannedTask():
+            task_dict["type"] = "planned"
+            task_dict["plan"] = serialize_task_plan(task.plan)  # type: ignore
 
     return task_dict
 
@@ -1272,14 +1276,15 @@ def deserialize_task(
     }
 
     # Add type-specific fields
-    if determined_class == ScheduledTask:  # type: ignore
-        schedule_data = task_data.get("schedule", {})
-        common_args["schedule"] = parse_task_schedule(schedule_data)
-        return ScheduledTask(**common_args)  # type: ignore
-    elif determined_class == AdHocTask:  # type: ignore
-        common_args["token"] = task_data.get("token", "")
-        return AdHocTask(**common_args)  # type: ignore
-    else:
-        plan_data = task_data.get("plan", {})
-        common_args["plan"] = parse_task_plan(plan_data)
-        return PlannedTask(**common_args)  # type: ignore
+    match determined_class:
+        case cls if cls == ScheduledTask:  # type: ignore
+            schedule_data = task_data.get("schedule", {})
+            common_args["schedule"] = parse_task_schedule(schedule_data)
+            return ScheduledTask(**common_args)  # type: ignore
+        case cls if cls == AdHocTask:  # type: ignore
+            common_args["token"] = task_data.get("token", "")
+            return AdHocTask(**common_args)  # type: ignore
+        case _:
+            plan_data = task_data.get("plan", {})
+            common_args["plan"] = parse_task_plan(plan_data)
+            return PlannedTask(**common_args)  # type: ignore

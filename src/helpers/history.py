@@ -383,13 +383,15 @@ class History(Record):
             compressed_part = False
             for ratio in ratios:
                 if ratio[0] > ratio[1] * total:
-                    over_part = ratio[2]
-                    if over_part == "current_topic":
-                        compressed_part = await self.current.compress()
-                    elif over_part == "history_topic":
-                        compressed_part = await self.compress_topics()
-                    else:
-                        compressed_part = await self.compress_bulks()
+                    match ratio[2]:
+                        case "current_topic":
+                            compressed_part = await self.current.compress()
+                        case "history_topic":
+                            compressed_part = await self.compress_topics()
+                        case "history_bulk":
+                            compressed_part = await self.compress_bulks()
+                        case _:
+                            compressed_part = False
                     if compressed_part:
                         break
 
@@ -483,9 +485,8 @@ def _stringify_content(content: MessageContent) -> str:
 
     # raw messages return preview or trimmed json
     if _is_raw_message(content):
-        preview: str = content.get("preview", "")  # type: ignore
-        if preview:
-            return preview
+        if preview := content.get("preview", ""):  # type: ignore
+            return str(preview)
         text = _json_dumps(content)
         if len(text) > RAW_MESSAGE_OUTPUT_TEXT_TRIM:
             return text[:RAW_MESSAGE_OUTPUT_TEXT_TRIM] + "... TRIMMED"

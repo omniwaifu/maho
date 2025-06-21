@@ -6,6 +6,7 @@
 
 #javascript files
 node_modules/
+webui/dist/
 
 # Ignore docker/run/agent-zero directory
 docker/run/agent-zero/

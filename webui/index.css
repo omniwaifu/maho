@@ -1022,6 +1022,28 @@ pre {
   color: rgba(253, 253, 253, 0.35);
 }
 
+.delete-chat-btn {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.1);
+  color: var(--color-text);
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: all 0.2s ease;
+}
+
+.delete-chat-btn:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  opacity: 1;
+}
+
 /* Input section layout */
 #input-section {
   display: flex;
@@ -2044,6 +2066,15 @@ a:active {
 
 .light-mode .edit-button:active {
   background-color: #dbeafe;
+}
+
+.light-mode .delete-chat-btn {
+  background-color: rgba(0, 0, 0, 0.1);
+  color: #374151;
+}
+
+.light-mode .delete-chat-btn:hover {
+  background-color: rgba(0, 0, 0, 0.2);
 }
 
 .light-mode #progress-bar-i {

@@ -191,7 +191,7 @@
                                         <span class="chat-name" :title="context.name ? context.name : 'Chat #' + context.no"
                                             x-text="context.name ? context.name : 'Chat #' + context.no"></span>
                                     </div>
-                                    <button class="edit-button" @click="killChat(context.id)">X</button>
+                                    <button class="delete-chat-btn" @click="killChat(context.id)">×</button>
                                 </li>
                             </template>
                         </ul>

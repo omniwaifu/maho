@@ -90,6 +90,10 @@ async def serve_index_css():
 async def serve_index_js():
     return FileResponse(get_abs_path("./webui/index.js"))
 
+@app.get("/ascii-art.txt")
+async def serve_ascii_art():
+    return FileResponse(get_abs_path("./webui/ascii-art.txt"), media_type="text/plain")
+
 # Security
 security = HTTPBasic()
 

@@ -137,6 +137,26 @@ function createBlankState() {
     }
 }
 
+// Load ASCII art from external file
+async function loadAsciiArt() {
+    try {
+        const response = await fetch('./ascii-art.txt');
+        if (response.ok) {
+            const asciiArt = await response.text();
+            const asciiElement = document.getElementById('ascii-art');
+            if (asciiElement) {
+                asciiElement.textContent = asciiArt;
+            }
+        }
+    } catch (error) {
+        console.log('Could not load ASCII art:', error);
+        const asciiElement = document.getElementById('ascii-art');
+        if (asciiElement) {
+            asciiElement.textContent = ''; // Clear loading text
+        }
+    }
+}
+
 // Application initialization
 async function initializeApp() {
     console.log('🚀 Initializing Maho Chat Application...');
@@ -147,6 +167,9 @@ async function initializeApp() {
         
         // Initialize DOM references
         initializeDOM();
+        
+        // Load ASCII art
+        await loadAsciiArt();
         
         // Initialize core modules
         initializeChatCore();

@@ -685,21 +685,22 @@ pre {
 }
 
 #send-button {
-  background-color: #4248f1;
+  background-color: var(--color-primary);
 }
 
 #send-button:hover {
   -webkit-transform: scale(1.05);
   transform: scale(1.05);
   transform-origin: center;
-  background-color: #353bc5;
+  background-color: var(--color-accent);
 }
 
 #send-button:active {
   -webkit-transform: scale(1);
   transform: scale(1);
   transform-origin: center;
-  background-color: #2b309c;
+  background-color: var(--color-accent);
+  opacity: 0.8;
 }
 
 .chat-button svg {

@@ -142,6 +142,9 @@ async function initializeApp() {
     console.log('🚀 Initializing Maho Chat Application...');
     
     try {
+        // Initialize dark mode first (before DOM manipulation)
+        initializeDarkMode();
+        
         // Initialize DOM references
         initializeDOM();
         
@@ -188,6 +191,31 @@ window.addEventListener('beforeunload', () => {
     stopPolling();
 });
 
+// Dark mode toggle function
+function toggleDarkMode(isDark) {
+    const body = document.body;
+    if (isDark) {
+        body.classList.remove('light-mode');
+        localStorage.setItem('darkMode', 'true');
+    } else {
+        body.classList.add('light-mode');
+        localStorage.setItem('darkMode', 'false');
+    }
+}
+
+// Initialize dark mode on page load
+function initializeDarkMode() {
+    const savedDarkMode = localStorage.getItem('darkMode');
+    const body = document.body;
+    
+    // Default to dark mode if no preference saved
+    if (savedDarkMode === 'false') {
+        body.classList.add('light-mode');
+    } else {
+        body.classList.remove('light-mode');
+    }
+}
+
 // Export key functions for global access (backward compatibility)
 window.sendMessage = sendMessage;
 window.updateChatInput = updateChatInput;
@@ -198,6 +226,7 @@ window.pauseAgent = pauseAgent;
 window.resetChat = resetChat;
 window.newChat = newChat;
 window.killChat = killChat;
+window.toggleDarkMode = toggleDarkMode;
 window.loadKnowledge = loadKnowledge;
 window.toast = toast;
 window.toastFetchError = toastFetchError;

@@ -12,6 +12,18 @@ install:
 install-dev:
     uv sync --dev
 
+# Install frontend dependencies
+ui-install:
+    cd webui && bun install
+
+# Build frontend assets (CSS)
+ui-build:
+    cd webui && bun run build
+
+# Watch frontend assets for development
+ui-watch:
+    cd webui && bun run dev
+
 # Run the web UI server
 ui:
     uv run scripts/start_ui.py

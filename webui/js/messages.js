@@ -5,7 +5,19 @@ import { marked } from "https://cdn.jsdelivr.net/npm/marked/lib/marked.esm.js";
 function createCopyButton() {
   const button = document.createElement("button");
   button.className = "copy-button";
-  button.textContent = "Copy";
+  
+  // Simple copy icon
+  const copyIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+    <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+    <path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"></path>
+  </svg>`;
+  
+  // Simple checkmark icon
+  const checkIcon = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2">
+    <path d="M20 6L9 17l-5-5"></path>
+  </svg>`;
+  
+  button.innerHTML = copyIcon;
 
   button.addEventListener("click", async function (e) {
     e.stopPropagation();
@@ -22,12 +34,10 @@ function createCopyButton() {
 
     try {
       await navigator.clipboard.writeText(textToCopy);
-      const originalText = button.textContent;
-      button.classList.add("copied");
-      button.textContent = "Copied!";
+      // Change to copied state with just the checkmark icon
+      button.innerHTML = checkIcon;
       setTimeout(() => {
-        button.classList.remove("copied");
-        button.textContent = originalText;
+        button.innerHTML = copyIcon;
       }, 2000);
     } catch (err) {
       console.error("Failed to copy text:", err);

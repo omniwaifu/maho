@@ -152,9 +152,9 @@ async function initializeApp() {
         initializeChatCore();
         
         // Setup UI components
-        setupSidebarToggle();
-        setupTabs();
-        
+    setupSidebarToggle();
+    setupTabs();
+    
         // Create blank state
         createBlankState();
         
@@ -162,13 +162,13 @@ async function initializeApp() {
         startTimeUpdates();
         
         // Initialize tabs after Alpine.js is ready
-        if (window.Alpine) {
+    if (window.Alpine) {
+        initializeActiveTab();
+    } else {
+        document.addEventListener('alpine:init', () => {
             initializeActiveTab();
-        } else {
-            document.addEventListener('alpine:init', () => {
-                initializeActiveTab();
-            });
-        }
+        });
+    }
         
         // Start polling for updates
         await startPolling();
@@ -216,6 +216,57 @@ function initializeDarkMode() {
     }
 }
 
+// Toggle functions for preferences
+function toggleAutoScroll(enabled) {
+    window.autoScroll = enabled;
+    localStorage.setItem('autoScroll', enabled.toString());
+}
+
+function toggleThoughts(enabled) {
+    const thoughts = document.querySelectorAll('.msg-thoughts');
+    thoughts.forEach(thought => {
+        thought.style.display = enabled ? 'block' : 'none';
+    });
+    localStorage.setItem('showThoughts', enabled.toString());
+}
+
+function toggleJson(enabled) {
+    const jsonElements = document.querySelectorAll('.msg-json');
+    jsonElements.forEach(json => {
+        json.style.display = enabled ? 'block' : 'none';
+    });
+    localStorage.setItem('showJson', enabled.toString());
+}
+
+function toggleUtils(enabled) {
+    const utilElements = document.querySelectorAll('.message-util');
+    utilElements.forEach(util => {
+        util.style.display = enabled ? 'block' : 'none';
+    });
+    localStorage.setItem('showUtils', enabled.toString());
+}
+
+function toggleSpeech(enabled) {
+    localStorage.setItem('speech', enabled.toString());
+    // Speech functionality is handled by the speech module
+    if (window.speech) {
+        window.speech.enabled = enabled;
+    }
+}
+
+// Safe call helper function
+function safeCall(functionName, ...args) {
+    try {
+        if (typeof window[functionName] === 'function') {
+            return window[functionName](...args);
+        } else {
+            console.warn(`Function ${functionName} not found`);
+        }
+    } catch (error) {
+        console.error(`Error calling ${functionName}:`, error);
+    }
+}
+
 // Export key functions for global access (backward compatibility)
 window.sendMessage = sendMessage;
 window.updateChatInput = updateChatInput;
@@ -227,6 +278,12 @@ window.resetChat = resetChat;
 window.newChat = newChat;
 window.killChat = killChat;
 window.toggleDarkMode = toggleDarkMode;
+window.toggleAutoScroll = toggleAutoScroll;
+window.toggleThoughts = toggleThoughts;
+window.toggleJson = toggleJson;
+window.toggleUtils = toggleUtils;
+window.toggleSpeech = toggleSpeech;
+window.safeCall = safeCall;
 window.loadKnowledge = loadKnowledge;
 window.toast = toast;
 window.toastFetchError = toastFetchError;

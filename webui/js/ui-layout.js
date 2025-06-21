@@ -9,7 +9,7 @@ let sidebarState = {
 };
 
 export function toggleSidebar(show) {
-    const sidebar = document.getElementById('sidebar');
+    const sidebar = document.getElementById('left-panel');
     const mainContent = document.querySelector('.main-content');
     const overlay = document.querySelector('.sidebar-overlay');
     
@@ -22,14 +22,14 @@ export function toggleSidebar(show) {
     sidebarState.isOpen = show;
 
     if (show) {
-        addClassToElement(sidebar, 'sidebar-open');
-        if (overlay) addClassToElement(overlay, 'active');
+        removeClassFromElement(sidebar, 'hidden');
+        if (overlay) addClassToElement(overlay, 'visible');
         if (isMobile() && mainContent) {
             addClassToElement(mainContent, 'sidebar-push');
         }
     } else {
-        removeClassFromElement(sidebar, 'sidebar-open');
-        if (overlay) removeClassFromElement(overlay, 'active');
+        addClassToElement(sidebar, 'hidden');
+        if (overlay) removeClassFromElement(overlay, 'visible');
         if (mainContent) {
             removeClassFromElement(mainContent, 'sidebar-push');
         }
@@ -40,7 +40,7 @@ export function toggleSidebar(show) {
 }
 
 export function handleResize() {
-    const sidebar = document.getElementById('sidebar');
+    const sidebar = document.getElementById('left-panel');
     if (!sidebar) return;
 
     if (isMobile()) {
@@ -62,7 +62,7 @@ export function handleResize() {
 }
 
 export function setupSidebarToggle() {
-    const toggleButton = document.getElementById('sidebar-toggle');
+    const toggleButton = document.getElementById('toggle-sidebar');
     const overlay = document.querySelector('.sidebar-overlay');
     
     if (toggleButton) {

@@ -968,6 +968,7 @@ pre {
   cursor: pointer;
   display: flex;
   align-items: center;
+  justify-content: center; /* Center text horizontally */
   gap: 0.5rem;
   font-family: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   font-size: var(--font-size-small);
